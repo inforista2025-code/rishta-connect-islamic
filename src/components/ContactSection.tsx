@@ -1,47 +1,8 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Phone, Mail, MessageCircle, Send } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 export function ContactSection() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: ""
-  });
-  const { toast } = useToast();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Create email with form data
-    const subject = encodeURIComponent(`Rishta Matrimony Contact - ${formData.name}`);
-    const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
-    
-    // Open email client with pre-filled data
-    window.open(`mailto:info.rista2025@gmail.com?subject=${subject}&body=${body}`, '_blank');
-    
-    // Show success toast
-    toast({
-      title: "Email Client Opened!",
-      description: "Your email client has been opened with the message pre-filled.",
-    });
-    
-    // Reset form
-    setFormData({ name: "", email: "", message: "" });
-  };
-
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent("Assalamualaikum! I need help with Rishta Matrimony.");
     window.open(`https://wa.me/918709675950?text=${message}`, '_blank');
@@ -64,9 +25,9 @@ export function ContactSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="flex justify-center">
             {/* Contact Information */}
-            <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
+            <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm max-w-lg w-full">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-foreground text-center">
                   Get in Touch
@@ -115,64 +76,6 @@ export function ContactSection() {
                     सोमवार - शुक्रवार: सुबह 9 - शाम 8 बजे तक
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Contact Form */}
-            <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-foreground text-center">
-                  Send us a Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Your full name"
-                      required
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="your.email@example.com"
-                      required
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      placeholder="How can we help you?"
-                      required
-                      rows={4}
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <Button type="submit" variant="hero" size="lg" className="w-full">
-                    <Send className="w-5 h-5" />
-                    Send Message
-                  </Button>
-                </form>
               </CardContent>
             </Card>
           </div>
