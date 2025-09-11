@@ -57,7 +57,7 @@ export function CommunityLinksSection() {
               Join Our Communities
             </h2>
             <p className="text-lg text-muted-foreground">
-              Connect with us on different platforms / विभिन्न प्लेटफॉर्म पर हमसे जुड़ें
+              Connect with us on different platforms
             </p>
           </div>
 
@@ -78,11 +78,8 @@ export function CommunityLinksSection() {
                 </CardHeader>
 
                 <CardContent className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-muted-foreground mb-4">
                     {link.description}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {link.descriptionHindi}
                   </p>
 
                   <Button
@@ -104,7 +101,7 @@ export function CommunityLinksSection() {
 
                   {!link.available && (
                     <p className="text-xs text-muted-foreground mt-2 opacity-70">
-                      जल्द आ रहा है
+                      Coming Soon
                     </p>
                   )}
                 </CardContent>
@@ -119,8 +116,6 @@ export function CommunityLinksSection() {
             </h3>
             <p className="text-sm text-muted-foreground">
               More community platforms will be added soon. Stay connected with our WhatsApp channel for updates.
-              <br />
-              जल्द ही और भी कम्युनिटी प्लेटफॉर्म जोड़े जाएंगे। अपडेट के लिए हमारे व्हाट्सएप चैनल से जुड़े रहें।
             </p>
           </div>
         </div>

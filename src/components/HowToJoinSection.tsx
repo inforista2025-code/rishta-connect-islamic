@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ExternalLink, FileText, CheckCircle2 } from "lucide-react";
 
 export function HowToJoinSection() {
-  const [language, setLanguage] = useState<'en' | 'hi'>('hi');
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
 
   const handleVerificationPageClick = () => {
     window.open('https://rishta-soulmate-haven.lovable.app/#hero', '_blank');
@@ -90,7 +90,7 @@ export function HowToJoinSection() {
           <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-8">
               <CardTitle className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                {language === 'hi' ? 'कैसे ज्वाइन करें — स्टेप-बाई-स्टेप' : 'How to Join — Step-by-Step'}
+                How to Join — Step-by-Step
               </CardTitle>
               
               {/* Language Toggle */}

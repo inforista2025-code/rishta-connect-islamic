@@ -53,7 +53,7 @@ export function ContactSection() {
               Contact Us
             </h2>
             <p className="text-lg text-muted-foreground">
-              Have questions? We're here to help / कोई सवाल हैं? हम मदद के लिए यहाँ हैं
+              Have questions? We're here to help
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export function ContactSection() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <Label htmlFor="name">Name / नाम</Label>
+                    <Label htmlFor="name">Name</Label>
                     <Input
                       id="name"
                       name="name"
@@ -148,7 +148,7 @@ export function ContactSection() {
                   </div>
 
                   <div>
-                    <Label htmlFor="message">Message / संदेश</Label>
+                    <Label htmlFor="message">Message</Label>
                     <Textarea
                       id="message"
                       name="message"
