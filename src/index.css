@@ -8,33 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Islamic-inspired soft pastel palette */
+    --background: 35 30% 98%;
+    --foreground: 345 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 345 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 345 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Soft rose gold primary */
+    --primary: 345 65% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Soft sage secondary */
+    --secondary: 120 25% 85%;
+    --secondary-foreground: 345 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Soft cream muted */
+    --muted: 35 40% 92%;
+    --muted-foreground: 345 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Soft lavender accent */
+    --accent: 280 30% 88%;
+    --accent-foreground: 345 25% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 35 25% 88%;
+    --input: 35 25% 88%;
+    --ring: 345 65% 65%;
+
+    /* Custom design tokens */
+    --hero-gradient: linear-gradient(135deg, hsl(345, 65%, 85%), hsl(280, 40%, 90%));
+    --card-shadow: 0 8px 32px -8px hsl(345, 25%, 15%, 0.1);
+    --button-shadow: 0 4px 16px -4px hsl(345, 65%, 65%, 0.3);
+    --section-gradient: linear-gradient(180deg, hsl(35, 30%, 98%), hsl(120, 25%, 95%));
+    
+    /* Islamic geometric pattern (subtle) */
+    --pattern-opacity: 0.03;
 
     --radius: 0.5rem;
 
@@ -101,5 +115,27 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .hero-gradient {
+    background: var(--hero-gradient);
+  }
+  
+  .section-gradient {
+    background: var(--section-gradient);
+  }
+  
+  .card-shadow {
+    box-shadow: var(--card-shadow);
+  }
+  
+  .button-shadow {
+    box-shadow: var(--button-shadow);
+  }
+  
+  .islamic-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill-opacity='0.03'%3E%3Cpath d='M30 0l15 26H15z'/%3E%3Cpath d='M30 60l15-26H15z'/%3E%3C/g%3E%3C/svg%3E");
   }
 }
