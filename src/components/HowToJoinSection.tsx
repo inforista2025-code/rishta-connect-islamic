@@ -111,12 +111,8 @@ export function HowToJoinSection() {
                 </Button>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                <Button variant="hero" size="lg" onClick={handleVerificationPageClick}>
-                  <ExternalLink className="w-5 h-5" />
-                  Open Verification Page
-                </Button>
+              {/* Action Button */}
+              <div className="flex justify-center mb-8">
                 <Button variant="community" size="lg" onClick={handleGoogleFormClick}>
                   <FileText className="w-5 h-5" />
                   Fill Google Form

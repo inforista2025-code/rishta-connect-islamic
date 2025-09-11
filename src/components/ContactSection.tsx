@@ -25,10 +25,17 @@ export function ContactSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // For demo purposes, we'll just show a toast
+    // Create email with form data
+    const subject = encodeURIComponent(`Rishta Matrimony Contact - ${formData.name}`);
+    const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
+    
+    // Open email client with pre-filled data
+    window.open(`mailto:info.rista2025@gmail.com?subject=${subject}&body=${body}`, '_blank');
+    
+    // Show success toast
     toast({
-      title: "Message Sent!",
-      description: "Thank you for your message. We'll get back to you soon.",
+      title: "Email Client Opened!",
+      description: "Your email client has been opened with the message pre-filled.",
     });
     
     // Reset form
