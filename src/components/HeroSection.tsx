@@ -8,7 +8,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
   const handleWhatsAppClick = () => {
-    window.open('https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B', '_blank');
+    window.open('https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t', '_blank');
   };
 
   return (
