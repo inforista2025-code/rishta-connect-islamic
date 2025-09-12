@@ -58,7 +58,7 @@ export function Footer() {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-background/80">
               <li>
-                <a href="#hero" className="hover:text-background transition-colors">
+                <a href="#hero" className="hover:text-background transition-colors cursor-pointer">
                   Home
                 </a>
               </li>
@@ -70,16 +70,6 @@ export function Footer() {
               <li>
                 <a href="#contact" className="hover:text-background transition-colors">
                   Contact Us
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="https://rishta-soulmate-haven.lovable.app/#hero" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-background transition-colors"
-                >
-                  Verification Page
                 </a>
               </li>
             </ul>

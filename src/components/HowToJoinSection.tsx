@@ -22,27 +22,22 @@ export function HowToJoinSection() {
       description: "सबसे पहले हमारे व्हाट्सएप चैनल को ज्वाइन करें और नियमित अपडेट पाएं।"
     },
     {
-      number: "२", 
-      title: "वेरिफिकेशन पेज खोलें",
-      description: "नीचे दिए गए 'Open Verification Page' बटन पर क्लिक करें।"
-    },
-    {
-      number: "३",
+      number: "२",
       title: "गूगल फॉर्म भरें",
       description: "अपनी सभी जानकारी सही-सही भरें: नाम, उम्र, शहर, शिक्षा, व्यवसाय, व्हाट्सएप नंबर।"
     },
     {
-      number: "४",
+      number: "३",
       title: "फोटो अपलोड करें", 
       description: "अपनी हाल की फोटो अपलोड करें (चेहरा साफ दिखना चाहिए)।"
     },
     {
-      number: "५",
+      number: "४",
       title: "बायो और preference लिखें",
       description: "अपने बारे में संक्षिप्त जानकारी और आप क्या खोज रहे हैं, वो लिखें।"
     },
     {
-      number: "६",
+      number: "५",
       title: "सबमिट करें और इंतजार करें",
       description: "फॉर्म सबमिट करने के बाद एडमिन टीम आपकी प्रोफाइल रिव्यू करके संपर्क करेगी।"
     }
@@ -56,26 +51,21 @@ export function HowToJoinSection() {
     },
     {
       number: "2",
-      title: "Open Verification Page", 
-      description: "Click on the 'Open Verification Page' button below."
-    },
-    {
-      number: "3",
       title: "Fill Google Form",
       description: "Fill all details correctly: Name, Age, City, Education, Profession, WhatsApp number."
     },
     {
-      number: "4",
+      number: "3",
       title: "Upload Photo",
       description: "Upload your recent photo (face should be clearly visible)."
     },
     {
-      number: "5",
+      number: "4",
       title: "Write Bio & Preferences",
       description: "Write a brief bio about yourself and what you're looking for in a partner."
     },
     {
-      number: "6", 
+      number: "5", 
       title: "Submit & Wait",
       description: "After submission, our admin team will review your profile and contact you."
     }
@@ -122,7 +112,7 @@ export function HowToJoinSection() {
 
             <CardContent>
               {/* Steps Accordion */}
-              <Accordion type="multiple" defaultValue={["item-0", "item-1", "item-2", "item-3", "item-4", "item-5"]} className="w-full">
+              <Accordion type="multiple" defaultValue={["item-0", "item-1", "item-2", "item-3", "item-4"]} className="w-full">
                 {currentSteps.map((step, index) => (
                   <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
                     <AccordionTrigger className="text-left hover:no-underline py-4">
