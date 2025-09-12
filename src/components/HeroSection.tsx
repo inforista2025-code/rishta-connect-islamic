@@ -50,7 +50,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
               className="w-full sm:w-auto"
             >
               <MessageCircle className="w-6 h-6" />
-              Join WhatsApp Channel
+              Join WhatsApp Community
             </Button>
             
             <Button 
