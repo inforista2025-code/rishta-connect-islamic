@@ -23,7 +23,7 @@ export function HowToJoinSection() {
     },
     {
       number: "२",
-      title: "गूगल फॉर्म भरें",
+      title: "Register Profile",
       description: "अपनी सभी जानकारी सही-सही भरें: नाम, उम्र, शहर, शिक्षा, व्यवसाय, व्हाट्सएप नंबर।"
     },
     {
@@ -51,7 +51,7 @@ export function HowToJoinSection() {
     },
     {
       number: "2",
-      title: "Fill Google Form",
+      title: "Register Profile",
       description: "Fill all details correctly: Name, Age, City, Education, Profession, WhatsApp number."
     },
     {
