@@ -105,7 +105,7 @@ export function HowToJoinSection() {
               <div className="flex justify-center mb-8">
                 <Button variant="community" size="lg" onClick={handleGoogleFormClick}>
                   <FileText className="w-5 h-5" />
-                  Fill Google Form
+                  Register Profile
                 </Button>
               </div>
             </CardHeader>
