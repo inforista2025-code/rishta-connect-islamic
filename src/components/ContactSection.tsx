@@ -8,6 +8,10 @@ export function ContactSection() {
     window.open(`https://wa.me/918709675950?text=${message}`, '_blank');
   };
 
+  const handlePhoneCall = () => {
+    window.open('tel:+918709675950', '_self');
+  };
+
   const handleEmailContact = () => {
     window.open('mailto:info.rista2025@gmail.com?subject=Rishta Matrimony Inquiry', '_blank');
   };
@@ -43,10 +47,16 @@ export function ContactSection() {
                     <h3 className="font-semibold text-foreground">Phone / WhatsApp</h3>
                     <p className="text-muted-foreground">+91 870 967 5950</p>
                   </div>
-                  <Button variant="whatsapp" size="sm" onClick={handleWhatsAppContact}>
-                    <MessageCircle className="w-4 h-4" />
-                    Chat
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handlePhoneCall}>
+                      <Phone className="w-4 h-4" />
+                      Call
+                    </Button>
+                    <Button variant="whatsapp" size="sm" onClick={handleWhatsAppContact}>
+                      <MessageCircle className="w-4 h-4" />
+                      Chat
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Email */}
