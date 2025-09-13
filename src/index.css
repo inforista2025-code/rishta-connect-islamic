@@ -8,44 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Islamic-inspired soft pastel palette */
-    --background: 35 30% 98%;
-    --foreground: 345 25% 15%;
+    /* Islamic theme - clean white with soft green & golden highlights */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 345 25% 15%;
+    --card-foreground: 0 0% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 345 25% 15%;
+    --popover-foreground: 0 0% 15%;
 
-    /* Soft rose gold primary */
-    --primary: 345 65% 65%;
+    /* Islamic Green Primary */
+    --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft sage secondary */
-    --secondary: 120 25% 85%;
-    --secondary-foreground: 345 25% 15%;
+    /* Soft cream secondary */
+    --secondary: 45 45% 94%;
+    --secondary-foreground: 0 0% 15%;
 
-    /* Soft cream muted */
-    --muted: 35 40% 92%;
-    --muted-foreground: 345 15% 45%;
+    /* Light gray muted */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Soft lavender accent */
-    --accent: 280 30% 88%;
-    --accent-foreground: 345 25% 15%;
+    /* Golden accent */
+    --accent: 43 74% 66%;
+    --accent-foreground: 0 0% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 35 25% 88%;
-    --input: 35 25% 88%;
-    --ring: 345 65% 65%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 142 76% 36%;
 
-    /* Custom design tokens */
-    --hero-gradient: linear-gradient(135deg, hsl(345, 65%, 85%), hsl(280, 40%, 90%));
-    --card-shadow: 0 8px 32px -8px hsl(345, 25%, 15%, 0.1);
-    --button-shadow: 0 4px 16px -4px hsl(345, 65%, 65%, 0.3);
-    --section-gradient: linear-gradient(180deg, hsl(35, 30%, 98%), hsl(120, 25%, 95%));
+    /* Custom design tokens for Islamic theme */
+    --hero-gradient: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(142, 15%, 98%));
+    --card-shadow: 0 4px 20px -4px hsl(0, 0%, 0%, 0.08);
+    --button-shadow: 0 4px 16px -4px hsl(142, 76%, 36%, 0.3);
+    --section-gradient: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(142, 8%, 98%));
+    --golden-gradient: linear-gradient(135deg, hsl(43, 74%, 66%), hsl(43, 84%, 76%));
+    --green-gradient: linear-gradient(135deg, hsl(142, 76%, 36%), hsl(142, 66%, 46%));
     
     /* Islamic geometric pattern (subtle) */
     --pattern-opacity: 0.03;
