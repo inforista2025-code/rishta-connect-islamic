@@ -3,8 +3,6 @@ import { HeroSection } from "./HeroSection";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { HowItWorksSection } from "./HowItWorksSection";
-import { PremiumMembershipSection } from "./PremiumMembershipSection";
-import { FeaturedProfilesSection } from "./FeaturedProfilesSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
@@ -35,12 +33,6 @@ export function RishtaMatrimonyLanding() {
 
       {/* How It Works Section */}
       <HowItWorksSection />
-
-      {/* Premium Membership Section */}
-      <PremiumMembershipSection />
-
-      {/* Featured Profiles Section */}
-      <FeaturedProfilesSection />
 
       {/* Community Links Section */}
       <CommunityLinksSection />
