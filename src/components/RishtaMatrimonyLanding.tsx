@@ -1,46 +1,45 @@
 import { useRef } from "react";
-import { HeaderSection } from "./HeaderSection";
-import { StepsSection } from "./StepsSection";
-import { WhyChooseUsSection } from "./WhyChooseUsSection";
-import { HowItWorksSection } from "./HowItWorksSection";
-import { TestimonialsSection } from "./TestimonialsSection";
-import { CallToActionSection } from "./CallToActionSection";
-import { FooterSection } from "./FooterSection";
+import { HeroSection } from "./HeroSection";
+import { HowToJoinSection } from "./HowToJoinSection";
+import { GoogleFormSection } from "./GoogleFormSection";
+import { CommunityLinksSection } from "./CommunityLinksSection";
+import { ContactSection } from "./ContactSection";
+import { Footer } from "./Footer";
 
 export function RishtaMatrimonyLanding() {
-  const stepsRef = useRef<HTMLDivElement>(null);
+  const howToJoinRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
 
-  const scrollToSteps = () => {
-    stepsRef.current?.scrollIntoView({ 
+  const scrollToHowToJoin = () => {
+    howToJoinRef.current?.scrollIntoView({ 
       behavior: 'smooth',
       block: 'start'
     });
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Section */}
-      <HeaderSection onScrollToSteps={scrollToSteps} />
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
 
-      {/* Steps Section */}
-      <div ref={stepsRef}>
-        <StepsSection />
+      {/* How to Join Section */}
+      <div ref={howToJoinRef}>
+        <HowToJoinSection />
       </div>
 
-      {/* Why Choose Us Section */}
-      <WhyChooseUsSection />
+      {/* Google Form Section */}
+      <GoogleFormSection />
 
-      {/* How It Works Section */}
-      <HowItWorksSection />
+      {/* Community Links Section */}
+      <CommunityLinksSection />
 
-      {/* Testimonials Section */}
-      <TestimonialsSection />
+      {/* Contact Section */}
+      <div ref={contactRef} id="contact">
+        <ContactSection />
+      </div>
 
-      {/* Call to Action Section */}
-      <CallToActionSection />
-
-      {/* Footer Section */}
-      <FooterSection />
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
