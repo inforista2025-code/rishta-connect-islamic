@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Navigation } from "./Navigation";
 import { HeroSection } from "./HeroSection";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
@@ -9,6 +10,9 @@ import { Footer } from "./Footer";
 
 export function RishtaMatrimonyLanding() {
   const howToJoinRef = useRef<HTMLDivElement>(null);
+  const whyChooseUsRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const communityRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
 
   const scrollToHowToJoin = () => {
@@ -18,10 +22,34 @@ export function RishtaMatrimonyLanding() {
     });
   };
 
+  const scrollToSection = (section: string) => {
+    switch (section) {
+      case "why-choose-us":
+        whyChooseUsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
+      case "how-it-works":
+        howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
+      case "community":
+        communityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
+      case "contact":
+        contactRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <Navigation onScrollToSection={scrollToSection} />
+
       {/* Hero Section */}
-      <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
+      <div className="pt-16">
+        <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
+      </div>
 
       {/* How to Join Section */}
       <div ref={howToJoinRef}>
@@ -29,13 +57,19 @@ export function RishtaMatrimonyLanding() {
       </div>
 
       {/* Why Choose Us Section */}
-      <WhyChooseUsSection />
+      <div ref={whyChooseUsRef}>
+        <WhyChooseUsSection />
+      </div>
 
       {/* How It Works Section */}
-      <HowItWorksSection />
+      <div ref={howItWorksRef}>
+        <HowItWorksSection />
+      </div>
 
       {/* Community Links Section */}
-      <CommunityLinksSection />
+      <div ref={communityRef}>
+        <CommunityLinksSection />
+      </div>
 
       {/* Contact Section */}
       <div ref={contactRef} id="contact">
