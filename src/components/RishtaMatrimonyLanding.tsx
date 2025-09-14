@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import { HeroSection } from "./HeroSection";
 import { HowToJoinSection } from "./HowToJoinSection";
-import { GoogleFormSection } from "./GoogleFormSection";
+import { WhyChooseUsSection } from "./WhyChooseUsSection";
+import { HowItWorksSection } from "./HowItWorksSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
@@ -27,8 +28,11 @@ export function RishtaMatrimonyLanding() {
         <HowToJoinSection />
       </div>
 
-      {/* Google Form Section */}
-      <GoogleFormSection />
+      {/* Why Choose Us Section */}
+      <WhyChooseUsSection />
+
+      {/* How It Works Section */}
+      <HowItWorksSection />
 
       {/* Community Links Section */}
       <CommunityLinksSection />
