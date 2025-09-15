@@ -14,6 +14,16 @@ export function BrowseProfilesSection() {
       image: "/placeholder.svg",
       isPremium: false
     },
+    // ADD NEW PROFILES HERE - Example:
+    {
+      id: 7,
+      name: "Sara Ahmed",
+      age: 23,
+      location: "Lahore, Pakistan",
+      profession: "Graphic Designer",
+      image: "/placeholder.svg",
+      isPremium: true
+    },
     {
       id: 2,
       name: "Fatima Ali",
