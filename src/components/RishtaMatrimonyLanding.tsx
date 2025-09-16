@@ -6,7 +6,6 @@ import { HowItWorksSection } from "./HowItWorksSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
-import { FloatingContactWidget } from "./FloatingContactWidget";
 
 export function RishtaMatrimonyLanding() {
   const howToJoinRef = useRef<HTMLDivElement>(null);
@@ -45,9 +44,6 @@ export function RishtaMatrimonyLanding() {
 
       {/* Footer */}
       <Footer />
-
-      {/* Floating Contact Widget */}
-      <FloatingContactWidget />
     </div>
   );
 }
