@@ -1,38 +1,53 @@
-import { Header } from "./Header";
-import { NewHeroSection } from "./NewHeroSection";
-import { HowToJoinStepsSection } from "./HowToJoinStepsSection";
-import { BrowseProfilesSection } from "./BrowseProfilesSection";
-import { PremiumUpgradeSection } from "./PremiumUpgradeSection";
-import { SuccessStoriesSection } from "./SuccessStoriesSection";
-import { AboutUsContactSection } from "./AboutUsContactSection";
-import { NewFooter } from "./NewFooter";
+import { useRef } from "react";
+import { HeroSection } from "./HeroSection";
+import { HowToJoinSection } from "./HowToJoinSection";
+import { WhyChooseUsSection } from "./WhyChooseUsSection";
+import { HowItWorksSection } from "./HowItWorksSection";
+import { CommunityLinksSection } from "./CommunityLinksSection";
+import { ContactSection } from "./ContactSection";
+import { Footer } from "./Footer";
+import { FloatingContactWidget } from "./FloatingContactWidget";
 
 export function RishtaMatrimonyLanding() {
+  const howToJoinRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
+
+  const scrollToHowToJoin = () => {
+    howToJoinRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Header />
-
       {/* Hero Section */}
-      <NewHeroSection />
+      <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
 
-      {/* How to Join Steps */}
-      <HowToJoinStepsSection />
+      {/* How to Join Section */}
+      <div ref={howToJoinRef}>
+        <HowToJoinSection />
+      </div>
 
-      {/* Browse Profiles Section */}
-      <BrowseProfilesSection />
+      {/* Why Choose Us Section */}
+      <WhyChooseUsSection />
 
-      {/* Premium Upgrade Section */}
-      <PremiumUpgradeSection />
+      {/* How It Works Section */}
+      <HowItWorksSection />
 
-      {/* Success Stories Section */}
-      <SuccessStoriesSection />
+      {/* Community Links Section */}
+      <CommunityLinksSection />
 
-      {/* About Us & Contact Section */}
-      <AboutUsContactSection />
+      {/* Contact Section */}
+      <div ref={contactRef} id="contact">
+        <ContactSection />
+      </div>
 
       {/* Footer */}
-      <NewFooter />
+      <Footer />
+
+      {/* Floating Contact Widget */}
+      <FloatingContactWidget />
     </div>
   );
 }
