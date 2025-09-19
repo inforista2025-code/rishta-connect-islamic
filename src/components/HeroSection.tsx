@@ -27,16 +27,28 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent rounded-2xl"></div>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+          {/* New Big Headline */}
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Find the Right Rishta with Verified Profiles
+            </span>
+          </h1>
+
+          {/* New Subheadline */}
+          <p className="text-2xl md:text-3xl text-muted-foreground mb-6 font-semibold">
+            Safe, Private & Trusted Islamic Matrimony Platform
+          </p>
+
+          {/* Original Greeting */}
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
             Assalamualaikum! 🌸
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Welcome to Rishta Matrimony
             </span>
-          </h1>
+          </h2>
 
-          {/* Subtitle */}
+          {/* Original Subtitle */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Join our Muslim Matrimony community to connect with verified profiles
           </p>
@@ -50,7 +62,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
               className="w-full sm:w-auto"
             >
               <MessageCircle className="w-6 h-6" />
-              Join WhatsApp Community
+              Join WhatsApp Channel
             </Button>
             
             <Button 
@@ -60,7 +72,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
               className="w-full sm:w-auto"
             >
               <CheckCircle className="w-6 h-6" />
-              How to Join / Verify
+              Register Free to Create Your Profile
             </Button>
           </div>
 
