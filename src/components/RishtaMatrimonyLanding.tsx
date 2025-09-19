@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { HeroSection } from "./HeroSection";
 import { HowToJoinSection } from "./HowToJoinSection";
+import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
@@ -27,6 +28,9 @@ export function RishtaMatrimonyLanding() {
       <div ref={howToJoinRef}>
         <HowToJoinSection />
       </div>
+
+      {/* Success & Trust Section */}
+      <SuccessAndTrustSection />
 
       {/* Why Choose Us Section */}
       <WhyChooseUsSection />
