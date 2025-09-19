@@ -18,8 +18,8 @@ export function HowToJoinSection() {
   const stepsHindi = [
     {
       number: "१",
-      title: "व्हाट्सएप कम्युनिटी ज्वाइन करें",
-      description: "सबसे पहले हमारे व्हाट्सएप कम्युनिटी को ज्वाइन करें और नियमित अपडेट पाएं।"
+      title: "व्हाट्सएप कम्युनिटी और चैनल ज्वाइन करें",
+      description: "सबसे पहले हमारे व्हाट्सएप कम्युनिटी और चैनल को ज्वाइन करें और नियमित अपडेट पाएं।"
     },
     {
       number: "२",
@@ -46,8 +46,8 @@ export function HowToJoinSection() {
   const stepsEnglish = [
     {
       number: "1",
-      title: "Join WhatsApp Community",
-      description: "First, join our WhatsApp community for regular updates and announcements."
+      title: "Join WhatsApp Community and Channel",
+      description: "First, join our WhatsApp community and channel for regular updates and announcements."
     },
     {
       number: "2",
