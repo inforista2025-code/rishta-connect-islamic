@@ -11,6 +11,10 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
     window.open('https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t', '_blank');
   };
 
+  const handleWhatsAppChannelClick = () => {
+    window.open('https://whatsapp.com/channel/0029VaQHy8nElagRqOG4g32y', '_blank');
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-accent/20 islamic-pattern">
       <div className="absolute inset-0 bg-black/5"></div>
@@ -43,6 +47,16 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <Button 
+              variant="whatsapp" 
+              size="lg" 
+              onClick={handleWhatsAppChannelClick}
+              className="w-full sm:w-auto"
+            >
+              <MessageCircle className="w-6 h-6" />
+              Join WhatsApp Channel
+            </Button>
+
             <Button 
               variant="whatsapp" 
               size="lg" 
