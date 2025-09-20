@@ -4,6 +4,7 @@ import { HowToJoinSection } from "./HowToJoinSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
+import { FAQSection } from "./FAQSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
 
@@ -36,6 +37,9 @@ export function RishtaMatrimonyLanding() {
 
       {/* Community Links Section */}
       <CommunityLinksSection />
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Contact Section */}
       <div ref={contactRef} id="contact">
