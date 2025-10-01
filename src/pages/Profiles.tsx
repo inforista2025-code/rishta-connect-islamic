@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, MapPin, GraduationCap, Briefcase, Heart, Users, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
 
 const Profiles = () => {
   const navigate = useNavigate();
@@ -50,18 +51,8 @@ const Profiles = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header */}
-      <header className="bg-card border-b shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Heart className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Muslim Rishta Connect</h1>
-          </div>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Back to Home
-          </Button>
-        </div>
-      </header>
+      {/* Navigation Menu */}
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">

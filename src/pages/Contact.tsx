@@ -1,10 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, Clock } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 export default function Contact() {
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Menu */}
+      <Navbar />
+      
       {/* Header */}
       <div className="hero-gradient py-12 px-4 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
@@ -21,6 +22,9 @@ export function RishtaMatrimonyLanding() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Menu */}
+      <Navbar />
+      
       {/* Hero Section */}
       <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
 
