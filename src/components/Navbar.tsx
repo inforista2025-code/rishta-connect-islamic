@@ -25,7 +25,7 @@ export function Navbar() {
           {/* Logo/Brand */}
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-xl font-bold text-primary">
-              Muslim Rishta Connect
+              Rishta Matrimony
             </span>
           </Link>
 
