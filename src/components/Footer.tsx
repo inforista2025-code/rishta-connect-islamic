@@ -57,33 +57,23 @@ export function Footer() {
           {/* Quick Links */}
           <div className="text-center">
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/profiles" className="text-sm text-white hover:text-white/80 transition-colors">
-                  Profiles
-                </Link>
-              </li>
-              <li>
-                <Link to="/pricing" className="text-sm text-white hover:text-white/80 transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link to="/register" className="text-sm text-white hover:text-white/80 transition-colors">
-                  Register
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-sm text-white hover:text-white/80 transition-colors">
-                  Contact
-                </Link>
-              </li>
-            </ul>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+              <Link to="/" className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer">
+                Home
+              </Link>
+              <Link to="/profiles" className="text-sm text-white hover:text-white/80 transition-colors">
+                Profiles
+              </Link>
+              <Link to="/pricing" className="text-sm text-white hover:text-white/80 transition-colors">
+                Pricing
+              </Link>
+              <Link to="/register" className="text-sm text-white hover:text-white/80 transition-colors">
+                Register
+              </Link>
+              <Link to="/contact" className="text-sm text-white hover:text-white/80 transition-colors">
+                Contact
+              </Link>
+            </div>
           </div>
 
           {/* Contact & Social */}
