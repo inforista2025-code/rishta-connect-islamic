@@ -12,23 +12,21 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-accent/20 islamic-pattern">
-      <div className="absolute inset-0 bg-black/5"></div>
+    <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-end justify-center overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <img 
+          src={heroImage} 
+          alt="Rishta Matrimony - Islamic Marriage Community" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+      </div>
       
-      <div className="relative z-10 container mx-auto px-4 py-20 text-center">
+      <div className="relative z-10 container mx-auto px-4 pb-12 pt-8 text-center">
         <div className="max-w-4xl mx-auto">
-          {/* Hero Image */}
-          <div className="mb-8 relative">
-            <img 
-              src={heroImage} 
-              alt="Rishta Matrimony - Islamic Marriage Community" 
-              className="w-full max-w-2xl mx-auto rounded-2xl shadow-card"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent rounded-2xl"></div>
-          </div>
-
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight drop-shadow-lg">
             Assalamualaikum! 🌸
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
