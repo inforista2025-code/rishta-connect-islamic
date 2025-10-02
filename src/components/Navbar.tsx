@@ -24,22 +24,22 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-primary">
+            <span className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
               Rishta Matrimony
             </span>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center gap-3">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  "px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200",
                   isActive(link.path)
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground hover:bg-muted hover:text-primary"
+                    ? "bg-primary text-primary-foreground shadow-md scale-105"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md hover:scale-105"
                 )}
               >
                 {link.name}
@@ -65,18 +65,18 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden pb-4 border-t border-border">
-            <div className="flex flex-col space-y-2 pt-4">
+          <div className="md:hidden pb-4 border-t border-border mt-2">
+            <div className="flex flex-col space-y-3 pt-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "px-4 py-3 rounded-md text-sm font-medium transition-colors",
+                    "px-5 py-3 rounded-lg text-sm font-semibold transition-all duration-200 text-center",
                     isActive(link.path)
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground hover:bg-muted hover:text-primary"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md"
                   )}
                 >
                   {link.name}
