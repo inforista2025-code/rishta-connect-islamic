@@ -1,4 +1,5 @@
 import { MessageCircle, Users, Facebook, Instagram, Mail, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -58,19 +59,29 @@ export function Footer() {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#hero" className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer">
+                <Link to="/" className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#how-to-join" className="text-sm text-white hover:text-white/80 transition-colors">
-                  How to Join
-                </a>
+                <Link to="/profiles" className="text-sm text-white hover:text-white/80 transition-colors">
+                  Profiles
+                </Link>
               </li>
               <li>
-                <a href="#contact" className="text-sm text-white hover:text-white/80 transition-colors">
-                  Contact Us
-                </a>
+                <Link to="/pricing" className="text-sm text-white hover:text-white/80 transition-colors">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="text-sm text-white hover:text-white/80 transition-colors">
+                  Register
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-sm text-white hover:text-white/80 transition-colors">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
