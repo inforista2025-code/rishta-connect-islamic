@@ -32,7 +32,7 @@ export default function Register() {
           <Button 
             onClick={handleRegisterClick}
             size="lg"
-            className="w-full md:w-auto px-12 py-8 text-xl font-bold rounded-xl hover:scale-105 transition-transform duration-300 card-shadow"
+            className="w-full md:w-3/4 lg:w-2/3 px-12 py-8 text-xl font-bold rounded-xl hover:scale-105 transition-transform duration-300 card-shadow"
           >
             Register Now
           </Button>
