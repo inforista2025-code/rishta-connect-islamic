@@ -74,9 +74,9 @@ export default function Register() {
         {/* Trust Counters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-            <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold text-primary mb-1">500+</div>
-            <div className="text-sm text-muted-foreground">Verified Profiles</div>
+            <Moon className="w-8 h-8 text-primary mx-auto mb-2" />
+            <div className="text-2xl font-bold text-primary mb-1">100%</div>
+            <div className="text-sm text-muted-foreground">Halal Process</div>
           </Card>
           <Card className="text-center p-6 hover:shadow-lg transition-shadow">
             <Heart className="w-8 h-8 text-primary mx-auto mb-2" />
