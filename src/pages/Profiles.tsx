@@ -232,7 +232,15 @@ const Profiles = () => {
 
   const [profiles, setProfiles] = useState<Profile[]>(() => {
     const saved = localStorage.getItem('matrimony_profiles');
-    return saved ? JSON.parse(saved) : initialProfiles;
+    if (saved) {
+      const parsedProfiles = JSON.parse(saved);
+      // If localStorage has fewer profiles than initialProfiles, reset to initialProfiles
+      if (parsedProfiles.length < initialProfiles.length) {
+        return initialProfiles;
+      }
+      return parsedProfiles;
+    }
+    return initialProfiles;
   });
 
   useEffect(() => {
