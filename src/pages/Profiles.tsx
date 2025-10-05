@@ -35,6 +35,9 @@ interface Profile {
   education: string;
   profession: string;
   maritalStatus: string;
+  caste?: string;
+  maslak?: string;
+  islamicKnowledge?: string;
   family: string;
   preferredPartner: string;
   preferredLocation: string;
@@ -147,6 +150,45 @@ const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => 
             </div>
           </div>
 
+          {/* Caste */}
+          {profile.caste && (
+            <div className="pt-2 border-t">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl">🏷️</span>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Caste</p>
+                  <p className="text-sm text-muted-foreground">{profile.caste}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Maslak */}
+          {profile.maslak && (
+            <div className="pt-2 border-t">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl">🕌</span>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Maslak</p>
+                  <p className="text-sm text-muted-foreground">{profile.maslak}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Islamic Knowledge */}
+          {profile.islamicKnowledge && (
+            <div className="pt-2 border-t">
+              <div className="flex items-start gap-2">
+                <span className="text-2xl">📚</span>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Islamic Knowledge</p>
+                  <p className="text-sm text-muted-foreground">{profile.islamicKnowledge}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Family Info */}
           <div className="pt-2 border-t">
             <div className="flex items-start gap-2">
@@ -201,7 +243,9 @@ const Profiles = () => {
       education: "Bachelor of Computer Application",
       profession: "IT Support",
       maritalStatus: "Single",
-      family: "Father – Mohammad Hafiz (Khan, Salafi - Ahle Hadees)",
+      caste: "Khan",
+      maslak: "Salafi (Ahle Hadees)",
+      family: "Father – Mohammad Hafiz",
       preferredPartner: "Height 5.5+, Deeni knowledge, practicing Muslimah",
       preferredLocation: "Any location",
       preferredAge: "25–28",
@@ -219,7 +263,9 @@ const Profiles = () => {
       education: "BCA",
       profession: "Working in HR in Qatar (Private Company)",
       maritalStatus: "Single",
-      family: "Father working in Qatar, Mother is a homemaker, Two younger brothers studying (Kokani, Sunni)",
+      caste: "Kokani",
+      maslak: "Sunni",
+      family: "Father working in Qatar, Mother is a homemaker, Two younger brothers studying",
       preferredPartner: "Smart, well-dressed, well-behaved, good values, conscious of halal earning",
       preferredLocation: "Gulf and Abroad",
       preferredAge: "25–29",
@@ -237,6 +283,7 @@ const Profiles = () => {
       education: "B.Tech Civil Engineer",
       profession: "Assistant Technical Manager at Red Sea Global, Saudi Arabia",
       maritalStatus: "Single",
+      caste: "Shaikh",
       family: "Well-settled, educated siblings, supportive environment",
       preferredPartner: "Looking for bride to join in Saudi Arabia, good family environment, no dowry",
       preferredLocation: "Bihar",
@@ -255,8 +302,9 @@ const Profiles = () => {
       education: "B.Sc. Mathematics + D.El.Ed + NTT",
       profession: "No",
       maritalStatus: "Single",
+      maslak: "Sunni Deobandi",
       family: "Father – Assistant Professor, Mithila B.Ed College, Darbhanga; Mother – Homemaker; Siblings – Well-settled in engineering, medical, research, and education fields",
-      preferredPartner: "Educated, religious, settled professional from a good family (Sunni Deobandi)",
+      preferredPartner: "Educated, religious, settled professional from a good family",
       preferredLocation: "Bihar",
       preferredAge: "30–34",
       order: 10
@@ -273,7 +321,8 @@ const Profiles = () => {
       education: "MBA",
       profession: "Sales & Marketing, Private Sector",
       maritalStatus: "Single",
-      family: "Respected and educated family, siblings well-settled in private and professional sectors (Ansari)",
+      caste: "Ansari",
+      family: "Respected and educated family, siblings well-settled in private and professional sectors",
       preferredPartner: "5'3\"+ height, fair complexion, bachelor's degree, knowledge of Quran",
       preferredLocation: "Jharkhand",
       preferredAge: "23–28",
@@ -291,7 +340,8 @@ const Profiles = () => {
       education: "M.Sc, D.El.Ed, CTET Qualified",
       profession: "No",
       maritalStatus: "Single",
-      family: "Father – Businessman; Mother – Homemaker; 2 Sisters (Rayeen)",
+      caste: "Rayeen",
+      family: "Father – Businessman; Mother – Homemaker; 2 Sisters",
       preferredPartner: "Government service person, well-reputed family",
       preferredLocation: "Bihar State",
       preferredAge: "30–35",
@@ -309,7 +359,8 @@ const Profiles = () => {
       education: "MBA (Finance & Marketing)",
       profession: "N/A",
       maritalStatus: "Single",
-      family: "Father – Late Shakil Ahmed Khan, Mother – Akbari Khatoon (Housewife), 2 Brothers, 3 Sisters (All Married) (Khan)",
+      caste: "Khan",
+      family: "Father – Late Shakil Ahmed Khan, Mother – Akbari Khatoon (Housewife), 2 Brothers, 3 Sisters (All Married)",
       preferredPartner: "Islamic, Namazi, No Dowry",
       preferredLocation: "Kashmir, Pune, Delhi, Himachal",
       preferredAge: "N/A",
@@ -327,7 +378,9 @@ const Profiles = () => {
       education: "M.Com",
       profession: "Private Job at SBI (Loan Department)",
       maritalStatus: "Single",
-      family: "Father – Late Md Nasim Khan, Mother – Rehana Khatoon (Housewife), 4 Elder Brothers (Married), 1 Younger Brother (Student), 4 Elder Sisters (Married) (Khan, Sunni)",
+      caste: "Khan",
+      maslak: "Sunni",
+      family: "Father – Late Md Nasim Khan, Mother – Rehana Khatoon (Housewife), 4 Elder Brothers (Married), 1 Younger Brother (Student), 4 Elder Sisters (Married)",
       preferredPartner: "Well-educated, simple, family-oriented, recites Quran, has deeni-taalim knowledge, and cooks well",
       preferredLocation: "Dhanbad, Bokaro, Ranchi",
       preferredAge: "21–25",
@@ -345,7 +398,9 @@ const Profiles = () => {
       education: "PhD in Zoology",
       profession: "Teaching (Assistant Professor in degree college)",
       maritalStatus: "Single",
-      family: "Father – (Late) M.A. Ansari (Assistant Manager at L&T); Mother – Housewife; 2 Brothers (Both Engineers); 2 Sisters (Both Teachers) (Momin Ansar, Sunni Muslim)",
+      caste: "Momin Ansar",
+      maslak: "Sunni Muslim",
+      family: "Father – (Late) M.A. Ansari (Assistant Manager at L&T); Mother – Housewife; 2 Brothers (Both Engineers); 2 Sisters (Both Teachers)",
       preferredPartner: "Well-educated (Graduate/Postgraduate/Professional), Teacher/Engineer/Professor/Doctor/Businessman, Practicing Muslim with good Islamic values, decent personality, non-smoker, non-drinker, respectful, caring, family-oriented, good character, height more than 5'5\" or 5'6\"",
       preferredLocation: "UP or nearby areas",
       preferredAge: "32–36",
@@ -363,7 +418,9 @@ const Profiles = () => {
       education: "B.Tech (ECE)",
       profession: "Principal",
       maritalStatus: "Divorced",
-      family: "Father – Late Md Subhan, Mother – Mobina Khatoon, Brothers – 3 (all married), Sisters – 4 (all married) (Sunni Islam, well-versed in Islamic knowledge)",
+      maslak: "Sunni Islam",
+      islamicKnowledge: "Alhamdulillah, well-versed in Islamic knowledge",
+      family: "Father – Late Md Subhan, Mother – Mobina Khatoon, Brothers – 3 (all married), Sisters – 4 (all married)",
       preferredPartner: "Single, Beautiful and should be fair",
       preferredLocation: "Patna, Kolkata or any",
       preferredAge: "20–25",
@@ -381,7 +438,10 @@ const Profiles = () => {
       education: "Graduation (Bachelor in Commerce)",
       profession: "No",
       maritalStatus: "Single",
-      family: "Father – Md Sohail Akhtar, Mother – Sanjeeda Perween, Brother – Md Shahnawaz Akhtar (Shah, Sunni Islam, well knowledgeable about Islam)",
+      caste: "Shah",
+      maslak: "Sunni Islam",
+      islamicKnowledge: "Alhamdulillah, Well knowledgeable about Islam",
+      family: "Father – Md Sohail Akhtar, Mother – Sanjeeda Perween, Brother – Md Shahnawaz Akhtar",
       preferredPartner: "Well-settled",
       preferredLocation: "Bihar, Patna, Kolkata or any",
       preferredAge: "25–28",
@@ -399,7 +459,9 @@ const Profiles = () => {
       education: "Graduation",
       profession: "No",
       maritalStatus: "Single",
-      family: "Father – (Late) Md Zahid Akhtar, Mother – Shabina Akhtar, 2 Sisters, 1 Brother (Shah, Sunni Islam)",
+      caste: "Shah",
+      maslak: "Sunni (Islam)",
+      family: "Father – (Late) Md Zahid Akhtar, Mother – Shabina Akhtar, 2 Sisters, 1 Brother",
       preferredPartner: "Well Settled",
       preferredLocation: "Patna, Kolkata or Any",
       preferredAge: "25–30",
@@ -417,6 +479,7 @@ const Profiles = () => {
       education: "MBA (Marketing & HR)",
       profession: "Assistant Manager, Bhutani Infra (Private Job)",
       maritalStatus: "Single",
+      caste: "Ansari",
       family: "Father (Businessman), Mother (Homemaker), Siblings (4 Brothers, 1 Sister – All Married)",
       preferredPartner: "Graduate, Age 20–25, From Jharkhand/Bihar",
       preferredLocation: "Jharkhand/Bihar",
