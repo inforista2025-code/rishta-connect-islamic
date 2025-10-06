@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   DndContext,
   closestCenter,
@@ -228,14 +230,16 @@ const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => 
 
 const Profiles = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAuthorizedAdmin, setIsAuthorizedAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Runtime only, no persistence
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
-  // Check admin authorization on mount
-  useEffect(() => {
-    const adminKey = localStorage.getItem('adminKey');
-    setIsAuthorizedAdmin(adminKey === 'approved');
-  }, []);
+  const ADMIN_PASSWORD = "rishta@123";
 
   const initialProfiles: Profile[] = [
     {
@@ -541,10 +545,149 @@ const Profiles = () => {
 
   const sortedProfiles = [...profiles].sort((a, b) => b.order - a.order);
 
+  const handleLogin = () => {
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setShowLoginPopup(false);
+      setShowWelcomeBanner(true);
+      setPassword("");
+      setLoginError("");
+      toast({
+        title: "✅ Login Successful",
+        description: "Welcome back, Admin!",
+      });
+      // Auto-hide banner after 5 seconds
+      setTimeout(() => setShowWelcomeBanner(false), 5000);
+    } else {
+      setLoginError("❌ Incorrect password. Try again.");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setIsAdmin(false);
+    setShowWelcomeBanner(false);
+    toast({
+      title: "✅ Admin logged out successfully",
+    });
+  };
+
+  const handleClosePopup = () => {
+    setShowLoginPopup(false);
+    setPassword("");
+    setLoginError("");
+    setShowPassword(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Navigation Menu */}
       <Navbar />
+
+      {/* Admin Mode Active Badge - Top Right */}
+      {isAuthenticated && isAdmin && (
+        <div className="fixed top-20 right-4 z-50 animate-fade-in">
+          <Badge className="bg-green-500 text-white px-4 py-2 text-sm font-semibold shadow-lg">
+            🟢 Admin Mode Active
+          </Badge>
+        </div>
+      )}
+
+      {/* Welcome Banner */}
+      {showWelcomeBanner && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+          <div className="bg-green-50 border-2 border-green-500 text-green-800 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <span className="text-lg">👋</span>
+            <span className="font-semibold">Welcome back, Admin! You can now manage profiles.</span>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Login Popup */}
+      {showLoginPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-xl p-8 shadow-2xl w-full max-w-md mx-4 animate-scale-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                🔐 Admin Login
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClosePopup}
+                className="hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter admin password…"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setLoginError("");
+                  }}
+                  onKeyPress={(e) => e.key === "Enter" && handleLogin()}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              
+              {loginError && (
+                <p className="text-red-600 text-sm font-medium">{loginError}</p>
+              )}
+              
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={handleLogin}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleClosePopup}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Admin Login Button - Bottom Right */}
+      {!isAuthenticated && (
+        <button
+          onClick={() => setShowLoginPopup(true)}
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
+        >
+          <LogIn className="w-5 h-5" />
+          <span className="font-semibold">Admin Login</span>
+        </button>
+      )}
+
+      {/* Floating Logout Button - Bottom Right */}
+      {isAuthenticated && (
+        <button
+          onClick={handleLogout}
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-semibold">Logout Admin</span>
+        </button>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
@@ -553,9 +696,9 @@ const Profiles = () => {
           <p className="text-muted-foreground text-lg">Browse verified profiles from our community</p>
         </div>
 
-        {/* Admin Toggle - Only visible to authorized admin */}
-        {isAuthorizedAdmin && (
-          <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out">
+        {/* Admin Toggle - Only visible to authenticated admin */}
+        {isAuthenticated && (
+          <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out animate-fade-in">
             <Button
               variant={isAdmin ? "default" : "outline"}
               size="sm"
