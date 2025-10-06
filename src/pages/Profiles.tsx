@@ -68,7 +68,7 @@ const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => 
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="hover:shadow-lg transition-shadow">
+      <Card className="hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02]">
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -229,6 +229,13 @@ const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => 
 const Profiles = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthorizedAdmin, setIsAuthorizedAdmin] = useState(false);
+
+  // Check admin authorization on mount
+  useEffect(() => {
+    const adminKey = localStorage.getItem('adminKey');
+    setIsAuthorizedAdmin(adminKey === 'approved');
+  }, []);
 
   const initialProfiles: Profile[] = [
     {
@@ -519,7 +526,15 @@ const Profiles = () => {
       setProfiles((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        const reorderedItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Recalculate order values based on new positions
+        const updatedItems = reorderedItems.map((item, index) => ({
+          ...item,
+          order: reorderedItems.length - index // Higher order = appears first
+        }));
+        
+        return updatedItems;
       });
     }
   };
@@ -538,24 +553,26 @@ const Profiles = () => {
           <p className="text-muted-foreground text-lg">Browse verified profiles from our community</p>
         </div>
 
-        {/* Admin Toggle */}
-        <div className="max-w-4xl mx-auto mb-6">
-          <Button
-            variant={isAdmin ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsAdmin(!isAdmin)}
-            className="flex items-center gap-2"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            {isAdmin ? "Admin Mode: ON" : "Enable Admin Mode"}
-          </Button>
-        </div>
+        {/* Admin Toggle - Only visible to authorized admin */}
+        {isAuthorizedAdmin && (
+          <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out">
+            <Button
+              variant={isAdmin ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsAdmin(!isAdmin)}
+              className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              {isAdmin ? "Admin Mode: ON" : "Enable Admin Mode"}
+            </Button>
+          </div>
+        )}
 
         {/* Alert Note */}
-        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3">
+        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3 transition-all duration-300">
           <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-foreground">
-            <strong>⚠️ Note:</strong> Detailed biodata and photos are available only for registered verified members.
+            <strong>⚠️ Note:</strong> Detailed biodata and contact details are available only to verified registered members.
           </p>
         </div>
 
