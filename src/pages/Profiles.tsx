@@ -7,6 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DndContext,
   closestCenter,
@@ -499,22 +500,119 @@ const Profiles = () => {
     }
   ];
 
-  const [profiles, setProfiles] = useState<Profile[]>(() => {
-    const saved = localStorage.getItem('matrimony_profiles');
-    if (saved) {
-      const parsedProfiles = JSON.parse(saved);
-      // If localStorage has fewer profiles than initialProfiles, reset to initialProfiles
-      if (parsedProfiles.length < initialProfiles.length) {
-        return initialProfiles;
-      }
-      return parsedProfiles;
-    }
-    return initialProfiles;
-  });
+  const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load profile order from database on mount
   useEffect(() => {
-    localStorage.setItem('matrimony_profiles', JSON.stringify(profiles));
-  }, [profiles]);
+    const loadProfileOrder = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles_order')
+          .select('*')
+          .order('order_position', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          // Create a map of profile_id to order_position
+          const orderMap = new Map(data.map(item => [item.profile_id, item.order_position]));
+          
+          // Update profiles with stored order, keeping initialProfiles as base
+          const updatedProfiles = initialProfiles.map(profile => ({
+            ...profile,
+            order: orderMap.get(profile.id) ?? profile.order
+          }));
+          
+          setProfiles(updatedProfiles);
+        }
+      } catch (error) {
+        console.error('Error loading profile order:', error);
+        toast({
+          title: "Error loading profile order",
+          description: "Using default order",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfileOrder();
+  }, [toast]);
+
+  // Subscribe to real-time updates for new profiles
+  useEffect(() => {
+    const channel = supabase
+      .channel('profiles-order-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'profiles_order'
+        },
+        (payload) => {
+          console.log('New profile order added:', payload);
+          // Reload profile order when new entry is added
+          const loadLatestOrder = async () => {
+            const { data, error } = await supabase
+              .from('profiles_order')
+              .select('*')
+              .order('order_position', { ascending: false });
+
+            if (!error && data) {
+              const orderMap = new Map(data.map(item => [item.profile_id, item.order_position]));
+              const updatedProfiles = initialProfiles.map(profile => ({
+                ...profile,
+                order: orderMap.get(profile.id) ?? profile.order
+              }));
+              setProfiles(updatedProfiles);
+            }
+          };
+          loadLatestOrder();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Save profile order to database whenever it changes
+  useEffect(() => {
+    if (isLoading) return; // Don't save during initial load
+
+    const saveProfileOrder = async () => {
+      try {
+        // Prepare data for upsert
+        const orderData = profiles.map(profile => ({
+          profile_id: profile.id,
+          order_position: profile.order
+        }));
+
+        // Upsert all profile orders
+        const { error } = await supabase
+          .from('profiles_order')
+          .upsert(orderData, { 
+            onConflict: 'profile_id',
+            ignoreDuplicates: false 
+          });
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving profile order:', error);
+        toast({
+          title: "Error saving profile order",
+          description: "Your changes may not be saved",
+          variant: "destructive"
+        });
+      }
+    };
+
+    saveProfileOrder();
+  }, [profiles, isLoading, toast]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
