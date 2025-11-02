@@ -502,6 +502,7 @@ const Profiles = () => {
 
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeGender, setActiveGender] = useState<"Male" | "Female">("Male");
 
   // Load profile order from database on mount
   useEffect(() => {
@@ -640,6 +641,18 @@ const Profiles = () => {
       });
     }
   };
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProfiles = profiles
+    .filter(profile => 
+      profile.gender === activeGender &&
+      (profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.age.toString().includes(searchTerm) ||
+      profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => b.order - a.order);
 
   const sortedProfiles = [...profiles].sort((a, b) => b.order - a.order);
 
@@ -817,6 +830,49 @@ const Profiles = () => {
           </p>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="max-w-7xl mx-auto px-4 mb-8 space-y-6">
+          <Input
+            type="text"
+            placeholder="Search profiles by name, age, location, or profession..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-md mx-auto"
+          />
+          
+          {/* Gender Filter Tabs */}
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setActiveGender("Male")}
+              className={`
+                px-8 py-3 rounded-full font-semibold text-base
+                transition-all duration-300 ease-in-out
+                transform hover:scale-105
+                ${activeGender === "Male" 
+                  ? "bg-primary text-primary-foreground shadow-button" 
+                  : "bg-muted text-muted-foreground hover:bg-primary/20"
+                }
+              `}
+            >
+              Male
+            </button>
+            <button
+              onClick={() => setActiveGender("Female")}
+              className={`
+                px-8 py-3 rounded-full font-semibold text-base
+                transition-all duration-300 ease-in-out
+                transform hover:scale-105
+                ${activeGender === "Female" 
+                  ? "bg-primary text-primary-foreground shadow-button" 
+                  : "bg-muted text-muted-foreground hover:bg-primary/20"
+                }
+              `}
+            >
+              Female
+            </button>
+          </div>
+        </div>
+
         {/* Profiles Grid */}
         <DndContext
           sensors={sensors}
@@ -824,12 +880,12 @@ const Profiles = () => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={isAdmin ? sortedProfiles.map(p => p.id) : []}
+            items={isAdmin ? filteredProfiles.map(p => p.id) : []}
             strategy={verticalListSortingStrategy}
             disabled={!isAdmin}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-              {sortedProfiles.map((profile) => (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto transition-all duration-300">
+              {filteredProfiles.map((profile) => (
                 <SortableProfileCard
                   key={profile.id}
                   profile={profile}
