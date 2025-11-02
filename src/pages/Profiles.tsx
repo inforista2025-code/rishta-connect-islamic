@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Eye, EyeOff, X } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -25,6 +26,25 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 interface Profile {
   id: number;
@@ -51,9 +71,11 @@ interface Profile {
 interface SortableProfileCardProps {
   profile: Profile;
   isAdmin: boolean;
+  onEdit: (profile: Profile) => void;
+  onDelete: (profile: Profile) => void;
 }
 
-const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => {
+const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
   const {
     attributes,
     listeners,
@@ -83,7 +105,35 @@ const SortableProfileCard = ({ profile, isAdmin }: SortableProfileCardProps) => 
               <User className="w-5 h-5 text-primary" />
               <span>{profile.name}</span>
             </div>
-            <Badge variant="secondary">{profile.gender}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{profile.gender}</Badge>
+              {isAdmin && (
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(profile);
+                    }}
+                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                  >
+                    <Pencil className="w-4 h-4 text-primary" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(profile);
+                    }}
+                    className="h-8 w-8 p-0 hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         
@@ -233,14 +283,25 @@ const Profiles = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Runtime only, no persistence
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
-
-  const ADMIN_PASSWORD = "rishta@123";
+  const [user, setUser] = useState<any>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeGender, setActiveGender] = useState<"Male" | "Female">("Male");
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Admin features state
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<Profile | null>(null);
+  const [newProfileData, setNewProfileData] = useState<Partial<Profile>>({
+    gender: "Male",
+    maritalStatus: "Single"
+  });
+  
+  // Undo functionality
+  const [history, setHistory] = useState<{ action: string; data: any }[]>([]);
 
   const initialProfiles: Profile[] = [
     {
@@ -500,78 +561,131 @@ const Profiles = () => {
     }
   ];
 
-  const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeGender, setActiveGender] = useState<"Male" | "Female">("Male");
-
-  // Load profile order from database on mount
+  // Check authentication and admin status
   useEffect(() => {
-    const loadProfileOrder = async () => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        if (roleData) {
+          setIsAdmin(true);
+        }
+      }
+    };
+
+    checkAuth();
+
+    // Auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load profiles from database
+  useEffect(() => {
+    const loadProfiles = async () => {
       try {
-        const { data, error } = await supabase
-          .from('profiles_order')
+        const { data: dbProfiles, error } = await supabase
+          .from('profiles_data')
           .select('*')
-          .order('order_position', { ascending: false });
+          .order('display_order', { ascending: false });
 
         if (error) throw error;
 
-        if (data && data.length > 0) {
-          // Create a map of profile_id to order_position
-          const orderMap = new Map(data.map(item => [item.profile_id, item.order_position]));
-          
-          // Update profiles with stored order, keeping initialProfiles as base
-          const updatedProfiles = initialProfiles.map(profile => ({
-            ...profile,
-            order: orderMap.get(profile.id) ?? profile.order
+        if (dbProfiles && dbProfiles.length > 0) {
+          const formattedProfiles = dbProfiles.map(p => ({
+            id: p.id,
+            name: p.name,
+            gender: p.gender,
+            age: p.age,
+            dob: p.dob,
+            location: p.location,
+            height: p.height,
+            complexion: p.complexion,
+            education: p.education,
+            profession: p.profession,
+            maritalStatus: p.marital_status,
+            caste: p.caste || undefined,
+            maslak: p.maslak || undefined,
+            islamicKnowledge: p.islamic_knowledge || undefined,
+            family: p.family,
+            preferredPartner: p.preferred_partner,
+            preferredLocation: p.preferred_location,
+            preferredAge: p.preferred_age,
+            order: p.display_order
           }));
-          
-          setProfiles(updatedProfiles);
+          setProfiles(formattedProfiles);
+        } else {
+          // Use initial profiles if database is empty
+          setProfiles(initialProfiles);
         }
       } catch (error) {
-        console.error('Error loading profile order:', error);
-        toast({
-          title: "Error loading profile order",
-          description: "Using default order",
-          variant: "destructive"
-        });
+        console.error('Error loading profiles:', error);
+        setProfiles(initialProfiles);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadProfileOrder();
-  }, [toast]);
+    loadProfiles();
+  }, []);
 
-  // Subscribe to real-time updates for new profiles
+  // Real-time subscription for profile changes
   useEffect(() => {
     const channel = supabase
-      .channel('profiles-order-changes')
+      .channel('profiles-changes')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
-          table: 'profiles_order'
+          table: 'profiles_data'
         },
-        (payload) => {
-          console.log('New profile order added:', payload);
-          // Reload profile order when new entry is added
-          const loadLatestOrder = async () => {
-            const { data, error } = await supabase
-              .from('profiles_order')
-              .select('*')
-              .order('order_position', { ascending: false });
+        async () => {
+          // Reload profiles
+          const { data: dbProfiles } = await supabase
+            .from('profiles_data')
+            .select('*')
+            .order('display_order', { ascending: false });
 
-            if (!error && data) {
-              const orderMap = new Map(data.map(item => [item.profile_id, item.order_position]));
-              const updatedProfiles = initialProfiles.map(profile => ({
-                ...profile,
-                order: orderMap.get(profile.id) ?? profile.order
-              }));
-              setProfiles(updatedProfiles);
-            }
-          };
-          loadLatestOrder();
+          if (dbProfiles) {
+            const formattedProfiles = dbProfiles.map(p => ({
+              id: p.id,
+              name: p.name,
+              gender: p.gender,
+              age: p.age,
+              dob: p.dob,
+              location: p.location,
+              height: p.height,
+              complexion: p.complexion,
+              education: p.education,
+              profession: p.profession,
+              maritalStatus: p.marital_status,
+              caste: p.caste || undefined,
+              maslak: p.maslak || undefined,
+              islamicKnowledge: p.islamic_knowledge || undefined,
+              family: p.family,
+              preferredPartner: p.preferred_partner,
+              preferredLocation: p.preferred_location,
+              preferredAge: p.preferred_age,
+              order: p.display_order
+            }));
+            setProfiles(formattedProfiles);
+          }
         }
       )
       .subscribe();
@@ -581,40 +695,6 @@ const Profiles = () => {
     };
   }, []);
 
-  // Save profile order to database whenever it changes
-  useEffect(() => {
-    if (isLoading) return; // Don't save during initial load
-
-    const saveProfileOrder = async () => {
-      try {
-        // Prepare data for upsert
-        const orderData = profiles.map(profile => ({
-          profile_id: profile.id,
-          order_position: profile.order
-        }));
-
-        // Upsert all profile orders
-        const { error } = await supabase
-          .from('profiles_order')
-          .upsert(orderData, { 
-            onConflict: 'profile_id',
-            ignoreDuplicates: false 
-          });
-
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error saving profile order:', error);
-        toast({
-          title: "Error saving profile order",
-          description: "Your changes may not be saved",
-          variant: "destructive"
-        });
-      }
-    };
-
-    saveProfileOrder();
-  }, [profiles, isLoading, toast]);
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -622,27 +702,55 @@ const Profiles = () => {
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setProfiles((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        const reorderedItems = arrayMove(items, oldIndex, newIndex);
-        
-        // Recalculate order values based on new positions
-        const updatedItems = reorderedItems.map((item, index) => ({
-          ...item,
-          order: reorderedItems.length - index // Higher order = appears first
-        }));
-        
-        return updatedItems;
+      const oldIndex = filteredProfiles.findIndex((item) => item.id === active.id);
+      const newIndex = filteredProfiles.findIndex((item) => item.id === over.id);
+      const reorderedItems = arrayMove(filteredProfiles, oldIndex, newIndex);
+      
+      // Recalculate order values
+      const updatedItems = reorderedItems.map((item, index) => ({
+        ...item,
+        order: reorderedItems.length - index
+      }));
+
+      // Save to history for undo
+      setHistory(prev => [...prev, { 
+        action: 'reorder', 
+        data: profiles 
+      }]);
+
+      setProfiles(prev => {
+        const newProfiles = [...prev];
+        updatedItems.forEach(item => {
+          const index = newProfiles.findIndex(p => p.id === item.id);
+          if (index !== -1) {
+            newProfiles[index] = item;
+          }
+        });
+        return newProfiles;
       });
+
+      // Update database
+      try {
+        for (const profile of updatedItems) {
+          await supabase
+            .from('profiles_data')
+            .update({ display_order: profile.order })
+            .eq('id', profile.id);
+        }
+      } catch (error) {
+        console.error('Error updating order:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save new order",
+          variant: "destructive"
+        });
+      }
     }
   };
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProfiles = profiles
     .filter(profile => 
@@ -654,167 +762,331 @@ const Profiles = () => {
     )
     .sort((a, b) => b.order - a.order);
 
-  const sortedProfiles = [...profiles].sort((a, b) => b.order - a.order);
+  const handleEdit = (profile: Profile) => {
+    setEditingProfile(profile);
+    setNewProfileData(profile);
+    setShowEditDialog(true);
+  };
 
-  const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      setShowLoginPopup(false);
-      setShowWelcomeBanner(true);
-      setPassword("");
-      setLoginError("");
+  const handleDelete = (profile: Profile) => {
+    setProfileToDelete(profile);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!profileToDelete) return;
+
+    // Save to history
+    setHistory(prev => [...prev, { 
+      action: 'delete', 
+      data: profileToDelete 
+    }]);
+
+    try {
+      const { error } = await supabase
+        .from('profiles_data')
+        .delete()
+        .eq('id', profileToDelete.id);
+
+      if (error) throw error;
+
+      setProfiles(prev => prev.filter(p => p.id !== profileToDelete.id));
+      
       toast({
-        title: "✅ Login Successful",
-        description: "Welcome back, Admin!",
+        title: "✅ Profile Deleted",
+        description: "Profile has been removed successfully",
       });
-      // Auto-hide banner after 5 seconds
-      setTimeout(() => setShowWelcomeBanner(false), 5000);
-    } else {
-      setLoginError("❌ Incorrect password. Try again.");
+    } catch (error: any) {
+      toast({
+        title: "❌ Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+
+    setShowDeleteDialog(false);
+    setProfileToDelete(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingProfile) return;
+
+    // Save to history
+    setHistory(prev => [...prev, { 
+      action: 'edit', 
+      data: editingProfile 
+    }]);
+
+    try {
+      const { error } = await supabase
+        .from('profiles_data')
+        .update({
+          name: newProfileData.name,
+          gender: newProfileData.gender,
+          age: newProfileData.age,
+          dob: newProfileData.dob,
+          location: newProfileData.location,
+          height: newProfileData.height,
+          complexion: newProfileData.complexion,
+          education: newProfileData.education,
+          profession: newProfileData.profession,
+          marital_status: newProfileData.maritalStatus,
+          caste: newProfileData.caste,
+          maslak: newProfileData.maslak,
+          islamic_knowledge: newProfileData.islamicKnowledge,
+          family: newProfileData.family,
+          preferred_partner: newProfileData.preferredPartner,
+          preferred_location: newProfileData.preferredLocation,
+          preferred_age: newProfileData.preferredAge,
+        })
+        .eq('id', editingProfile.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Profile Updated",
+        description: "Changes saved successfully",
+      });
+
+      setShowEditDialog(false);
+      setEditingProfile(null);
+    } catch (error: any) {
+      toast({
+        title: "❌ Error",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setIsAdmin(false);
-    setShowWelcomeBanner(false);
-    toast({
-      title: "✅ Admin logged out successfully",
-    });
+  const handleAddProfile = async () => {
+    if (!newProfileData.name || !newProfileData.gender) {
+      toast({
+        title: "❌ Validation Error",
+        description: "Name and Gender are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const maxOrder = Math.max(...profiles.map(p => p.order), 0);
+      
+      const { data, error } = await supabase
+        .from('profiles_data')
+        .insert({
+          name: newProfileData.name!,
+          gender: newProfileData.gender!,
+          age: newProfileData.age || "N/A",
+          dob: newProfileData.dob || "N/A",
+          location: newProfileData.location || "N/A",
+          height: newProfileData.height || "N/A",
+          complexion: newProfileData.complexion || "N/A",
+          education: newProfileData.education || "N/A",
+          profession: newProfileData.profession || "N/A",
+          marital_status: newProfileData.maritalStatus || "Single",
+          caste: newProfileData.caste,
+          maslak: newProfileData.maslak,
+          islamic_knowledge: newProfileData.islamicKnowledge,
+          family: newProfileData.family || "N/A",
+          preferred_partner: newProfileData.preferredPartner || "N/A",
+          preferred_location: newProfileData.preferredLocation || "Any",
+          preferred_age: newProfileData.preferredAge || "N/A",
+          display_order: maxOrder + 1
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Profile Added",
+        description: "New profile created successfully",
+      });
+
+      setShowAddDialog(false);
+      setNewProfileData({ gender: "Male", maritalStatus: "Single" });
+    } catch (error: any) {
+      toast({
+        title: "❌ Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleClosePopup = () => {
-    setShowLoginPopup(false);
-    setPassword("");
-    setLoginError("");
-    setShowPassword(false);
+  const handleUndo = async () => {
+    if (history.length === 0) {
+      toast({
+        title: "Nothing to Undo",
+        description: "No recent actions to revert",
+      });
+      return;
+    }
+
+    const lastAction = history[history.length - 1];
+    
+    try {
+      if (lastAction.action === 'delete') {
+        // Re-add deleted profile
+        const profile = lastAction.data;
+        await supabase
+          .from('profiles_data')
+          .insert({
+            name: profile.name,
+            gender: profile.gender,
+            age: profile.age,
+            dob: profile.dob,
+            location: profile.location,
+            height: profile.height,
+            complexion: profile.complexion,
+            education: profile.education,
+            profession: profile.profession,
+            marital_status: profile.maritalStatus,
+            caste: profile.caste,
+            maslak: profile.maslak,
+            islamic_knowledge: profile.islamicKnowledge,
+            family: profile.family,
+            preferred_partner: profile.preferredPartner,
+            preferred_location: profile.preferredLocation,
+            preferred_age: profile.preferredAge,
+            display_order: profile.order
+          });
+      } else if (lastAction.action === 'edit') {
+        // Restore previous profile data
+        const profile = lastAction.data;
+        await supabase
+          .from('profiles_data')
+          .update({
+            name: profile.name,
+            gender: profile.gender,
+            age: profile.age,
+            dob: profile.dob,
+            location: profile.location,
+            height: profile.height,
+            complexion: profile.complexion,
+            education: profile.education,
+            profession: profile.profession,
+            marital_status: profile.maritalStatus,
+            caste: profile.caste,
+            maslak: profile.maslak,
+            islamic_knowledge: profile.islamicKnowledge,
+            family: profile.family,
+            preferred_partner: profile.preferredPartner,
+            preferred_location: profile.preferredLocation,
+            preferred_age: profile.preferredAge,
+          })
+          .eq('id', profile.id);
+      } else if (lastAction.action === 'reorder') {
+        // Restore previous order
+        const oldProfiles = lastAction.data;
+        for (const profile of oldProfiles) {
+          await supabase
+            .from('profiles_data')
+            .update({ display_order: profile.order })
+            .eq('id', profile.id);
+        }
+        setProfiles(oldProfiles);
+      }
+
+      setHistory(prev => prev.slice(0, -1));
+      
+      toast({
+        title: "✅ Undo Successful",
+        description: "Last action has been reverted",
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleLogin = () => {
+    navigate("/auth");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsAdmin(false);
+    toast({
+      title: "✅ Logged Out",
+      description: "You have been logged out successfully",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Navigation Menu */}
       <Navbar />
 
-      {/* Admin Mode Active Badge - Top Right */}
-      {isAuthenticated && isAdmin && (
+      {/* Admin Mode Badge */}
+      {user && isAdmin && (
         <div className="fixed top-20 right-4 z-50 animate-fade-in">
-          <Badge className="bg-green-500 text-white px-4 py-2 text-sm font-semibold shadow-lg">
-            🟢 Admin Mode Active
+          <Badge className="bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold shadow-lg">
+            🔧 Admin Mode Active
           </Badge>
         </div>
       )}
 
-      {/* Welcome Banner */}
-      {showWelcomeBanner && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
-          <div className="bg-green-50 border-2 border-green-500 text-green-800 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <span className="text-lg">👋</span>
-            <span className="font-semibold">Welcome back, Admin! You can now manage profiles.</span>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Login Popup */}
-      {showLoginPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-xl p-8 shadow-2xl w-full max-w-md mx-4 animate-scale-in">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                🔐 Admin Login
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClosePopup}
-                className="hover:bg-gray-100"
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter admin password…"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setLoginError("");
-                  }}
-                  onKeyPress={(e) => e.key === "Enter" && handleLogin()}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              
-              {loginError && (
-                <p className="text-red-600 text-sm font-medium">{loginError}</p>
-              )}
-              
-              <div className="flex gap-3 pt-2">
-                <Button
-                  onClick={handleLogin}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  Login
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleClosePopup}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Admin Login Button - Bottom Right */}
-      {!isAuthenticated && (
+      {/* Floating Admin Buttons */}
+      {!user ? (
         <button
-          onClick={() => setShowLoginPopup(true)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
+          onClick={handleLogin}
+          className="fixed bottom-6 right-6 bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
         >
           <LogIn className="w-5 h-5" />
           <span className="font-semibold">Admin Login</span>
         </button>
+      ) : (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+          {isAdmin && (
+            <>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="font-semibold">Add Profile</span>
+              </Button>
+              {history.length > 0 && (
+                <Button
+                  onClick={handleUndo}
+                  variant="secondary"
+                  className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+                >
+                  <Undo2 className="w-5 h-5" />
+                  <span className="font-semibold">Undo</span>
+                </Button>
+              )}
+            </>
+          )}
+          <button
+            onClick={handleLogout}
+            className="bg-destructive text-destructive-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-semibold">Logout</span>
+          </button>
+        </div>
       )}
 
-      {/* Floating Logout Button - Bottom Right */}
-      {isAuthenticated && (
-        <button
-          onClick={handleLogout}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-semibold">Logout Admin</span>
-        </button>
-      )}
-
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-foreground mb-4">Available Profiles</h2>
           <p className="text-muted-foreground text-lg">Browse verified profiles from our community</p>
         </div>
 
-        {/* Admin Toggle - Only visible to authenticated admin */}
-        {isAuthenticated && (
+        {/* Admin Toggle */}
+        {user && (
           <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out animate-fade-in">
             <Button
               variant={isAdmin ? "default" : "outline"}
               size="sm"
               onClick={() => setIsAdmin(!isAdmin)}
               className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
+              disabled={!user}
             >
               <ShieldCheck className="w-4 h-4" />
               {isAdmin ? "Admin Mode: ON" : "Enable Admin Mode"}
@@ -823,7 +1095,7 @@ const Profiles = () => {
         )}
 
         {/* Alert Note */}
-        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3 transition-all duration-300">
+        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-foreground">
             <strong>⚠️ Note:</strong> Detailed biodata and contact details are available only to verified registered members.
@@ -890,6 +1162,8 @@ const Profiles = () => {
                   key={profile.id}
                   profile={profile}
                   isAdmin={isAdmin}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -905,6 +1179,361 @@ const Profiles = () => {
           </Button>
         </div>
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>Make changes to the profile below</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  value={newProfileData.name || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="gender">Gender *</Label>
+                <select
+                  id="gender"
+                  value={newProfileData.gender || "Male"}
+                  onChange={(e) => setNewProfileData({...newProfileData, gender: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  value={newProfileData.age || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, age: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="dob">Date of Birth</Label>
+                <Input
+                  id="dob"
+                  value={newProfileData.dob || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, dob: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={newProfileData.location || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, location: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="height">Height</Label>
+                <Input
+                  id="height"
+                  value={newProfileData.height || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, height: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="complexion">Complexion</Label>
+                <Input
+                  id="complexion"
+                  value={newProfileData.complexion || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, complexion: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="education">Education</Label>
+              <Input
+                id="education"
+                value={newProfileData.education || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, education: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="profession">Profession</Label>
+              <Input
+                id="profession"
+                value={newProfileData.profession || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, profession: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="maritalStatus">Marital Status</Label>
+                <Input
+                  id="maritalStatus"
+                  value={newProfileData.maritalStatus || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, maritalStatus: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="caste">Caste</Label>
+                <Input
+                  id="caste"
+                  value={newProfileData.caste || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, caste: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="maslak">Maslak</Label>
+                <Input
+                  id="maslak"
+                  value={newProfileData.maslak || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, maslak: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="islamicKnowledge">Islamic Knowledge</Label>
+                <Input
+                  id="islamicKnowledge"
+                  value={newProfileData.islamicKnowledge || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, islamicKnowledge: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="family">Family</Label>
+              <Textarea
+                id="family"
+                value={newProfileData.family || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, family: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="preferredPartner">Preferred Partner</Label>
+              <Textarea
+                id="preferredPartner"
+                value={newProfileData.preferredPartner || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, preferredPartner: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="preferredLocation">Preferred Location</Label>
+                <Input
+                  id="preferredLocation"
+                  value={newProfileData.preferredLocation || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, preferredLocation: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="preferredAge">Preferred Age</Label>
+                <Input
+                  id="preferredAge"
+                  value={newProfileData.preferredAge || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, preferredAge: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Dialog - Same structure as Edit Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Profile</DialogTitle>
+            <DialogDescription>Fill in the details below to create a new profile</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {/* Same form fields as Edit Dialog */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-name">Name *</Label>
+                <Input
+                  id="add-name"
+                  value={newProfileData.name || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-gender">Gender *</Label>
+                <select
+                  id="add-gender"
+                  value={newProfileData.gender || "Male"}
+                  onChange={(e) => setNewProfileData({...newProfileData, gender: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-age">Age</Label>
+                <Input
+                  id="add-age"
+                  value={newProfileData.age || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, age: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-dob">Date of Birth</Label>
+                <Input
+                  id="add-dob"
+                  value={newProfileData.dob || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, dob: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="add-location">Location</Label>
+              <Input
+                id="add-location"
+                value={newProfileData.location || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, location: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-height">Height</Label>
+                <Input
+                  id="add-height"
+                  value={newProfileData.height || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, height: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-complexion">Complexion</Label>
+                <Input
+                  id="add-complexion"
+                  value={newProfileData.complexion || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, complexion: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="add-education">Education</Label>
+              <Input
+                id="add-education"
+                value={newProfileData.education || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, education: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="add-profession">Profession</Label>
+              <Input
+                id="add-profession"
+                value={newProfileData.profession || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, profession: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-maritalStatus">Marital Status</Label>
+                <Input
+                  id="add-maritalStatus"
+                  value={newProfileData.maritalStatus || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, maritalStatus: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-caste">Caste</Label>
+                <Input
+                  id="add-caste"
+                  value={newProfileData.caste || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, caste: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-maslak">Maslak</Label>
+                <Input
+                  id="add-maslak"
+                  value={newProfileData.maslak || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, maslak: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-islamicKnowledge">Islamic Knowledge</Label>
+                <Input
+                  id="add-islamicKnowledge"
+                  value={newProfileData.islamicKnowledge || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, islamicKnowledge: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="add-family">Family</Label>
+              <Textarea
+                id="add-family"
+                value={newProfileData.family || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, family: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="add-preferredPartner">Preferred Partner</Label>
+              <Textarea
+                id="add-preferredPartner"
+                value={newProfileData.preferredPartner || ""}
+                onChange={(e) => setNewProfileData({...newProfileData, preferredPartner: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="add-preferredLocation">Preferred Location</Label>
+                <Input
+                  id="add-preferredLocation"
+                  value={newProfileData.preferredLocation || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, preferredLocation: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-preferredAge">Preferred Age</Label>
+                <Input
+                  id="add-preferredAge"
+                  value={newProfileData.preferredAge || ""}
+                  onChange={(e) => setNewProfileData({...newProfileData, preferredAge: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddProfile}>Add Profile</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the profile of <strong>{profileToDelete?.name}</strong>. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
