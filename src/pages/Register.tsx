@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 
 export default function Register() {
   const handleRegisterClick = () => {
-    window.open("https://forms.gle/HdQgKBAVbVAoT9N47", "_blank");
+    window.open("https://forms.gle/sY4jHKFHWTqb6yfD9", "_blank");
   };
 
   return (

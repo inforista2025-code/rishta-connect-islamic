@@ -1174,7 +1174,7 @@ const Profiles = () => {
         <div className="text-center mt-12 bg-card border rounded-lg p-8 max-w-2xl mx-auto">
           <h3 className="text-2xl font-bold text-foreground mb-4">Want to Add Your Profile?</h3>
           <p className="text-muted-foreground mb-6">Register free and let us help you find your perfect match</p>
-          <Button size="lg" onClick={() => navigate("/")}>
+          <Button size="lg" onClick={() => window.open("https://forms.gle/sY4jHKFHWTqb6yfD9", "_blank")}>
             Register Now
           </Button>
         </div>
