@@ -30,6 +30,10 @@ export default function Pricing() {
 
   const premiumPlanFeatures = [
     {
+      title: "Unlimited Access",
+      description: "Instantly get unlimited access to any posted profile—for free. Request detailed information for any member, anytime, without limits."
+    },
+    {
       title: "Priority Contact Sharing",
       description: "Get contact details of suitable profiles on priority."
     },
