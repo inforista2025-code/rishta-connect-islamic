@@ -43,8 +43,7 @@ export default function Contact() {
                 size="lg" 
                 className="w-full"
                 onClick={() => {
-                  // Placeholder - will be updated with actual WhatsApp link
-                  window.open('https://wa.me/1234567890', '_blank');
+                  window.open('https://wa.me/919128719875', '_blank');
                 }}
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
