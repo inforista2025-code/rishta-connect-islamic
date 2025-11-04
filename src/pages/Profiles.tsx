@@ -1031,15 +1031,7 @@ const Profiles = () => {
       )}
 
       {/* Floating Admin Buttons */}
-      {!user ? (
-        <button
-          onClick={handleLogin}
-          className="fixed bottom-6 right-6 bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-40 flex items-center gap-2"
-        >
-          <LogIn className="w-5 h-5" />
-          <span className="font-semibold">Admin Login</span>
-        </button>
-      ) : (
+      {user && (
         <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
           {isAdmin && (
             <>
