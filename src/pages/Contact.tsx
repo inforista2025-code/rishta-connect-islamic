@@ -68,19 +68,17 @@ export default function Contact() {
               </div>
             </CardHeader>
             <CardContent>
-              <a 
-                href="mailto:info.rista2025@gmail.com"
-                className="block"
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full"
+                onClick={() => {
+                  window.open('https://mail.google.com/mail/?view=cm&to=info.rista2025@gmail.com', '_blank');
+                }}
               >
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="w-full"
-                >
-                  <Mail className="w-5 h-5 mr-2" />
-                  info.rista2025@gmail.com
-                </Button>
-              </a>
+                <Mail className="w-5 h-5 mr-2" />
+                info.rista2025@gmail.com
+              </Button>
             </CardContent>
           </Card>
 
