@@ -266,7 +266,7 @@ const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortablePro
           {/* Action Button */}
           <Button className="w-full" size="lg" asChild>
             <a 
-              href={`https://wa.me/919182719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
+              href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
               target="_blank"
               rel="noopener noreferrer"
             >
