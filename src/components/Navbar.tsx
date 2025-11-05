@@ -65,9 +65,8 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={handleAdminLogin}
-                className="ml-2 flex items-center gap-2"
+                className="ml-2"
               >
-                <LogIn className="w-4 h-4" />
                 Admin Login
               </Button>
             )}
@@ -91,7 +90,6 @@ export function Navbar() {
                   onClick={handleAdminLogin}
                   className="justify-start px-4 py-3 h-auto text-sm font-medium"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
                   Admin Login
                 </Button>
               )}
