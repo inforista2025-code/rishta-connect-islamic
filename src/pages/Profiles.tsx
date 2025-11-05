@@ -4,7 +4,7 @@ import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertica
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -75,7 +75,7 @@ interface SortableProfileCardProps {
   onDelete: (profile: Profile) => void;
 }
 
-const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
+const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
   const {
     attributes,
     listeners,
@@ -85,11 +85,21 @@ const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortablePro
     isDragging,
   } = useSortable({ id: profile.id, disabled: !isAdmin });
 
-  const style = {
+  const style = useMemo(() => ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
+  }), [transform, transition, isDragging]);
+
+  const handleEditClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(profile);
+  }, [onEdit, profile]);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(profile);
+  }, [onDelete, profile]);
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -112,10 +122,7 @@ const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortablePro
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(profile);
-                    }}
+                    onClick={handleEditClick}
                     className="h-8 w-8 p-0 hover:bg-primary/10"
                   >
                     <Pencil className="w-4 h-4 text-primary" />
@@ -123,10 +130,7 @@ const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortablePro
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(profile);
-                    }}
+                    onClick={handleDeleteClick}
                     className="h-8 w-8 p-0 hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
@@ -277,7 +281,7 @@ const SortableProfileCard = ({ profile, isAdmin, onEdit, onDelete }: SortablePro
       </Card>
     </div>
   );
-};
+});
 
 const Profiles = () => {
   const navigate = useNavigate();
@@ -752,26 +756,29 @@ const Profiles = () => {
     }
   };
 
-  const filteredProfiles = profiles
-    .filter(profile => 
-      profile.gender === activeGender &&
-      (profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      profile.age.toString().includes(searchTerm) ||
-      profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    .sort((a, b) => b.order - a.order);
+  const filteredProfiles = useMemo(() => 
+    profiles
+      .filter(profile => 
+        profile.gender === activeGender &&
+        (profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.age.toString().includes(searchTerm) ||
+        profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+      .sort((a, b) => b.order - a.order),
+    [profiles, activeGender, searchTerm]
+  );
 
-  const handleEdit = (profile: Profile) => {
+  const handleEdit = useCallback((profile: Profile) => {
     setEditingProfile(profile);
     setNewProfileData(profile);
     setShowEditDialog(true);
-  };
+  }, []);
 
-  const handleDelete = (profile: Profile) => {
+  const handleDelete = useCallback((profile: Profile) => {
     setProfileToDelete(profile);
     setShowDeleteDialog(true);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (!profileToDelete) return;
