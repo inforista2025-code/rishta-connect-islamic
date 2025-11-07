@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
@@ -282,6 +283,85 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
     </div>
   );
 });
+
+const ProfileSkeleton = () => (
+  <Card className="animate-fade-in">
+    <CardHeader className="bg-primary/5 border-b">
+      <CardTitle className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <Skeleton className="h-6 w-16" />
+      </CardTitle>
+    </CardHeader>
+    
+    <CardContent className="pt-6 space-y-4">
+      {/* Basic Info Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex items-start gap-2">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Education & Profession */}
+      <div className="space-y-3 pt-2 border-t">
+        {[1, 2].map((i) => (
+          <div key={i} className="flex items-start gap-2">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Marital Status */}
+      <div className="pt-2 border-t">
+        <div className="flex items-start gap-2">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+      </div>
+
+      {/* Family Info */}
+      <div className="pt-2 border-t">
+        <div className="flex items-start gap-2">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      </div>
+
+      {/* Preferences */}
+      <div className="pt-2 border-t bg-muted/30 -mx-6 px-6 py-4 rounded-b-lg space-y-3">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-6 w-20" />
+        </div>
+      </div>
+
+      {/* Action Button */}
+      <Skeleton className="w-full h-11 rounded-md" />
+    </CardContent>
+  </Card>
+);
 
 const Profiles = () => {
   const navigate = useNavigate();
@@ -1145,29 +1225,37 @@ const Profiles = () => {
         </div>
 
         {/* Profiles Grid */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={isAdmin ? filteredProfiles.map(p => p.id) : []}
-            strategy={verticalListSortingStrategy}
-            disabled={!isAdmin}
+        {isLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <ProfileSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto transition-all duration-300">
-              {filteredProfiles.map((profile) => (
-                <SortableProfileCard
-                  key={profile.id}
-                  profile={profile}
-                  isAdmin={isAdmin}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={isAdmin ? filteredProfiles.map(p => p.id) : []}
+              strategy={verticalListSortingStrategy}
+              disabled={!isAdmin}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto transition-all duration-300">
+                {filteredProfiles.map((profile) => (
+                  <SortableProfileCard
+                    key={profile.id}
+                    profile={profile}
+                    isAdmin={isAdmin}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
 
         {/* Bottom CTA */}
         <div className="text-center mt-12 bg-card border rounded-lg p-8 max-w-2xl mx-auto">
