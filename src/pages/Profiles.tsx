@@ -103,7 +103,7 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
   }, [onDelete, profile]);
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} className="animate-fade-in">
       <Card className="hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02]">
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
