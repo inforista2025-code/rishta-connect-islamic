@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, CheckCircle } from "lucide-react";
+import { MessageCircle, CheckCircle, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-matrimony.jpg";
 
 interface HeroSectionProps {
@@ -7,8 +8,14 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
+  const navigate = useNavigate();
+  
   const handleWhatsAppClick = () => {
     window.open('https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t', '_blank');
+  };
+
+  const handleBrowseProfilesClick = () => {
+    navigate('/profiles');
   };
 
   return (
@@ -59,6 +66,16 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
             >
               <CheckCircle className="w-6 h-6" />
               How to Join / Verify
+            </Button>
+            
+            <Button 
+              variant="elegant" 
+              size="lg" 
+              onClick={handleBrowseProfilesClick}
+              className="w-full sm:w-auto"
+            >
+              <User className="w-6 h-6" />
+              Browse Profiles
             </Button>
           </div>
 
