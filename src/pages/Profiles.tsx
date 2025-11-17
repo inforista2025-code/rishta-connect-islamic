@@ -126,10 +126,12 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
       try {
         await navigator.share(shareData);
       } catch (err) {
-        // User cancelled or error occurred
-        if ((err as Error).name !== 'AbortError') {
-          console.error('Error sharing:', err);
+        // If user cancelled, do nothing. For any other error, show fallback modal
+        if ((err as Error).name === 'AbortError') {
+          return;
         }
+        // Show fallback modal for permission denied or other errors
+        setShowShareModal(true);
       }
     } else {
       setShowShareModal(true);
