@@ -895,18 +895,26 @@ const Profiles = () => {
     const profileId = urlParams.get('id');
     
     if (profileId && profiles.length > 0) {
-      // Wait a bit for the DOM to render
-      setTimeout(() => {
-        const profileElement = document.getElementById(`profile-${profileId}`);
-        if (profileElement) {
-          profileElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // Add a highlight effect
-          profileElement.style.boxShadow = '0 0 0 3px hsl(var(--primary))';
-          setTimeout(() => {
-            profileElement.style.boxShadow = '';
-          }, 2000);
-        }
-      }, 300);
+      // Find the profile to get its gender
+      const targetProfile = profiles.find(p => p.id === parseInt(profileId));
+      
+      if (targetProfile) {
+        // Set the correct gender tab
+        setActiveGender(targetProfile.gender as "Male" | "Female");
+        
+        // Wait for the filter to apply and DOM to render
+        setTimeout(() => {
+          const profileElement = document.getElementById(`profile-${profileId}`);
+          if (profileElement) {
+            profileElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a highlight effect
+            profileElement.style.boxShadow = '0 0 0 3px hsl(var(--primary))';
+            setTimeout(() => {
+              profileElement.style.boxShadow = '';
+            }, 2000);
+          }
+        }, 500);
+      }
     }
   }, [profiles]);
 
