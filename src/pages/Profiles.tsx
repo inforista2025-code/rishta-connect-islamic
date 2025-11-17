@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -79,6 +79,7 @@ interface SortableProfileCardProps {
 const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
+  const cardRef = useRef<HTMLDivElement>(null);
   
   const {
     attributes,
@@ -110,7 +111,7 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
   }, [profile]);
 
   const getProfileUrl = useCallback(() => {
-    return `${window.location.origin}/profiles#profile-${profile.id}`;
+    return `${window.location.origin}/profiles?id=${profile.id}`;
   }, [profile.id]);
 
   const handleShare = useCallback(async (e: React.MouseEvent) => {
@@ -161,7 +162,7 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
   }, [getShareText, getProfileUrl]);
 
   return (
-    <div ref={setNodeRef} style={style} className="animate-fade-in">
+    <div ref={setNodeRef} style={style} className="animate-fade-in" id={`profile-${profile.id}`}>
       <Card className="hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02]">
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
@@ -887,6 +888,27 @@ const Profiles = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Scroll to profile if id parameter is present in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileId = urlParams.get('id');
+    
+    if (profileId && profiles.length > 0) {
+      // Wait a bit for the DOM to render
+      setTimeout(() => {
+        const profileElement = document.getElementById(`profile-${profileId}`);
+        if (profileElement) {
+          profileElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add a highlight effect
+          profileElement.style.boxShadow = '0 0 0 3px hsl(var(--primary))';
+          setTimeout(() => {
+            profileElement.style.boxShadow = '';
+          }, 2000);
+        }
+      }, 300);
+    }
+  }, [profiles]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
