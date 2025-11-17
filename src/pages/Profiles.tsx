@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -77,6 +77,9 @@ interface SortableProfileCardProps {
 }
 
 const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
+  const [showShareModal, setShowShareModal] = useState(false);
+  const { toast } = useToast();
+  
   const {
     attributes,
     listeners,
@@ -101,6 +104,59 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
     e.stopPropagation();
     onDelete(profile);
   }, [onDelete, profile]);
+
+  const getShareText = useCallback(() => {
+    return `Assalamu Alaikum, here is a profile you may be interested in:\n\nName: ${profile.name}\nAge: ${profile.age} yrs\nLocation: ${profile.location}\nProfession: ${profile.profession}${profile.caste ? `\nCaste: ${profile.caste}` : ''}${profile.maslak ? `\nMaslak: ${profile.maslak}` : ''}\n\nView full profile here:`;
+  }, [profile]);
+
+  const getProfileUrl = useCallback(() => {
+    return `${window.location.origin}/profiles#profile-${profile.id}`;
+  }, [profile.id]);
+
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const shareData = {
+      title: `Rishta Profile – ${profile.name}`,
+      text: getShareText(),
+      url: getProfileUrl(),
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error occurred
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      setShowShareModal(true);
+    }
+  }, [profile.name, getShareText, getProfileUrl]);
+
+  const handleCopyLink = useCallback(() => {
+    const textToCopy = `${getShareText()}\n${getProfileUrl()}`;
+    navigator.clipboard.writeText(textToCopy);
+    toast({
+      title: "Copied!",
+      description: "Profile details copied to clipboard",
+    });
+    setShowShareModal(false);
+  }, [getShareText, getProfileUrl, toast]);
+
+  const handleWhatsAppShare = useCallback(() => {
+    const text = `${getShareText()}\n${getProfileUrl()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    setShowShareModal(false);
+  }, [getShareText, getProfileUrl]);
+
+  const handleTelegramShare = useCallback(() => {
+    const text = `${getShareText()}\n${getProfileUrl()}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(getProfileUrl())}&text=${encodeURIComponent(getShareText())}`, '_blank');
+    setShowShareModal(false);
+  }, [getShareText, getProfileUrl]);
 
   return (
     <div ref={setNodeRef} style={style} className="animate-fade-in">
@@ -268,18 +324,67 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
             </div>
           </div>
 
-          {/* Action Button */}
-          <Button className="w-full" size="lg" asChild>
-            <a 
-              href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
-              target="_blank"
-              rel="noopener noreferrer"
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Button className="flex-[8]" size="lg" asChild>
+              <a 
+                href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Request Detailed Profile
+              </a>
+            </Button>
+            <Button 
+              className="flex-[2] aspect-square p-0" 
+              size="lg"
+              variant="outline"
+              onClick={handleShare}
+              style={{ backgroundColor: 'hsl(var(--primary) / 0.1)', borderColor: 'hsl(var(--primary) / 0.3)' }}
             >
-              Request Detailed Profile
-            </a>
-          </Button>
+              <Share2 className="w-5 h-5 text-primary" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Share Modal for Desktop Fallback */}
+      <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Profile</DialogTitle>
+            <DialogDescription>
+              Share this profile with others
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg text-sm">
+              <p className="font-semibold mb-2">{profile.name}</p>
+              <p className="text-muted-foreground whitespace-pre-line">{getShareText()}</p>
+              <p className="text-primary mt-2 break-all">{getProfileUrl()}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button onClick={handleCopyLink} className="w-full">
+                <Copy className="w-4 h-4 mr-2" />
+                Copy All
+              </Button>
+              <Button onClick={handleWhatsAppShare} className="w-full" variant="outline">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Share on WhatsApp
+              </Button>
+              <Button onClick={handleTelegramShare} className="w-full" variant="outline">
+                <Send className="w-4 h-4 mr-2" />
+                Share on Telegram
+              </Button>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button type="button" variant="ghost" onClick={() => setShowShareModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
