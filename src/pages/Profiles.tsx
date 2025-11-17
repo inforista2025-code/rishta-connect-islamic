@@ -107,7 +107,32 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
   }, [onDelete, profile]);
 
   const getShareText = useCallback(() => {
-    return `Assalamu Alaikum, here is a profile you may be interested in:\n\nName: ${profile.name}\nAge: ${profile.age} yrs\nLocation: ${profile.location}\nProfession: ${profile.profession}${profile.caste ? `\nCaste: ${profile.caste}` : ''}${profile.maslak ? `\nMaslak: ${profile.maslak}` : ''}\n\nView full profile here:`;
+    return `Assalamu Alaikum, here is a profile you may be interested in:
+
+📋 Personal Details:
+Name: ${profile.name}
+Age: ${profile.age} yrs
+DOB: ${profile.dob}
+Location: ${profile.location}
+Height: ${profile.height}
+Complexion: ${profile.complexion}
+
+🎓 Education & Career:
+Education: ${profile.education}
+Profession: ${profile.profession}
+Marital Status: ${profile.maritalStatus}
+
+🕌 Religious Information:${profile.caste ? `\nCaste: ${profile.caste}` : ''}${profile.maslak ? `\nMaslak: ${profile.maslak}` : ''}${profile.islamicKnowledge ? `\nIslamic Knowledge: ${profile.islamicKnowledge}` : ''}
+
+👨‍👩‍👧‍👦 Family:
+${profile.family}
+
+💑 Partner Preferences:
+Preferred Partner: ${profile.preferredPartner}
+Preferred Location: ${profile.preferredLocation}
+Preferred Age: ${profile.preferredAge}
+
+View full profile here:`;
   }, [profile]);
 
   const getProfileUrl = useCallback(() => {
