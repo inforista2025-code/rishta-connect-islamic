@@ -336,13 +336,15 @@ const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: Sortab
               </a>
             </Button>
             <Button 
-              className="flex-[2] aspect-square p-0" 
+              type="button"
+              className="flex-[2]" 
               size="lg"
               variant="outline"
               onClick={handleShare}
               style={{ backgroundColor: 'hsl(var(--primary) / 0.1)', borderColor: 'hsl(var(--primary) / 0.3)' }}
             >
-              <Share2 className="w-5 h-5 text-primary" />
+              <Share2 className="w-5 h-5 text-primary mr-1" />
+              <span className="text-primary">Share</span>
             </Button>
           </div>
         </CardContent>
