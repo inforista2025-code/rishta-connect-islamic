@@ -356,25 +356,26 @@ View full profile here:`;
 
           {/* Action Buttons */}
           <div className="flex gap-2">
-            <Button className="flex-[8]" size="lg" asChild>
+            <Button className="flex-1 min-w-0 text-sm sm:text-base" size="lg" asChild>
               <a 
                 href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Request Detailed Profile
+                <span className="hidden xs:inline">Request Detailed Profile</span>
+                <span className="inline xs:hidden">Request Profile</span>
               </a>
             </Button>
             <Button 
               type="button"
-              className="flex-[2]" 
+              className="flex-shrink-0 px-3 sm:px-4" 
               size="lg"
               variant="outline"
               onClick={handleShare}
               style={{ backgroundColor: 'hsl(var(--primary) / 0.1)', borderColor: 'hsl(var(--primary) / 0.3)' }}
             >
-              <Share2 className="w-5 h-5 text-primary mr-1" />
-              <span className="text-primary">Share</span>
+              <Share2 className="w-5 h-5 text-primary sm:mr-1" />
+              <span className="text-primary hidden sm:inline">Share</span>
             </Button>
           </div>
         </CardContent>
