@@ -132,6 +132,8 @@ Preferred Partner: ${profile.preferredPartner}
 Preferred Location: ${profile.preferredLocation}
 Preferred Age: ${profile.preferredAge}
 
+📩 For Request Detailed Profile, message on WhatsApp: +91-9128719875
+
 View full profile here:`;
   }, [profile]);
 
