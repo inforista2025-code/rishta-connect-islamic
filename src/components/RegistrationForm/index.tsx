@@ -9,6 +9,7 @@ import { StepIndicator } from "./StepIndicator";
 import { Step1 } from "./Step1";
 import { Step2 } from "./Step2";
 import { Step3 } from "./Step3";
+import { SuccessDialog } from "./SuccessDialog";
 import { registrationSchema, step1Schema, step2Schema, step3Schema, type RegistrationData } from "./schema";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ const TOTAL_STEPS = 3;
 export function RegistrationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<RegistrationData>({
@@ -133,16 +135,9 @@ export function RegistrationForm() {
 
       if (insertError) throw insertError;
 
-      toast({
-        title: "Registration Submitted Successfully! ✅",
-        description: "Your profile has been submitted for verification. We will contact you on WhatsApp soon.",
-      });
-
-      // Reset form and redirect
+      // Show success dialog instead of toast
+      setShowSuccessDialog(true);
       form.reset();
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
 
     } catch (error: any) {
       console.error('Submission error:', error);
@@ -160,59 +155,68 @@ export function RegistrationForm() {
     return await validateCurrentStep();
   };
 
+  const handleSuccessClose = () => {
+    setShowSuccessDialog(false);
+    navigate('/');
+  };
+
   return (
-    <Card className="max-w-3xl mx-auto card-shadow">
-      <CardContent className="p-6 md:p-8">
-        <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+    <>
+      <Card className="max-w-3xl mx-auto card-shadow">
+        <CardContent className="p-6 md:p-8">
+          <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {currentStep === 1 && <Step1 form={form} />}
-            {currentStep === 2 && <Step2 form={form} />}
-            {currentStep === 3 && <Step3 form={form} />}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {currentStep === 1 && <Step1 form={form} />}
+              {currentStep === 2 && <Step2 form={form} />}
+              {currentStep === 3 && <Step3 form={form} />}
 
-            <div className="flex gap-4 pt-6">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevious}
-                  className="flex-1"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </Button>
-              )}
+              <div className="flex gap-4 pt-6">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrevious}
+                    className="flex-1"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous
+                  </Button>
+                )}
 
-              {currentStep < TOTAL_STEPS ? (
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  className="flex-1"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !form.formState.isValid}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit Profile"
-                  )}
-                </Button>
-              )}
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+                {currentStep < TOTAL_STEPS ? (
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-1"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !form.formState.isValid}
+                    className="flex-1"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Profile"
+                    )}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <SuccessDialog open={showSuccessDialog} onClose={handleSuccessClose} />
+    </>
   );
 }
