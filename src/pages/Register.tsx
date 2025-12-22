@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { RegistrationForm } from "@/components/RegistrationForm";
+import { RegistrationTrustSection } from "@/components/RegistrationTrustSection";
 
 export default function Register() {
   return (
@@ -18,6 +19,7 @@ export default function Register() {
 
       {/* Registration Form */}
       <div className="container mx-auto px-4 py-8 md:py-12">
+        <RegistrationTrustSection />
         <RegistrationForm />
       </div>
 
