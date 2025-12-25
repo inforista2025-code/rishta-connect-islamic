@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
+import { StatsCounter } from "./StatsCounter";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
@@ -27,6 +28,9 @@ export function RishtaMatrimonyLanding() {
       
       {/* Hero Section */}
       <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
+
+      {/* Stats Counter Section */}
+      <StatsCounter />
 
       {/* How to Join Section */}
       <div ref={howToJoinRef}>
