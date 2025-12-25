@@ -5,7 +5,6 @@ import { HowToJoinSection } from "./HowToJoinSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
-import { BlogSection } from "./BlogSection";
 import { FAQSection } from "./FAQSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
@@ -42,9 +41,6 @@ export function RishtaMatrimonyLanding() {
 
       {/* Community Links Section */}
       <CommunityLinksSection />
-
-      {/* Blog Section */}
-      <BlogSection />
 
       {/* FAQ Section */}
       <FAQSection />
