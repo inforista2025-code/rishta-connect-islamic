@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "./Logo";
-
 const navLinks = [{
   name: "Home",
   path: "/"
@@ -53,8 +51,8 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link to="/" className="flex items-center">
-            <Logo size="md" showText={true} />
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-xl text-primary font-extrabold">Rishta Matrimony</span>
           </Link>
 
           {/* Desktop Menu */}
