@@ -70,6 +70,9 @@ export function Footer() {
               <Link to="/register" className="text-sm text-white hover:text-white/80 transition-colors">
                 Register
               </Link>
+              <Link to="/blog" className="text-sm text-white hover:text-white/80 transition-colors">
+                Blog
+              </Link>
               <Link to="/contact" className="text-sm text-white hover:text-white/80 transition-colors">
                 Contact
               </Link>
