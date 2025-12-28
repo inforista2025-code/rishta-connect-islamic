@@ -19,9 +19,6 @@ const navLinks = [{
   name: "Register",
   path: "/register"
 }, {
-  name: "Blog",
-  path: "/blog"
-}, {
   name: "Contact",
   path: "/contact"
 }];

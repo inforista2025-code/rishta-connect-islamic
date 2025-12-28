@@ -29,9 +29,9 @@ const Auth = () => {
 
       toast({
         title: "✅ Login Successful",
-        description: "Welcome back!",
+        description: "Welcome to Admin Dashboard!",
       });
-      navigate("/profiles");
+      navigate("/admin");
     } catch (error: any) {
       toast({
         title: "❌ Error",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Upload, Sparkles, Loader2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Loader2, Image as ImageIcon, Bold, Italic, Heading2, List, Link2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BlogShareButton } from '@/components/blog/BlogShareButton';
+import { cn } from '@/lib/utils';
 
 interface BlogEditorProps {
   blog?: {
@@ -23,6 +25,11 @@ interface BlogEditorProps {
     seo_meta_description?: string | null;
   } | null;
   onClose: () => void;
+  initialContent?: {
+    title: string;
+    content: string;
+    excerpt: string;
+  };
 }
 
 function generateSlug(title: string): string {
@@ -34,17 +41,21 @@ function generateSlug(title: string): string {
     .trim();
 }
 
-export function BlogEditor({ blog, onClose }: BlogEditorProps) {
-  const [title, setTitle] = useState(blog?.title || '');
+export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
+  const [title, setTitle] = useState(blog?.title || initialContent?.title || '');
   const [slug, setSlug] = useState(blog?.slug || '');
-  const [content, setContent] = useState(blog?.content || '');
-  const [excerpt, setExcerpt] = useState(blog?.excerpt || '');
+  const [content, setContent] = useState(blog?.content || initialContent?.content || '');
+  const [excerpt, setExcerpt] = useState(blog?.excerpt || initialContent?.excerpt || '');
   const [featuredImage, setFeaturedImage] = useState(blog?.featured_image || '');
   const [status, setStatus] = useState(blog?.status || 'draft');
   const [seoTitle, setSeoTitle] = useState(blog?.seo_meta_title || '');
   const [seoDescription, setSeoDescription] = useState(blog?.seo_meta_description || '');
   const [uploading, setUploading] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -80,6 +91,26 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
     }
   }, [title, blog]);
 
+  // Rich text formatting functions
+  const insertFormatting = (tag: string, wrapper?: string) => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let newText = '';
+    if (wrapper) {
+      newText = `<${tag}>${selectedText || 'text'}</${tag}>`;
+    } else {
+      newText = `<${tag}>${selectedText || 'text'}</${tag}>`;
+    }
+    
+    const newContent = content.substring(0, start) + newText + content.substring(end);
+    setContent(newContent);
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const blogData = {
@@ -114,10 +145,7 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
     },
   });
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const uploadFile = async (file: File) => {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
@@ -142,6 +170,41 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
       setUploading(false);
     }
   };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadFile(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        await uploadFile(file);
+      } else {
+        toast({ title: '❌ Please drop an image file', variant: 'destructive' });
+      }
+    }
+  }, []);
 
   const generateAIImage = async () => {
     if (!title) {
@@ -214,14 +277,21 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={onClose}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <h2 className="text-2xl font-bold">
-          {blog ? 'Edit Blog' : 'Create New Blog'}
-        </h2>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={onClose}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <h2 className="text-2xl font-bold">
+            {blog ? 'Edit Blog' : 'Create New Blog'}
+          </h2>
+        </div>
+        
+        {/* Share Button - only for existing published blogs */}
+        {blog?.id && blog.status === 'published' && (
+          <BlogShareButton blogSlug={blog.slug} blogTitle={blog.title} />
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -267,17 +337,75 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
               </div>
 
               <div>
-                <Label htmlFor="content">Content * (HTML supported)</Label>
+                <Label htmlFor="content">Content *</Label>
+                {/* Formatting Toolbar */}
+                <div className="flex flex-wrap gap-1 mb-2 p-2 border rounded-t-md bg-muted/50">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => insertFormatting('h2')}
+                    title="Heading"
+                  >
+                    <Heading2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => insertFormatting('strong')}
+                    title="Bold"
+                  >
+                    <Bold className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => insertFormatting('em')}
+                    title="Italic"
+                  >
+                    <Italic className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const text = content;
+                      setContent(text + '\n<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>');
+                    }}
+                    title="List"
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const link = prompt('Enter URL:');
+                      if (link) {
+                        const text = prompt('Enter link text:') || 'Click here';
+                        setContent(content + `<a href="${link}">${text}</a>`);
+                      }
+                    }}
+                    title="Link"
+                  >
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                </div>
                 <Textarea
+                  ref={contentRef}
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write your blog content here... (HTML tags supported)"
+                  placeholder="Write your blog content here... Use the toolbar above for formatting."
                   rows={15}
-                  className="font-mono text-sm"
+                  className="font-mono text-sm rounded-t-none"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  You can use HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;a href=""&gt;
+                  Use the toolbar or type HTML tags directly. Supported: h2, h3, p, ul, li, strong, em, a
                 </p>
               </div>
             </CardContent>
@@ -322,7 +450,7 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
             </CardContent>
           </Card>
 
-          {/* Featured Image */}
+          {/* Featured Image with Drag & Drop */}
           <Card>
             <CardHeader>
               <CardTitle>Featured Image</CardTitle>
@@ -347,24 +475,47 @@ export function BlogEditor({ blog, onClose }: BlogEditorProps) {
               )}
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg hover:border-primary transition-colors">
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
+                {/* Drag & Drop Zone */}
+                <div
+                  ref={dropZoneRef}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer",
+                    isDragging 
+                      ? "border-primary bg-primary/10" 
+                      : "border-muted-foreground/30 hover:border-primary/50",
+                    uploading && "opacity-50 pointer-events-none"
+                  )}
+                >
+                  {uploading ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  ) : (
+                    <>
+                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground text-center">
+                        Drag & drop an image here
+                      </p>
+                      <p className="text-xs text-muted-foreground">or</p>
+                    </>
+                  )}
+                  
+                  <Label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-md hover:bg-secondary/80 transition-colors">
                       <Upload className="w-4 h-4" />
-                    )}
-                    <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
-                  </div>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={uploading}
-                  />
-                </Label>
+                      <span className="text-sm">Browse Files</span>
+                    </div>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </Label>
+                </div>
 
                 <Button
                   variant="outline"
