@@ -45,60 +45,39 @@ export default function BlogDetail() {
 
     setIsTranslating(true);
     try {
-      const languageNames: Record<Language, string> = {
-        en: 'English',
-        hi: 'Hindi',
-        ur: 'Urdu',
-        ar: 'Arabic'
-      };
-
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an expert translator specializing in Islamic and matrimonial content. Translate the following blog post to ${languageNames[lang]}. Preserve:
-- Islamic terminology and respectful tone
-- HTML formatting (tags like <h2>, <p>, <strong>, etc.)
-- The original meaning and context
-- Cultural sensitivity for Muslim readers
-
-Return the response as JSON with "title" and "content" fields.`
-            },
-            {
-              role: 'user',
-              content: `Translate this blog:
-Title: ${blog.title}
-Content: ${blog.content}
-
-Return as: {"title": "translated title", "content": "translated HTML content"}`
-            }
-          ],
-        })
+      const response = await supabase.functions.invoke('translate-blog', {
+        body: {
+          title: blog.title,
+          content: blog.content,
+          targetLanguage: lang
+        }
       });
 
-      const data = await response.json();
-      const responseText = data.choices?.[0]?.message?.content;
+      if (response.error) {
+        throw new Error(response.error.message || 'Translation failed');
+      }
+
+      const data = response.data;
       
-      if (responseText) {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          setTranslatedContent({
-            title: parsed.title || blog.title,
-            content: parsed.content || blog.content,
-          });
-        }
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.title && data.content) {
+        setTranslatedContent({
+          title: data.title,
+          content: data.content,
+        });
+        toast({
+          title: '✅ Translation complete',
+          description: `Content translated successfully`,
+        });
       }
     } catch (error: any) {
+      console.error('Translation error:', error);
       toast({
         title: '❌ Translation failed',
-        description: 'Using original content',
+        description: error.message || 'Using original content',
         variant: 'destructive'
       });
       setTranslatedContent(null);

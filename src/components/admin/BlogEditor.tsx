@@ -53,6 +53,7 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
   const [uploading, setUploading] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [imagePosition, setImagePosition] = useState<'center' | 'top' | 'bottom'>('center');
   
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -457,20 +458,44 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               {featuredImage && (
-                <div className="relative">
-                  <img
-                    src={featuredImage}
-                    alt="Featured"
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => setFeaturedImage('')}
-                  >
-                    Remove
-                  </Button>
+                <div className="space-y-3">
+                  <div className="relative border rounded-lg overflow-hidden">
+                    <img
+                      src={featuredImage}
+                      alt="Featured"
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setFeaturedImage('')}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Image Position Options */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Image Position</Label>
+                    <Select 
+                      value={imagePosition} 
+                      onValueChange={(value: 'center' | 'top' | 'bottom') => setImagePosition(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top">Top (Logo/Header at top)</SelectItem>
+                        <SelectItem value="center">Center (Default)</SelectItem>
+                        <SelectItem value="bottom">Bottom (Focus on bottom)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Adjust how the image is cropped on the blog page
+                    </p>
+                  </div>
                 </div>
               )}
 
