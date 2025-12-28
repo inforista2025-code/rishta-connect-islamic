@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
@@ -7,9 +8,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Calendar, ArrowLeft, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
+import { LanguageSwitch, Language } from '@/components/blog/LanguageSwitch';
+import { useToast } from '@/hooks/use-toast';
 
 export default function BlogDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const [translatedContent, setTranslatedContent] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const { toast } = useToast();
 
   const { data: blog, isLoading, error } = useQuery({
     queryKey: ['blog', slug],
@@ -26,6 +36,81 @@ export default function BlogDetail() {
     },
     enabled: !!slug,
   });
+
+  const translateContent = useCallback(async (lang: Language) => {
+    if (!blog || lang === 'en') {
+      setTranslatedContent(null);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const languageNames: Record<Language, string> = {
+        en: 'English',
+        hi: 'Hindi',
+        ur: 'Urdu',
+        ar: 'Arabic'
+      };
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an expert translator specializing in Islamic and matrimonial content. Translate the following blog post to ${languageNames[lang]}. Preserve:
+- Islamic terminology and respectful tone
+- HTML formatting (tags like <h2>, <p>, <strong>, etc.)
+- The original meaning and context
+- Cultural sensitivity for Muslim readers
+
+Return the response as JSON with "title" and "content" fields.`
+            },
+            {
+              role: 'user',
+              content: `Translate this blog:
+Title: ${blog.title}
+Content: ${blog.content}
+
+Return as: {"title": "translated title", "content": "translated HTML content"}`
+            }
+          ],
+        })
+      });
+
+      const data = await response.json();
+      const responseText = data.choices?.[0]?.message?.content;
+      
+      if (responseText) {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          setTranslatedContent({
+            title: parsed.title || blog.title,
+            content: parsed.content || blog.content,
+          });
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: '❌ Translation failed',
+        description: 'Using original content',
+        variant: 'destructive'
+      });
+      setTranslatedContent(null);
+    } finally {
+      setIsTranslating(false);
+    }
+  }, [blog, toast]);
+
+  const handleLanguageChange = (lang: Language) => {
+    setCurrentLanguage(lang);
+    translateContent(lang);
+  };
 
   const defaultImage = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=600&fit=crop';
 
@@ -63,6 +148,8 @@ export default function BlogDetail() {
   }
 
   const formattedDate = format(new Date(blog.published_date), 'dd MMMM, yyyy');
+  const displayTitle = translatedContent?.title || blog.title;
+  const displayContent = translatedContent?.content || blog.content;
 
   return (
     <>
@@ -94,18 +181,31 @@ export default function BlogDetail() {
 
           {/* Article Content */}
           <article className="container mx-auto px-4 py-8 max-w-4xl">
-            {/* Back Button */}
-            <Button asChild variant="ghost" className="mb-6">
-              <Link to="/blog">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Blog
-              </Link>
-            </Button>
+            {/* Back Button & Language Switch */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <Button asChild variant="ghost">
+                <Link to="/blog">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Blog
+                </Link>
+              </Button>
+              
+              <LanguageSwitch 
+                currentLanguage={currentLanguage}
+                onLanguageChange={handleLanguageChange}
+                isTranslating={isTranslating}
+              />
+            </div>
 
             {/* Title & Meta */}
             <header className="mb-8">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
-                {blog.title}
+                {isTranslating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    Translating...
+                  </span>
+                ) : displayTitle}
               </h1>
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-2">
@@ -120,10 +220,17 @@ export default function BlogDetail() {
             </header>
 
             {/* Content */}
-            <div 
-              className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/80 prose-a:text-primary prose-strong:text-foreground"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
-            />
+            {isTranslating ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mr-2" />
+                <span>Translating content...</span>
+              </div>
+            ) : (
+              <div 
+                className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/80 prose-a:text-primary prose-strong:text-foreground"
+                dangerouslySetInnerHTML={{ __html: displayContent }}
+              />
+            )}
 
             {/* CTA Section */}
             <div className="mt-12 p-6 bg-primary/10 rounded-lg text-center">

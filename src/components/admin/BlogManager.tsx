@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { BlogEditor } from './BlogEditor';
+import { AIBlogGenerator } from './AIBlogGenerator';
+import { BlogShareButton } from '@/components/blog/BlogShareButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,10 +32,18 @@ interface Blog {
   created_at: string;
 }
 
+type ViewMode = 'list' | 'editor' | 'ai-generator';
+
 export function BlogManager() {
-  const [showEditor, setShowEditor] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState<{
+    title: string;
+    content: string;
+    excerpt: string;
+  } | null>(null);
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -85,26 +95,59 @@ export function BlogManager() {
 
   const handleEdit = (blog: Blog) => {
     setEditingBlog(blog);
-    setShowEditor(true);
+    setAiGeneratedContent(null);
+    setViewMode('editor');
   };
 
   const handleCloseEditor = () => {
-    setShowEditor(false);
+    setViewMode('list');
     setEditingBlog(null);
+    setAiGeneratedContent(null);
   };
 
-  if (showEditor) {
-    return <BlogEditor blog={editingBlog} onClose={handleCloseEditor} />;
+  const handleAIGenerated = (data: { title: string; content: string; excerpt: string }) => {
+    setAiGeneratedContent(data);
+    setEditingBlog(null);
+    setViewMode('editor');
+  };
+
+  if (viewMode === 'ai-generator') {
+    return (
+      <AIBlogGenerator 
+        onClose={() => setViewMode('list')}
+        onBlogGenerated={handleAIGenerated}
+      />
+    );
+  }
+
+  if (viewMode === 'editor') {
+    return (
+      <BlogEditor 
+        blog={editingBlog} 
+        onClose={handleCloseEditor}
+        initialContent={aiGeneratedContent || undefined}
+      />
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-4">
         <h2 className="text-2xl font-bold">Blog Manager</h2>
-        <Button onClick={() => setShowEditor(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Blog
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setViewMode('ai-generator')}>
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate with AI
+          </Button>
+          <Button onClick={() => {
+            setEditingBlog(null);
+            setAiGeneratedContent(null);
+            setViewMode('editor');
+          }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Blog
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -138,7 +181,12 @@ export function BlogManager() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {/* Share Button - only for published blogs */}
+                  {blog.status === 'published' && (
+                    <BlogShareButton blogSlug={blog.slug} blogTitle={blog.title} />
+                  )}
+                  
                   <Button
                     variant="outline"
                     size="sm"
@@ -177,10 +225,20 @@ export function BlogManager() {
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-muted-foreground mb-4">No blogs yet. Create your first blog post!</p>
-            <Button onClick={() => setShowEditor(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Blog
-            </Button>
+            <div className="flex justify-center gap-2">
+              <Button variant="outline" onClick={() => setViewMode('ai-generator')}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate with AI
+              </Button>
+              <Button onClick={() => {
+                setEditingBlog(null);
+                setAiGeneratedContent(null);
+                setViewMode('editor');
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Blog
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
