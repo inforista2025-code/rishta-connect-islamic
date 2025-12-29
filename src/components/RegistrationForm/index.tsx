@@ -162,7 +162,7 @@ export function RegistrationForm() {
 
   return (
     <>
-      <Card className="max-w-3xl mx-auto bg-background/60 backdrop-blur-md border-border/50 shadow-xl">
+      <Card className="max-w-3xl mx-auto bg-background/30 backdrop-blur-sm border-border/30 shadow-xl">
         <CardContent className="p-6 md:p-8">
           <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
