@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
+import logo from "@/assets/logo.png";
 
 const navLinks = [{
   name: "Home",
@@ -62,6 +63,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <Link to="/" className="flex items-center space-x-2">
+            <img src={logo} alt="Rishta Matrimony Logo" className="h-10 w-10 object-contain" />
             <span className="text-xl text-primary font-extrabold">Rishta Matrimony</span>
           </Link>
 
