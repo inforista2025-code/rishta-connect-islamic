@@ -4,7 +4,7 @@ import registerBg from "@/assets/register-bg.png";
 
 export default function Register() {
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen relative">
       {/* Fixed Background Image */}
       <div 
         className="fixed inset-0 z-0"
@@ -15,19 +15,17 @@ export default function Register() {
           backgroundRepeat: 'no-repeat',
         }}
       />
-      {/* Overlay for better text visibility */}
-      <div className="fixed inset-0 z-0 bg-background/70" />
       
       {/* Content */}
       <div className="relative z-10">
         <Navbar />
         
         {/* Header Section */}
-        <div className="hero-gradient py-12 px-4 text-center bg-background/80 backdrop-blur-sm">
-          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3">
+        <div className="py-12 px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 drop-shadow-md">
             Registration Form
           </h1>
-          <p className="text-sm md:text-base text-foreground/80 max-w-2xl mx-auto font-medium">
+          <p className="text-sm md:text-base text-foreground/90 max-w-2xl mx-auto font-medium drop-shadow-sm">
             Complete the form below to join our verified and halal matrimonial community.
           </p>
         </div>
@@ -38,8 +36,8 @@ export default function Register() {
         </div>
 
         {/* Islamic Quote Section */}
-        <div className="text-center py-8 px-4 bg-background/80 backdrop-blur-sm">
-          <p className="text-base md:text-lg italic text-foreground/80 font-medium">
+        <div className="text-center py-8 px-4">
+          <p className="text-base md:text-lg italic text-foreground/90 font-medium drop-shadow-sm">
             "Nikah is half of faith – Prophet Muhammad ﷺ"
           </p>
         </div>
