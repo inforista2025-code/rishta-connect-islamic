@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info } from 'lucide-react';
 import { BlogManager } from '@/components/admin/BlogManager';
+import { AboutUsManager } from '@/components/admin/AboutUsManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
@@ -59,6 +60,10 @@ export default function AdminDashboard() {
               <BookOpen className="w-4 h-4" />
               Blog Manager
             </TabsTrigger>
+            <TabsTrigger value="about-us" className="flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              About Us
+            </TabsTrigger>
             <TabsTrigger value="profiles" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Profiles
@@ -71,6 +76,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="blog">
             <BlogManager />
+          </TabsContent>
+
+          <TabsContent value="about-us">
+            <AboutUsManager />
           </TabsContent>
 
           <TabsContent value="profiles">

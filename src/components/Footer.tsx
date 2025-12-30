@@ -58,6 +58,9 @@ export function Footer() {
           <div className="text-center">
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+              <Link to="/about-us" className="text-sm text-white hover:text-white/80 transition-colors">
+                About Us
+              </Link>
               <Link to="/" className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer">
                 Home
               </Link>
