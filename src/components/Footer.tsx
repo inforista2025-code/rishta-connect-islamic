@@ -1,5 +1,6 @@
 import { MessageCircle, Users, Facebook, Instagram, Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -43,9 +44,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-bold mb-4">
-              Rishta Matrimony 🌸
-            </h3>
+            <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
+              <img src={logo} alt="Rishta Matrimony Logo" className="h-14 w-14 object-contain" />
+              <h3 className="text-2xl font-bold">
+                Rishta Matrimony
+              </h3>
+            </div>
             <p className="text-background/80 mb-4">
               Connecting Muslim hearts with Islamic values
             </p>
