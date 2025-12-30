@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1787,6 +1788,8 @@ const Profiles = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Footer />
     </div>
   );
 };

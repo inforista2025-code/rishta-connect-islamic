@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, Clock } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 export default function Contact() {
   return (
@@ -102,6 +103,8 @@ export default function Contact() {
           </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
