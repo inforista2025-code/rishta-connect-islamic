@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { RegistrationForm } from "@/components/RegistrationForm";
 
 export default function Register() {
@@ -27,6 +28,8 @@ export default function Register() {
           "Nikah is half of faith – Prophet Muhammad ﷺ"
         </p>
       </div>
+
+      <Footer />
     </div>
   );
 }

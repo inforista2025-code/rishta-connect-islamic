@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 export default function Pricing() {
   const freePlanFeatures = [
@@ -179,6 +180,8 @@ export default function Pricing() {
           </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
