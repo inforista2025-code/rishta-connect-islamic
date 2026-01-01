@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Save } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 type Language = 'en' | 'hi' | 'ur';
 
@@ -15,6 +16,27 @@ const languages = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिंदी', flag: '🇮🇳' },
   { code: 'ur', name: 'Urdu', nativeName: 'اردو', flag: '🇵🇰' },
+];
+
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'align': [] }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link'],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'align',
+  'color', 'background',
+  'link'
 ];
 
 export function AboutUsManager() {
@@ -41,7 +63,7 @@ export function AboutUsManager() {
   });
 
   // Update form data when contents load
-  useState(() => {
+  useEffect(() => {
     if (contents) {
       const newFormData = { ...formData };
       contents.forEach((item) => {
@@ -53,7 +75,7 @@ export function AboutUsManager() {
       });
       setFormData(newFormData);
     }
-  });
+  }, [contents]);
 
   const updateMutation = useMutation({
     mutationFn: async ({ language, title, content }: { language: Language; title: string; content: string }) => {
@@ -121,6 +143,7 @@ export function AboutUsManager() {
 
         {languages.map((lang) => {
           const currentContent = getContent(lang.code as Language);
+          const isRtl = lang.code === 'ur';
           
           return (
             <TabsContent key={lang.code} value={lang.code}>
@@ -141,33 +164,32 @@ export function AboutUsManager() {
                         [lang.code]: { ...prev[lang.code as Language], title: e.target.value }
                       }))}
                       placeholder={`Enter title in ${lang.name}`}
-                      dir={lang.code === 'ur' ? 'rtl' : 'ltr'}
+                      dir={isRtl ? 'rtl' : 'ltr'}
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Content (HTML supported)
-                    </label>
-                    <Textarea
-                      value={formData[lang.code as Language]?.content || currentContent.content}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        [lang.code]: { ...prev[lang.code as Language], content: e.target.value }
-                      }))}
-                      placeholder={`Enter content in ${lang.name}. You can use HTML tags like <p>, <h2>, <ul>, <li>, etc.`}
-                      rows={15}
-                      dir={lang.code === 'ur' ? 'rtl' : 'ltr'}
-                      className="font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Tip: Use HTML tags for formatting. Example: &lt;h2&gt;Section&lt;/h2&gt;, &lt;p&gt;Paragraph&lt;/p&gt;, &lt;ul&gt;&lt;li&gt;List item&lt;/li&gt;&lt;/ul&gt;
-                    </p>
+                    <label className="text-sm font-medium mb-2 block">Content</label>
+                    <div className={`quill-wrapper ${isRtl ? 'rtl-editor' : ''}`}>
+                      <ReactQuill
+                        theme="snow"
+                        value={formData[lang.code as Language]?.content || currentContent.content}
+                        onChange={(value) => setFormData(prev => ({
+                          ...prev,
+                          [lang.code]: { ...prev[lang.code as Language], content: value }
+                        }))}
+                        modules={quillModules}
+                        formats={quillFormats}
+                        placeholder={`Enter content in ${lang.name}...`}
+                        style={{ minHeight: '300px' }}
+                      />
+                    </div>
                   </div>
 
                   <Button 
                     onClick={() => handleSave(lang.code as Language)}
                     disabled={updateMutation.isPending}
+                    className="mt-4"
                   >
                     {updateMutation.isPending ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -182,6 +204,33 @@ export function AboutUsManager() {
           );
         })}
       </Tabs>
+
+      <style>{`
+        .quill-wrapper .ql-container {
+          min-height: 250px;
+          font-size: 16px;
+        }
+        .quill-wrapper .ql-editor {
+          min-height: 250px;
+        }
+        .rtl-editor .ql-editor {
+          direction: rtl;
+          text-align: right;
+        }
+        .ql-toolbar.ql-snow {
+          border-radius: 8px 8px 0 0;
+          border-color: hsl(var(--border));
+          background: hsl(var(--muted));
+        }
+        .ql-container.ql-snow {
+          border-radius: 0 0 8px 8px;
+          border-color: hsl(var(--border));
+        }
+        .ql-editor.ql-blank::before {
+          color: hsl(var(--muted-foreground));
+          font-style: normal;
+        }
+      `}</style>
     </div>
   );
 }
