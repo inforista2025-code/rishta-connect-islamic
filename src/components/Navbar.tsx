@@ -97,17 +97,8 @@ export function Navbar() {
               </Button>
             )}
             
-            {/* Login/Logout Button */}
-            {!user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAdminLogin}
-                className="ml-2"
-              >
-                Admin Login
-              </Button>
-            ) : (
+            {/* Logout Button - Only for logged in users */}
+            {user && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -167,16 +158,8 @@ export function Navbar() {
                 </Button>
               )}
               
-              {/* Login/Logout - Mobile */}
-              {!user ? (
-                <Button
-                  variant="ghost"
-                  onClick={handleAdminLogin}
-                  className="justify-start px-4 py-3 h-auto text-sm font-medium"
-                >
-                  Admin Login
-                </Button>
-              ) : (
+              {/* Logout - Mobile */}
+              {user && (
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
