@@ -79,22 +79,25 @@ const formatContent = (text: string | null) => {
 export default function AboutUs() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
 
-  const { data: content, isLoading } = useQuery({
+  const { data: content, isLoading, error } = useQuery({
     queryKey: ['about-us-content', currentLanguage],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('about_us_content')
         .select('*')
         .eq('language', currentLanguage)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
   });
 
+  // Check if content contains HTML
+  const isHtmlContent = content?.content?.includes('<') && content?.content?.includes('>');
+  const formattedContent = isHtmlContent ? null : formatContent(content?.content);
+
   const currentLang = languages.find(l => l.code === currentLanguage);
-  const formattedContent = formatContent(content?.content);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -144,55 +147,62 @@ export default function AboutUs() {
             </h1>
             
             {/* Formatted Content */}
-            <div className="space-y-8 md:space-y-12">
-              {formattedContent.map((section: any) => {
-                if (!section) return null;
-                
-                if (section.type === 'heading') {
-                  return (
-                    <h2 
-                      key={section.key} 
-                      className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground mt-12 md:mt-16 first:mt-0 border-b border-border/30 pb-3"
-                    >
-                      {section.content}
-                    </h2>
-                  );
-                }
-                
-                if (section.type === 'bullets') {
-                  return (
-                    <ul 
-                      key={section.key} 
-                      className={`space-y-3 md:space-y-4 ${currentLanguage === 'ur' ? 'pr-4 md:pr-6' : 'pl-4 md:pl-6'}`}
-                    >
-                      {section.content.map((item: string, idx: number) => (
-                        <li 
-                          key={idx} 
-                          className="text-base md:text-lg text-foreground/80 leading-relaxed flex items-start gap-3"
-                        >
-                          <span className="text-primary mt-1.5 text-sm">●</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  );
-                }
-                
-                // Paragraph
-                return (
-                  <div key={section.key} className="space-y-4">
-                    {section.content.map((line: string, idx: number) => (
-                      <p 
-                        key={idx} 
-                        className="text-base md:text-lg lg:text-xl text-foreground/80 leading-relaxed md:leading-loose"
+            {isHtmlContent ? (
+              <div 
+                className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/80 prose-li:text-foreground/80 prose-strong:text-foreground"
+                dangerouslySetInnerHTML={{ __html: content.content || '' }}
+              />
+            ) : (
+              <div className="space-y-8 md:space-y-12">
+                {formattedContent?.map((section: any) => {
+                  if (!section) return null;
+                  
+                  if (section.type === 'heading') {
+                    return (
+                      <h2 
+                        key={section.key} 
+                        className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground mt-12 md:mt-16 first:mt-0 border-b border-border/30 pb-3"
                       >
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+                        {section.content}
+                      </h2>
+                    );
+                  }
+                  
+                  if (section.type === 'bullets') {
+                    return (
+                      <ul 
+                        key={section.key} 
+                        className={`space-y-3 md:space-y-4 ${currentLanguage === 'ur' ? 'pr-4 md:pr-6' : 'pl-4 md:pl-6'}`}
+                      >
+                        {section.content.map((item: string, idx: number) => (
+                          <li 
+                            key={idx} 
+                            className="text-base md:text-lg text-foreground/80 leading-relaxed flex items-start gap-3"
+                          >
+                            <span className="text-primary mt-1.5 text-sm">●</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  
+                  // Paragraph
+                  return (
+                    <div key={section.key} className="space-y-4">
+                      {section.content.map((line: string, idx: number) => (
+                        <p 
+                          key={idx} 
+                          className="text-base md:text-lg lg:text-xl text-foreground/80 leading-relaxed md:leading-loose"
+                        >
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-20 text-muted-foreground">
