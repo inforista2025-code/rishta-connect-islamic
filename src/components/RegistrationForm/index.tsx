@@ -127,25 +127,35 @@ export function RegistrationForm() {
     setIsSubmitting(true);
     
     try {
-      // Upload photos
-      const photoUrls: string[] = [];
+      // Upload photos and get full URLs
+      const photoPaths: string[] = [];
+      const photoFullUrls: string[] = [];
       for (let i = 0; i < data.photos.length; i++) {
         const file = data.photos[i];
         const timestamp = Date.now();
         const fileName = `${timestamp}-${i}-${file.name}`;
         const path = await uploadFile(file, 'registration-photos', fileName);
-        photoUrls.push(path);
+        photoPaths.push(path);
+        
+        // Get the full public URL for the webhook
+        const { data: urlData } = supabase.storage.from('registration-photos').getPublicUrl(path);
+        photoFullUrls.push(urlData.publicUrl);
       }
 
       // Upload biodata if provided
-      let biodataUrl: string | null = null;
+      let biodataPath: string | null = null;
+      let biodataFullUrl: string | null = null;
       if (data.biodata) {
         const timestamp = Date.now();
         const fileName = `${timestamp}-${data.biodata.name}`;
-        biodataUrl = await uploadFile(data.biodata, 'registration-biodatas', fileName);
+        biodataPath = await uploadFile(data.biodata, 'registration-biodatas', fileName);
+        
+        // Get the full public URL for the webhook
+        const { data: urlData } = supabase.storage.from('registration-biodatas').getPublicUrl(biodataPath);
+        biodataFullUrl = urlData.publicUrl;
       }
 
-      // Insert registration data to database
+      // Insert registration data to database (store paths for internal use)
       const { error: insertError } = await supabase
         .from('registration_submissions')
         .insert({
@@ -168,16 +178,16 @@ export function RegistrationForm() {
           partner_preferences: data.partnerPreferences,
           islamic_education: data.islamicEducation || null,
           other_info: data.otherInfo || null,
-          photo_urls: photoUrls,
-          biodata_url: biodataUrl,
+          photo_urls: photoPaths,
+          biodata_url: biodataPath,
           referral: data.referral || null,
           status: 'pending'
         });
 
       if (insertError) throw insertError;
 
-      // Send data to Google Sheet (fire and forget)
-      sendToGoogleSheet(data, photoUrls, biodataUrl);
+      // Send data to Google Sheet with full URLs (fire and forget)
+      sendToGoogleSheet(data, photoFullUrls, biodataFullUrl);
 
       // Show success dialog
       setShowSuccessDialog(true);
