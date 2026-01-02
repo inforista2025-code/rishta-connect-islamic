@@ -27,7 +27,7 @@ export function SuccessDialog({ open, onClose }: SuccessDialogProps) {
           </h2>
           
           <p className="text-lg md:text-xl text-foreground/90 mb-6 leading-relaxed">
-            Your form has been submitted successfully.
+            Your registration has been submitted successfully and is under verification.
           </p>
           
           <p className="text-base md:text-lg text-foreground/80 mb-8 leading-relaxed">
