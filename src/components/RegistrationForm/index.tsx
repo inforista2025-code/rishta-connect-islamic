@@ -82,6 +82,47 @@ export function RegistrationForm() {
     return data.path;
   };
 
+  const sendToGoogleSheet = async (data: RegistrationData, photoUrls: string[], biodataUrl: string | null) => {
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzr0cvTmK8Dg2Pt2yies4NOuNaamMFurabOOt8VGlBiinmUHEorKqAyzYbzDPdsPmUp/exec';
+    
+    const payload = {
+      email: data.email,
+      full_name: data.fullName,
+      gender: data.gender,
+      date_of_birth: data.dateOfBirth.toISOString().split('T')[0],
+      height: data.height,
+      caste: data.caste,
+      complexion: data.complexion,
+      marital_status: data.maritalStatus,
+      maslak: data.maslak,
+      residence_location: data.residenceLocation,
+      education_details: data.educationDetails,
+      occupation_details: data.occupationDetails,
+      family_details: data.familyDetails,
+      whatsapp_number: data.whatsappNumber,
+      preferred_age_range: data.preferredAgeRange,
+      preferred_location: data.preferredLocation,
+      partner_preferences: data.partnerPreferences,
+      islamic_education: data.islamicEducation || '',
+      other_info: data.otherInfo || '',
+      photo_urls: photoUrls.join(', '),
+      biodata_url: biodataUrl || '',
+      referral: data.referral || '',
+      submitted_at: new Date().toISOString()
+    };
+
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        mode: 'no-cors',
+        body: JSON.stringify(payload)
+      });
+    } catch (error) {
+      console.error('Google Sheet webhook error:', error);
+    }
+  };
+
   const onSubmit = async (data: RegistrationData) => {
     setIsSubmitting(true);
     
@@ -104,7 +145,7 @@ export function RegistrationForm() {
         biodataUrl = await uploadFile(data.biodata, 'registration-biodatas', fileName);
       }
 
-      // Insert registration data
+      // Insert registration data to database
       const { error: insertError } = await supabase
         .from('registration_submissions')
         .insert({
@@ -135,7 +176,10 @@ export function RegistrationForm() {
 
       if (insertError) throw insertError;
 
-      // Show success dialog instead of toast
+      // Send data to Google Sheet (fire and forget)
+      sendToGoogleSheet(data, photoUrls, biodataUrl);
+
+      // Show success dialog
       setShowSuccessDialog(true);
       form.reset();
 
