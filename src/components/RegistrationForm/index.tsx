@@ -155,9 +155,9 @@ export function RegistrationForm() {
         biodataFullUrl = urlData.publicUrl;
       }
 
-      // Insert registration data to database (store paths for internal use)
+      // Insert registration data to the new registrations table (store full URLs)
       const { error: insertError } = await supabase
-        .from('registration_submissions')
+        .from('registrations')
         .insert({
           email: data.email,
           full_name: data.fullName,
@@ -178,10 +178,11 @@ export function RegistrationForm() {
           partner_preferences: data.partnerPreferences,
           islamic_education: data.islamicEducation || null,
           other_info: data.otherInfo || null,
-          photo_urls: photoPaths,
-          biodata_url: biodataPath,
+          photo_urls: photoFullUrls,
+          biodata_url: biodataFullUrl,
           referral: data.referral || null,
-          status: 'pending'
+          verification_status: 'pending',
+          is_live: false
         });
 
       if (insertError) throw insertError;
