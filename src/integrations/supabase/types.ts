@@ -269,6 +269,99 @@ export type Database = {
         }
         Relationships: []
       }
+      registrations: {
+        Row: {
+          admin_notes: string | null
+          biodata_url: string | null
+          caste: string
+          complexion: string
+          created_at: string
+          date_of_birth: string
+          education_details: string
+          email: string
+          family_details: string
+          full_name: string
+          gender: string
+          height: string
+          id: string
+          is_live: boolean
+          islamic_education: string | null
+          marital_status: string
+          maslak: string
+          occupation_details: string
+          other_info: string | null
+          partner_preferences: string
+          photo_urls: string[]
+          preferred_age_range: string
+          preferred_location: string
+          referral: string | null
+          residence_location: string
+          updated_at: string
+          verification_status: string
+          whatsapp_number: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          biodata_url?: string | null
+          caste: string
+          complexion: string
+          created_at?: string
+          date_of_birth: string
+          education_details: string
+          email: string
+          family_details: string
+          full_name: string
+          gender: string
+          height: string
+          id?: string
+          is_live?: boolean
+          islamic_education?: string | null
+          marital_status: string
+          maslak: string
+          occupation_details: string
+          other_info?: string | null
+          partner_preferences: string
+          photo_urls?: string[]
+          preferred_age_range: string
+          preferred_location: string
+          referral?: string | null
+          residence_location: string
+          updated_at?: string
+          verification_status?: string
+          whatsapp_number: string
+        }
+        Update: {
+          admin_notes?: string | null
+          biodata_url?: string | null
+          caste?: string
+          complexion?: string
+          created_at?: string
+          date_of_birth?: string
+          education_details?: string
+          email?: string
+          family_details?: string
+          full_name?: string
+          gender?: string
+          height?: string
+          id?: string
+          is_live?: boolean
+          islamic_education?: string | null
+          marital_status?: string
+          maslak?: string
+          occupation_details?: string
+          other_info?: string | null
+          partner_preferences?: string
+          photo_urls?: string[]
+          preferred_age_range?: string
+          preferred_location?: string
+          referral?: string | null
+          residence_location?: string
+          updated_at?: string
+          verification_status?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
