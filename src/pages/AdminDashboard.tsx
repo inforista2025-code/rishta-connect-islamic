@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut, Info } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList } from 'lucide-react';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { AboutUsManager } from '@/components/admin/AboutUsManager';
+import { RegistrationsManager } from '@/components/admin/RegistrationsManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdmin();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('blog');
+  const [activeTab, setActiveTab] = useState('registrations');
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -55,7 +56,11 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1">
+            <TabsTrigger value="registrations" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Registrations
+            </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Blog Manager
@@ -73,6 +78,10 @@ export default function AdminDashboard() {
               Settings
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="registrations">
+            <RegistrationsManager />
+          </TabsContent>
 
           <TabsContent value="blog">
             <BlogManager />
