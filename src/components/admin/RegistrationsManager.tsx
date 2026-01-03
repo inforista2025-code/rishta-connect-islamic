@@ -63,14 +63,62 @@ export function RegistrationsManager() {
 
   const handleVerify = async (id: string) => {
     try {
-      const { error } = await supabase
+      // First, get the registration data
+      const registration = registrations.find(r => r.id === id);
+      if (!registration) throw new Error('Registration not found');
+
+      // Update registration status
+      const { error: updateError } = await supabase
         .from('registrations')
         .update({ verification_status: 'verified', is_live: true })
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      toast({ title: 'Profile verified and made live!' });
+      // Calculate age from date_of_birth
+      const dob = new Date(registration.date_of_birth);
+      const today = new Date();
+      const age = Math.floor((today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      
+      // Format DOB for display (DD/MM/YYYY)
+      const formattedDob = `${String(dob.getDate()).padStart(2, '0')}/${String(dob.getMonth() + 1).padStart(2, '0')}/${dob.getFullYear()}`;
+
+      // Get max display_order to add new profile at top
+      const { data: maxOrderData } = await supabase
+        .from('profiles_data')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1);
+      
+      const newOrder = (maxOrderData && maxOrderData[0]?.display_order) ? maxOrderData[0].display_order + 1 : 1;
+
+      // Insert into profiles_data table
+      const { error: insertError } = await supabase
+        .from('profiles_data')
+        .insert({
+          name: registration.full_name,
+          gender: registration.gender,
+          age: String(age),
+          dob: formattedDob,
+          location: registration.residence_location,
+          height: registration.height,
+          complexion: registration.complexion,
+          education: registration.education_details,
+          profession: registration.occupation_details,
+          marital_status: registration.marital_status,
+          caste: registration.caste,
+          maslak: registration.maslak,
+          islamic_knowledge: registration.islamic_education,
+          family: registration.family_details,
+          preferred_partner: registration.partner_preferences,
+          preferred_location: registration.preferred_location,
+          preferred_age: registration.preferred_age_range,
+          display_order: newOrder
+        });
+
+      if (insertError) throw insertError;
+
+      toast({ title: 'Profile verified and added to public profiles!' });
       fetchRegistrations();
     } catch (error) {
       console.error('Error verifying:', error);
