@@ -67,6 +67,26 @@ export function RegistrationsManager() {
       const registration = registrations.find(r => r.id === id);
       if (!registration) throw new Error('Registration not found');
 
+      // Check if profile already exists for this registration
+      const { data: existingProfile } = await supabase
+        .from('profiles_data')
+        .select('id')
+        .eq('registration_id', id)
+        .maybeSingle();
+
+      if (existingProfile) {
+        // Profile already exists, just update registration status
+        const { error: updateError } = await supabase
+          .from('registrations')
+          .update({ verification_status: 'verified', is_live: true })
+          .eq('id', id);
+
+        if (updateError) throw updateError;
+        toast({ title: 'Profile already exists, status updated!' });
+        fetchRegistrations();
+        return;
+      }
+
       // Update registration status
       const { error: updateError } = await supabase
         .from('registrations')
@@ -92,7 +112,7 @@ export function RegistrationsManager() {
       
       const newOrder = (maxOrderData && maxOrderData[0]?.display_order) ? maxOrderData[0].display_order + 1 : 1;
 
-      // Insert into profiles_data table
+      // Insert into profiles_data table with registration_id link
       const { error: insertError } = await supabase
         .from('profiles_data')
         .insert({
@@ -113,7 +133,8 @@ export function RegistrationsManager() {
           preferred_partner: registration.partner_preferences,
           preferred_location: registration.preferred_location,
           preferred_age: registration.preferred_age_range,
-          display_order: newOrder
+          display_order: newOrder,
+          registration_id: id
         });
 
       if (insertError) throw insertError;
@@ -132,14 +153,25 @@ export function RegistrationsManager() {
 
   const handleReject = async (id: string) => {
     try {
-      const { error } = await supabase
+      // Update registration status
+      const { error: updateError } = await supabase
         .from('registrations')
         .update({ verification_status: 'rejected', is_live: false })
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      toast({ title: 'Profile rejected' });
+      // Remove profile from profiles_data if it exists
+      const { error: deleteError } = await supabase
+        .from('profiles_data')
+        .delete()
+        .eq('registration_id', id);
+
+      if (deleteError) {
+        console.error('Error removing profile:', deleteError);
+      }
+
+      toast({ title: 'Profile rejected and removed from public profiles' });
       fetchRegistrations();
     } catch (error) {
       console.error('Error rejecting:', error);
