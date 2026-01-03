@@ -111,6 +111,7 @@ export type Database = {
           preferred_location: string
           preferred_partner: string
           profession: string
+          registration_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -134,6 +135,7 @@ export type Database = {
           preferred_location: string
           preferred_partner: string
           profession: string
+          registration_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -157,9 +159,18 @@ export type Database = {
           preferred_location?: string
           preferred_partner?: string
           profession?: string
+          registration_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_data_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles_order: {
         Row: {
