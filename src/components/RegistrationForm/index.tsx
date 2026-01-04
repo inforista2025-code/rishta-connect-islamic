@@ -123,6 +123,25 @@ export function RegistrationForm() {
     }
   };
 
+  const sendRegistrationEmails = async (data: RegistrationData) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-registration-emails', {
+        body: {
+          full_name: data.fullName,
+          email: data.email,
+          gender: data.gender,
+          city: data.residenceLocation,
+          whatsapp_number: data.whatsappNumber,
+        },
+      });
+      if (error) {
+        console.error('Email sending error:', error);
+      }
+    } catch (error) {
+      console.error('Failed to send registration emails:', error);
+    }
+  };
+
   const onSubmit = async (data: RegistrationData) => {
     setIsSubmitting(true);
     
@@ -189,6 +208,9 @@ export function RegistrationForm() {
 
       // Send data to Google Sheet with full URLs (fire and forget)
       sendToGoogleSheet(data, photoFullUrls, biodataFullUrl);
+
+      // Send registration emails (fire and forget)
+      sendRegistrationEmails(data);
 
       // Show success dialog
       setShowSuccessDialog(true);

@@ -1,0 +1,109 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface RegistrationEmailRequest {
+  full_name: string;
+  email: string;
+  gender: string;
+  city: string;
+  whatsapp_number: string;
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { full_name, email, gender, city, whatsapp_number }: RegistrationEmailRequest = await req.json();
+
+    console.log("Sending registration emails for:", full_name, email);
+
+    // Email to user
+    const userEmailResponse = await resend.emails.send({
+      from: "Rista Matrimony <onboarding@resend.dev>",
+      to: [email],
+      subject: "Rista Matrimony – Registration Received",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #8B5A2B;">Assalamu Alaikum ${full_name},</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            Your profile has been submitted successfully.
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            Our team will verify it soon.
+          </p>
+          <br/>
+          <p style="font-size: 14px; color: #666;">
+            Best regards,<br/>
+            <strong>Rista Matrimony Team</strong>
+          </p>
+        </div>
+      `,
+    });
+
+    console.log("User email sent:", userEmailResponse);
+
+    // Email to admin
+    const adminEmailResponse = await resend.emails.send({
+      from: "Rista Matrimony <onboarding@resend.dev>",
+      to: ["info.rista2025@gmail.com"],
+      subject: "New Matrimony Registration",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #8B5A2B;">New Registration Received</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Name</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${full_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Gender</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${gender}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">City</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${city}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">WhatsApp</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${whatsapp_number}</td>
+            </tr>
+          </table>
+          <p style="margin-top: 20px; font-size: 14px; color: #666;">
+            Please review this registration in the admin dashboard.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log("Admin email sent:", adminEmailResponse);
+
+    return new Response(
+      JSON.stringify({ success: true, userEmail: userEmailResponse, adminEmail: adminEmailResponse }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error sending registration emails:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);
