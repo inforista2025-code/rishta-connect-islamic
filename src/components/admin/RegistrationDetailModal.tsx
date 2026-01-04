@@ -51,40 +51,139 @@ export function RegistrationDetailModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const syncPublicProfile = async (updated: Partial<Registration>) => {
+    if (!registration) return;
+
+    const shouldBePublic = updated.verification_status === 'verified' && updated.is_live === true;
+
+    if (!shouldBePublic) {
+      // If verification is reverted or set to non-live, remove from public profiles
+      const { error: deleteError } = await supabase
+        .from('profiles_data')
+        .delete()
+        .eq('registration_id', registration.id);
+
+      if (deleteError) {
+        console.error('Error removing public profile:', deleteError);
+      }
+      return;
+    }
+
+    // Ensure we have DOB for formatting/age calc
+    const dobValue = updated.date_of_birth as unknown as string | undefined;
+    const dob = dobValue ? new Date(dobValue) : null;
+
+    const today = new Date();
+    const age = dob
+      ? Math.floor((today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      : 0;
+
+    const formattedDob = dob
+      ? `${String(dob.getDate()).padStart(2, '0')}/${String(dob.getMonth() + 1).padStart(2, '0')}/${dob.getFullYear()}`
+      : '';
+
+    // Keep the same display_order if profile already exists; otherwise append at top
+    const { data: existingProfile } = await supabase
+      .from('profiles_data')
+      .select('id, display_order')
+      .eq('registration_id', registration.id)
+      .maybeSingle();
+
+    let displayOrder = existingProfile?.display_order;
+
+    if (displayOrder == null) {
+      const { data: maxOrderData } = await supabase
+        .from('profiles_data')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1);
+
+      displayOrder = (maxOrderData && maxOrderData[0]?.display_order)
+        ? maxOrderData[0].display_order + 1
+        : 1;
+    }
+
+    const profilePayload = {
+      name: updated.full_name ?? registration.full_name,
+      gender: updated.gender ?? registration.gender,
+      age: String(age),
+      dob: formattedDob,
+      location: updated.residence_location ?? registration.residence_location,
+      height: updated.height ?? registration.height,
+      complexion: updated.complexion ?? registration.complexion,
+      education: updated.education_details ?? registration.education_details,
+      profession: updated.occupation_details ?? registration.occupation_details,
+      marital_status: updated.marital_status ?? registration.marital_status,
+      caste: updated.caste ?? registration.caste,
+      maslak: updated.maslak ?? registration.maslak,
+      islamic_knowledge: updated.islamic_education ?? registration.islamic_education,
+      family: updated.family_details ?? registration.family_details,
+      preferred_partner: updated.partner_preferences ?? registration.partner_preferences,
+      preferred_location: updated.preferred_location ?? registration.preferred_location,
+      preferred_age: updated.preferred_age_range ?? registration.preferred_age_range,
+      display_order: displayOrder,
+      registration_id: registration.id,
+    };
+
+    if (existingProfile?.id) {
+      const { error: updateError } = await supabase
+        .from('profiles_data')
+        .update(profilePayload)
+        .eq('id', existingProfile.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('profiles_data')
+        .insert(profilePayload);
+
+      if (insertError) {
+        throw insertError;
+      }
+    }
+  };
+
   const handleSave = async () => {
     if (!registration) return;
 
     setSaving(true);
     try {
+      const updatedRegistration: Partial<Registration> = {
+        full_name: formData.full_name,
+        gender: formData.gender,
+        date_of_birth: formData.date_of_birth,
+        height: formData.height,
+        complexion: formData.complexion,
+        marital_status: formData.marital_status,
+        caste: formData.caste,
+        maslak: formData.maslak,
+        residence_location: formData.residence_location,
+        education_details: formData.education_details,
+        occupation_details: formData.occupation_details,
+        family_details: formData.family_details,
+        islamic_education: formData.islamic_education,
+        whatsapp_number: formData.whatsapp_number,
+        email: formData.email,
+        preferred_age_range: formData.preferred_age_range,
+        preferred_location: formData.preferred_location,
+        partner_preferences: formData.partner_preferences,
+        other_info: formData.other_info,
+        verification_status: formData.verification_status,
+        is_live: formData.is_live,
+        admin_notes: formData.admin_notes,
+      };
+
       const { error } = await supabase
         .from('registrations')
-        .update({
-          full_name: formData.full_name,
-          gender: formData.gender,
-          date_of_birth: formData.date_of_birth,
-          height: formData.height,
-          complexion: formData.complexion,
-          marital_status: formData.marital_status,
-          caste: formData.caste,
-          maslak: formData.maslak,
-          residence_location: formData.residence_location,
-          education_details: formData.education_details,
-          occupation_details: formData.occupation_details,
-          family_details: formData.family_details,
-          islamic_education: formData.islamic_education,
-          whatsapp_number: formData.whatsapp_number,
-          email: formData.email,
-          preferred_age_range: formData.preferred_age_range,
-          preferred_location: formData.preferred_location,
-          partner_preferences: formData.partner_preferences,
-          other_info: formData.other_info,
-          verification_status: formData.verification_status,
-          is_live: formData.is_live,
-          admin_notes: formData.admin_notes,
-        })
+        .update(updatedRegistration)
         .eq('id', registration.id);
 
       if (error) throw error;
+
+      // Keep public profiles in sync with (verified + live) rule
+      await syncPublicProfile(updatedRegistration);
 
       toast({ title: 'Registration updated successfully!' });
       onUpdate();
