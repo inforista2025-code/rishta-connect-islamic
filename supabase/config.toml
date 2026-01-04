@@ -3,3 +3,7 @@ project_id = "rxlzlkcdszulyetcxxih"
 [functions.translate-blog]
 enabled = true
 verify_jwt = false
+
+[functions.send-registration-emails]
+enabled = true
+verify_jwt = false
