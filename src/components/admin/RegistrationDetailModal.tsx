@@ -51,6 +51,30 @@ export function RegistrationDetailModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const sendVerificationStatusEmail = async (
+    fullName: string,
+    email: string,
+    status: 'verified' | 'rejected'
+  ) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-registration-emails', {
+        body: {
+          type: 'verification_status',
+          full_name: fullName,
+          email: email,
+          verification_status: status,
+        },
+      });
+      if (error) {
+        console.error('Failed to send verification email:', error);
+      } else {
+        console.log('Verification status email sent successfully');
+      }
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    }
+  };
+
   const syncPublicProfile = async (updated: Partial<Registration>) => {
     if (!registration) return;
 
@@ -184,6 +208,17 @@ export function RegistrationDetailModal({
 
       // Keep public profiles in sync with (verified + live) rule
       await syncPublicProfile(updatedRegistration);
+
+      // Send verification status email if status changed to verified or rejected
+      const previousStatus = registration.verification_status;
+      const newStatus = formData.verification_status;
+      if (previousStatus !== newStatus && (newStatus === 'verified' || newStatus === 'rejected')) {
+        sendVerificationStatusEmail(
+          formData.full_name || registration.full_name,
+          formData.email || registration.email,
+          newStatus
+        );
+      }
 
       toast({ title: 'Registration updated successfully!' });
       onUpdate();

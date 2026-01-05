@@ -125,8 +125,9 @@ export function RegistrationForm() {
 
   const sendRegistrationEmails = async (data: RegistrationData) => {
     try {
-      const { error } = await supabase.functions.invoke('send-registration-emails', {
+      const { data: response, error } = await supabase.functions.invoke('send-registration-emails', {
         body: {
+          type: 'registration',
           full_name: data.fullName,
           email: data.email,
           gender: data.gender,
@@ -136,6 +137,8 @@ export function RegistrationForm() {
       });
       if (error) {
         console.error('Email sending error:', error);
+      } else {
+        console.log('Registration emails sent successfully:', response);
       }
     } catch (error) {
       console.error('Failed to send registration emails:', error);
