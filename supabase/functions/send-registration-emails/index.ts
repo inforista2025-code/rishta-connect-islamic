@@ -3,6 +3,8 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "Rista Matrimony <onboarding@resend.dev>";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -33,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (type === "registration") {
       // Email to user
       const userEmailResponse = await resend.emails.send({
-        from: "Rista Matrimony <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: [email],
         subject: "Rista Matrimony – Registration Received",
         html: `
@@ -58,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Email to admin
       const adminEmailResponse = await resend.emails.send({
-        from: "Rista Matrimony <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: ["info.rista2025@gmail.com"],
         subject: "New Matrimony Registration",
         html: `
@@ -125,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const emailResponse = await resend.emails.send({
-        from: "Rista Matrimony <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: [email],
         subject: subject,
         html: `

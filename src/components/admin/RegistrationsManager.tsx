@@ -61,10 +61,29 @@ export function RegistrationsManager() {
     fetchRegistrations();
   }, [filter]);
 
+  const sendVerificationStatusEmail = async (
+    registration: Registration,
+    status: 'verified' | 'rejected'
+  ) => {
+    const { error } = await supabase.functions.invoke('send-registration-emails', {
+      body: {
+        type: 'verification_status',
+        full_name: registration.full_name,
+        email: registration.email, // MUST match registrations.email
+        verification_status: status,
+      },
+    });
+
+    if (error) {
+      console.error('Failed to send verification status email:', error);
+      throw error;
+    }
+  };
+
   const handleVerify = async (id: string) => {
     try {
       // First, get the registration data
-      const registration = registrations.find(r => r.id === id);
+      const registration = registrations.find((r) => r.id === id);
       if (!registration) throw new Error('Registration not found');
 
       // Check if profile already exists for this registration
@@ -82,6 +101,14 @@ export function RegistrationsManager() {
           .eq('id', id);
 
         if (updateError) throw updateError;
+
+        // Notify user
+        try {
+          await sendVerificationStatusEmail(registration, 'verified');
+        } catch {
+          // non-blocking for admin flow
+        }
+
         toast({ title: 'Profile already exists, status updated!' });
         fetchRegistrations();
         return;
@@ -98,10 +125,14 @@ export function RegistrationsManager() {
       // Calculate age from date_of_birth
       const dob = new Date(registration.date_of_birth);
       const today = new Date();
-      const age = Math.floor((today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-      
+      const age = Math.floor(
+        (today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+      );
+
       // Format DOB for display (DD/MM/YYYY)
-      const formattedDob = `${String(dob.getDate()).padStart(2, '0')}/${String(dob.getMonth() + 1).padStart(2, '0')}/${dob.getFullYear()}`;
+      const formattedDob = `${String(dob.getDate()).padStart(2, '0')}/${String(
+        dob.getMonth() + 1
+      ).padStart(2, '0')}/${dob.getFullYear()}`;
 
       // Get max display_order to add new profile at top
       const { data: maxOrderData } = await supabase
@@ -109,35 +140,43 @@ export function RegistrationsManager() {
         .select('display_order')
         .order('display_order', { ascending: false })
         .limit(1);
-      
-      const newOrder = (maxOrderData && maxOrderData[0]?.display_order) ? maxOrderData[0].display_order + 1 : 1;
+
+      const newOrder =
+        maxOrderData && maxOrderData[0]?.display_order
+          ? maxOrderData[0].display_order + 1
+          : 1;
 
       // Insert into profiles_data table with registration_id link
-      const { error: insertError } = await supabase
-        .from('profiles_data')
-        .insert({
-          name: registration.full_name,
-          gender: registration.gender,
-          age: String(age),
-          dob: formattedDob,
-          location: registration.residence_location,
-          height: registration.height,
-          complexion: registration.complexion,
-          education: registration.education_details,
-          profession: registration.occupation_details,
-          marital_status: registration.marital_status,
-          caste: registration.caste,
-          maslak: registration.maslak,
-          islamic_knowledge: registration.islamic_education,
-          family: registration.family_details,
-          preferred_partner: registration.partner_preferences,
-          preferred_location: registration.preferred_location,
-          preferred_age: registration.preferred_age_range,
-          display_order: newOrder,
-          registration_id: id
-        });
+      const { error: insertError } = await supabase.from('profiles_data').insert({
+        name: registration.full_name,
+        gender: registration.gender,
+        age: String(age),
+        dob: formattedDob,
+        location: registration.residence_location,
+        height: registration.height,
+        complexion: registration.complexion,
+        education: registration.education_details,
+        profession: registration.occupation_details,
+        marital_status: registration.marital_status,
+        caste: registration.caste,
+        maslak: registration.maslak,
+        islamic_knowledge: registration.islamic_education,
+        family: registration.family_details,
+        preferred_partner: registration.partner_preferences,
+        preferred_location: registration.preferred_location,
+        preferred_age: registration.preferred_age_range,
+        display_order: newOrder,
+        registration_id: id,
+      });
 
       if (insertError) throw insertError;
+
+      // Notify user
+      try {
+        await sendVerificationStatusEmail(registration, 'verified');
+      } catch {
+        // non-blocking for admin flow
+      }
 
       toast({ title: 'Profile verified and added to public profiles!' });
       fetchRegistrations();
@@ -153,6 +192,19 @@ export function RegistrationsManager() {
 
   const handleReject = async (id: string) => {
     try {
+      // Get the registration (for email)
+      let registration = registrations.find((r) => r.id === id) || null;
+      if (!registration) {
+        const { data, error } = await supabase
+          .from('registrations')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        registration = data;
+      }
+      if (!registration) throw new Error('Registration not found');
+
       // Update registration status
       const { error: updateError } = await supabase
         .from('registrations')
@@ -169,6 +221,13 @@ export function RegistrationsManager() {
 
       if (deleteError) {
         console.error('Error removing profile:', deleteError);
+      }
+
+      // Notify user
+      try {
+        await sendVerificationStatusEmail(registration, 'rejected');
+      } catch {
+        // non-blocking for admin flow
       }
 
       toast({ title: 'Profile rejected and removed from public profiles' });
