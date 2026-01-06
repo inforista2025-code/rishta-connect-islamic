@@ -13,9 +13,9 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check } from "lucide-react";
 import { format, setMonth, setYear } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,6 +46,8 @@ export function Step1({ form }: Step1Props) {
     const newDate = setMonth(calendarMonth, parseInt(month));
     setCalendarMonth(newDate);
   };
+
+  const selectedDate = form.watch("dateOfBirth");
 
   return (
     <div className="space-y-6">
@@ -190,6 +192,16 @@ export function Step1({ form }: Step1Props) {
                   initialFocus
                   className="pointer-events-auto"
                 />
+                {selectedDate && (
+                  <div className="p-3 border-t border-border">
+                    <PopoverClose asChild>
+                      <Button className="w-full" size="sm">
+                        <Check className="w-4 h-4 mr-2" />
+                        OK
+                      </Button>
+                    </PopoverClose>
+                  </div>
+                )}
               </PopoverContent>
             </Popover>
             <FormDescription>
