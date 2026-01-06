@@ -124,26 +124,23 @@ export function RegistrationForm() {
   };
 
   const sendRegistrationEmails = async (data: RegistrationData) => {
-    const { data: response, error } = await supabase.functions.invoke(
-      'send-registration-emails',
-      {
+    try {
+      const { error } = await supabase.functions.invoke('send-registration-emails', {
         body: {
           type: 'registration',
           full_name: data.fullName,
-          email: data.email, // MUST match registrations.email
+          email: data.email,
           gender: data.gender,
           city: data.residenceLocation,
           whatsapp_number: data.whatsappNumber,
         },
+      });
+      if (error) {
+        console.warn('Email sending failed (non-blocking):', error);
       }
-    );
-
-    if (error) {
-      console.error('Email sending error:', error);
-      throw error;
+    } catch (err) {
+      console.warn('Email sending failed (non-blocking):', err);
     }
-
-    return response;
   };
 
   const onSubmit = async (data: RegistrationData) => {
@@ -213,8 +210,8 @@ export function RegistrationForm() {
       // Send data to Google Sheet with full URLs (fire and forget)
       sendToGoogleSheet(data, photoFullUrls, biodataFullUrl);
 
-      // Send registration emails (send to registrations.email)
-      await sendRegistrationEmails(data);
+      // Send registration emails (fire and forget - won't block registration)
+      sendRegistrationEmails(data);
 
       // Show success dialog
       setShowSuccessDialog(true);
