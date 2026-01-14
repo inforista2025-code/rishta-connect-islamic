@@ -4,7 +4,7 @@ import { RegistrationForm } from "@/components/RegistrationForm";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScx_example/viewform";
+const GOOGLE_FORM_URL = "https://forms.gle/sY4jHKFHWTqb6yfD9";
 
 export default function Register() {
   const handleGoogleFormClick = () => {
@@ -32,9 +32,9 @@ export default function Register() {
             variant="outline"
             size="sm"
             onClick={handleGoogleFormClick}
-            className="absolute -top-2 right-0 text-xs px-3 py-1 h-7 border-pink-300 text-pink-600 hover:bg-pink-50 hover:text-pink-700 rounded-lg"
+            className="absolute -top-2 right-0 text-xs px-3 py-1 h-7 border-pink-300 text-pink-600 hover:bg-pink-50 hover:text-pink-700 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md"
           >
-            <ExternalLink className="w-3 h-3 mr-1" />
+            <ExternalLink className="w-3 h-3 mr-1 transition-transform duration-300 group-hover:rotate-12" />
             Register via Google Form
           </Button>
           <RegistrationForm />
