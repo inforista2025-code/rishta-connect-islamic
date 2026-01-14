@@ -24,21 +24,20 @@ export default function Register() {
         </p>
       </div>
 
-      {/* Google Form Button - Positioned between hero and form */}
-      <div className="flex justify-center -mt-4 mb-4 relative z-10">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleGoogleFormClick}
-          className="text-xs px-4 py-2 h-8 border-pink-300 bg-white text-pink-600 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-400 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md font-medium"
-        >
-          Register via Google Form
-        </Button>
-      </div>
-
       {/* Registration Form */}
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <RegistrationForm />
+        <div className="relative">
+          {/* Google Form Button - Top right of form */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGoogleFormClick}
+            className="absolute -top-4 right-4 text-xs px-4 py-2 h-8 border-pink-300 bg-white text-pink-600 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-400 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md font-medium z-10"
+          >
+            Register via Google Form
+          </Button>
+          <RegistrationForm />
+        </div>
       </div>
 
       {/* Islamic Quote Section */}
