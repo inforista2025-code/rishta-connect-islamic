@@ -1,18 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ExternalLink, FileText, CheckCircle2 } from "lucide-react";
+import { FileText, CheckCircle2 } from "lucide-react";
 
 export function HowToJoinSection() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const navigate = useNavigate();
 
-  const handleVerificationPageClick = () => {
-    window.open('https://rishta-soulmate-haven.lovable.app/#hero', '_blank');
-  };
-
-  const handleGoogleFormClick = () => {
-    window.open('https://forms.gle/sY4jHKFHWTqb6yfD9', '_blank');
+  const handleRegisterClick = () => {
+    navigate('/register');
   };
 
   const stepsHindi = [
@@ -103,7 +101,7 @@ export function HowToJoinSection() {
 
               {/* Action Button */}
               <div className="flex justify-center mb-8">
-                <Button variant="community" size="lg" onClick={handleGoogleFormClick}>
+                <Button variant="community" size="lg" onClick={handleRegisterClick}>
                   <FileText className="w-5 h-5" />
                   Register Now
                 </Button>
