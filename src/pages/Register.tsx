@@ -29,10 +29,9 @@ export default function Register() {
         <div className="relative">
           {/* Google Form Button - Top right of form */}
           <Button
-            variant="outline"
             size="sm"
             onClick={handleGoogleFormClick}
-            className="absolute -top-4 right-4 text-xs px-4 py-2 h-8 border-pink-300 bg-white text-pink-600 hover:bg-pink-50 hover:text-pink-700 hover:border-pink-400 rounded-lg shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md font-medium z-10"
+            className="absolute -top-4 right-4 text-xs px-4 py-2 h-8 bg-pink-500 text-white hover:bg-pink-600 rounded-lg shadow-lg shadow-pink-300/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-pink-400/60 font-medium z-10"
           >
             Register via Google Form
           </Button>
