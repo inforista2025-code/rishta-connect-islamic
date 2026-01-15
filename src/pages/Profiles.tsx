@@ -506,6 +506,7 @@ const Profiles = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeGender, setActiveGender] = useState<"Male" | "Female">("Male");
@@ -783,35 +784,46 @@ const Profiles = () => {
     }
   ];
 
-  // Check authentication and admin status
+  // Check authentication and admin status using secure RPC
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       
       if (user) {
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .single();
+        // Use secure RPC function to check admin role
+        const { data: isAdminRole, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
         
-        if (roleData) {
+        if (!error && isAdminRole === true) {
           setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
         }
+      } else {
+        setIsAdmin(false);
       }
+      setAuthChecked(true);
     };
 
     checkAuth();
 
     // Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
-      if (!session?.user) {
+      if (session?.user) {
+        // Re-check admin status on auth change
+        const { data: isAdminRole } = await supabase.rpc('has_role', {
+          _user_id: session.user.id,
+          _role: 'admin'
+        });
+        setIsAdmin(isAdminRole === true);
+      } else {
         setIsAdmin(false);
       }
+      setAuthChecked(true);
     });
 
     return () => subscription.unsubscribe();
@@ -1271,6 +1283,56 @@ const Profiles = () => {
     });
   };
 
+  // Show loading while checking auth
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Checking access...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show access denied for non-admins
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <Navbar />
+        <main className="container mx-auto px-4 py-12">
+          <div className="max-w-md mx-auto text-center">
+            <div className="bg-card border rounded-lg p-8 shadow-lg">
+              <ShieldCheck className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-4">Admin Access Required</h2>
+              <p className="text-muted-foreground mb-6">
+                This page contains sensitive profile information and is only accessible to authorized administrators.
+              </p>
+              {!user ? (
+                <Button onClick={() => navigate("/auth")} className="w-full">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login as Admin
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-destructive">You don't have admin privileges.</p>
+                  <Button variant="outline" onClick={() => navigate("/")} className="w-full">
+                    Go to Home
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <Navbar />
@@ -1284,39 +1346,33 @@ const Profiles = () => {
         </div>
       )}
 
-      {/* Floating Admin Buttons */}
-      {user && (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
-          {isAdmin && (
-            <>
-              <Button
-                onClick={() => setShowAddDialog(true)}
-                className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                <span className="font-semibold">Add Profile</span>
-              </Button>
-              {history.length > 0 && (
-                <Button
-                  onClick={handleUndo}
-                  variant="secondary"
-                  className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
-                >
-                  <Undo2 className="w-5 h-5" />
-                  <span className="font-semibold">Undo</span>
-                </Button>
-              )}
-            </>
-          )}
-          <button
-            onClick={handleLogout}
-            className="bg-destructive text-destructive-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+      {/* Floating Admin Buttons - Only visible to admins (page already restricted) */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <Button
+          onClick={() => setShowAddDialog(true)}
+          className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          <span className="font-semibold">Add Profile</span>
+        </Button>
+        {history.length > 0 && (
+          <Button
+            onClick={handleUndo}
+            variant="secondary"
+            className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-semibold">Logout</span>
-          </button>
-        </div>
-      )}
+            <Undo2 className="w-5 h-5" />
+            <span className="font-semibold">Undo</span>
+          </Button>
+        )}
+        <button
+          onClick={handleLogout}
+          className="bg-destructive text-destructive-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 flex items-center gap-2"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-semibold">Logout</span>
+        </button>
+      </div>
 
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
@@ -1324,19 +1380,13 @@ const Profiles = () => {
           <p className="text-muted-foreground text-lg">Browse verified profiles from our community</p>
         </div>
 
-        {/* Admin Toggle */}
-        {user && (
+        {/* Admin Status Info - No toggle, status comes from database only */}
+        {user && isAdmin && (
           <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out animate-fade-in">
-            <Button
-              variant={isAdmin ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsAdmin(!isAdmin)}
-              className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
-              disabled={!user}
-            >
+            <div className="flex items-center gap-2 text-sm text-primary bg-primary/10 px-4 py-2 rounded-lg w-fit">
               <ShieldCheck className="w-4 h-4" />
-              {isAdmin ? "Admin Mode: ON" : "Enable Admin Mode"}
-            </Button>
+              <span className="font-semibold">Admin Access Verified</span>
+            </div>
           </div>
         )}
 
