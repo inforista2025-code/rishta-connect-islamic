@@ -341,10 +341,8 @@ export function RegistrationDetailModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Single">Single</SelectItem>
-                    <SelectItem value="Never Married">Never Married</SelectItem>
                     <SelectItem value="Divorced">Divorced</SelectItem>
                     <SelectItem value="Widowed">Widowed</SelectItem>
-                    <SelectItem value="Separated">Separated</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
