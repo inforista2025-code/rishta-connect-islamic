@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText } from 'lucide-react';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { AboutUsManager } from '@/components/admin/AboutUsManager';
 import { RegistrationsManager } from '@/components/admin/RegistrationsManager';
+import { TermsManager } from '@/components/admin/TermsManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
@@ -69,6 +70,10 @@ export default function AdminDashboard() {
               <Info className="w-4 h-4" />
               About Us
             </TabsTrigger>
+            <TabsTrigger value="terms" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Terms & Conditions
+            </TabsTrigger>
             <TabsTrigger value="profiles" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Profiles
@@ -89,6 +94,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="about-us">
             <AboutUsManager />
+          </TabsContent>
+
+          <TabsContent value="terms">
+            <TermsManager />
           </TabsContent>
 
           <TabsContent value="profiles">
