@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText, Shield } from 'lucide-react';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { AboutUsManager } from '@/components/admin/AboutUsManager';
 import { RegistrationsManager } from '@/components/admin/RegistrationsManager';
 import { TermsManager } from '@/components/admin/TermsManager';
+import { PrivacyPolicyManager } from '@/components/admin/PrivacyPolicyManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
@@ -74,6 +75,10 @@ export default function AdminDashboard() {
               <FileText className="w-4 h-4" />
               Terms & Conditions
             </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Privacy Policy
+            </TabsTrigger>
             <TabsTrigger value="profiles" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Profiles
@@ -98,6 +103,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="terms">
             <TermsManager />
+          </TabsContent>
+
+          <TabsContent value="privacy">
+            <PrivacyPolicyManager />
           </TabsContent>
 
           <TabsContent value="profiles">

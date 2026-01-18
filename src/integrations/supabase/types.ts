@@ -89,6 +89,27 @@ export type Database = {
         }
         Relationships: []
       }
+      privacy_policy_content: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles_data: {
         Row: {
           age: string
