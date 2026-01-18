@@ -82,6 +82,9 @@ export function Footer() {
               <Link to="/terms" className="text-sm text-white hover:text-white/80 transition-colors">
                 Terms & Conditions
               </Link>
+              <Link to="/privacy-policy" className="text-sm text-white hover:text-white/80 transition-colors">
+                Privacy Policy
+              </Link>
               <Link to="/auth" className="text-sm text-white hover:text-white/80 transition-colors">
                 Admin Login
               </Link>
