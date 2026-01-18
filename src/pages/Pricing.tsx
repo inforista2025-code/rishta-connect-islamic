@@ -21,7 +21,7 @@ export default function Pricing() {
     },
     {
       title: "Weekly Profile Reposting",
-      description: "Your profile will be reshared weekly to reach more families."
+      description: "Profile reposting depends on availability and queue."
     },
     {
       title: "Community Access",
