@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -133,8 +134,27 @@ export default function AboutUs() {
 
         {/* Content Area */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
+            <Skeleton className="h-12 w-64 mb-8" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-5/6" />
+            <div className="pt-8">
+              <Skeleton className="h-8 w-48 mb-4" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-2/3" />
+            </div>
+            <div className="pt-8">
+              <Skeleton className="h-8 w-40 mb-4" />
+              <div className="space-y-3 pl-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-5 w-full" />
+                ))}
+              </div>
+            </div>
           </div>
         ) : content ? (
           <div 

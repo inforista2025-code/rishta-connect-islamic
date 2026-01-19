@@ -3,8 +3,9 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { BlogCard } from '@/components/blog/BlogCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Blog() {
   const { data: blogs, isLoading, error } = useQuery({
@@ -56,9 +57,16 @@ export default function Blog() {
           <section className="py-12">
             <div className="container mx-auto px-4">
               {isLoading ? (
-                <div className="flex justify-center items-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <span className="ml-2 text-muted-foreground">Loading articles...</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="space-y-4 animate-pulse">
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  ))}
                 </div>
               ) : error ? (
                 <div className="text-center py-20">
