@@ -26,6 +26,9 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
           src={heroImage} 
           alt="Rishta Matrimony - Islamic Marriage Community" 
           className="w-full h-full object-cover"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
       </div>
