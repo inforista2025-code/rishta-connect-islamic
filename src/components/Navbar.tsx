@@ -63,7 +63,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src={logo} alt="Rishta Matrimony Logo" className="h-14 w-14 object-contain" />
+            <img 
+              src={logo} 
+              alt="Rishta Matrimony Logo" 
+              className="h-14 w-14 object-contain" 
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+            />
             <span className="text-xl text-primary font-extrabold">Rishta Matrimony</span>
           </Link>
 
