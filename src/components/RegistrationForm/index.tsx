@@ -70,16 +70,27 @@ export function RegistrationForm() {
     }
   };
 
-  const uploadFile = async (file: File, bucket: string, path: string) => {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+  const uploadFile = async (file: File, bucket: string, path: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-    if (error) throw error;
-    return data.path;
+      if (error) {
+        console.error(`Upload error for ${bucket}:`, error);
+        throw new Error(`Photo upload failed: ${error.message}`);
+      }
+      return data.path;
+    } catch (err: any) {
+      console.error(`Upload exception for ${bucket}:`, err);
+      if (err.message?.includes('fetch')) {
+        throw new Error('Network error - please check your internet connection and try again');
+      }
+      throw err;
+    }
   };
 
   const sendToGoogleSheet = async (data: RegistrationData, photoUrls: string[], biodataUrl: string | null) => {
@@ -147,35 +158,55 @@ export function RegistrationForm() {
     setIsSubmitting(true);
     
     try {
-      // Upload photos and get full URLs
-      const photoPaths: string[] = [];
+      // Validate photos exist
+      if (!data.photos || data.photos.length === 0) {
+        throw new Error('Please upload at least one photo');
+      }
+
+      // Upload photos and get full URLs with progress tracking
+      toast({
+        title: "Uploading Photos...",
+        description: "Please wait while we upload your photos",
+      });
+
       const photoFullUrls: string[] = [];
       for (let i = 0; i < data.photos.length; i++) {
         const file = data.photos[i];
+        // Sanitize filename - remove special characters
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const timestamp = Date.now();
-        const fileName = `${timestamp}-${i}-${file.name}`;
-        const path = await uploadFile(file, 'registration-photos', fileName);
-        photoPaths.push(path);
+        const fileName = `${timestamp}-${i}-${sanitizedName}`;
         
-        // Get the full public URL for the webhook
+        const path = await uploadFile(file, 'registration-photos', fileName);
+        
+        // Get the full public URL
         const { data: urlData } = supabase.storage.from('registration-photos').getPublicUrl(path);
         photoFullUrls.push(urlData.publicUrl);
       }
 
       // Upload biodata if provided
-      let biodataPath: string | null = null;
       let biodataFullUrl: string | null = null;
       if (data.biodata) {
-        const timestamp = Date.now();
-        const fileName = `${timestamp}-${data.biodata.name}`;
-        biodataPath = await uploadFile(data.biodata, 'registration-biodatas', fileName);
+        toast({
+          title: "Uploading Biodata...",
+          description: "Please wait while we upload your biodata",
+        });
         
-        // Get the full public URL for the webhook
+        const sanitizedName = data.biodata.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const timestamp = Date.now();
+        const fileName = `${timestamp}-${sanitizedName}`;
+        const biodataPath = await uploadFile(data.biodata, 'registration-biodatas', fileName);
+        
         const { data: urlData } = supabase.storage.from('registration-biodatas').getPublicUrl(biodataPath);
         biodataFullUrl = urlData.publicUrl;
       }
 
-      // Insert registration data to the new registrations table (store full URLs)
+      toast({
+        title: "Saving Registration...",
+        description: "Almost done!",
+      });
+
+      // Insert registration data
       const { error: insertError } = await supabase
         .from('registrations')
         .insert({
@@ -205,12 +236,15 @@ export function RegistrationForm() {
           is_live: false
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw new Error('Failed to save registration. Please try again.');
+      }
 
-      // Send data to Google Sheet with full URLs (fire and forget)
+      // Send data to Google Sheet (fire and forget)
       sendToGoogleSheet(data, photoFullUrls, biodataFullUrl);
 
-      // Send registration emails (fire and forget - won't block registration)
+      // Send registration emails (fire and forget)
       sendRegistrationEmails(data);
 
       // Show success dialog
@@ -219,9 +253,20 @@ export function RegistrationForm() {
 
     } catch (error: any) {
       console.error('Submission error:', error);
+      
+      let errorMessage = 'Failed to submit registration. Please try again.';
+      
+      if (error.message?.includes('Network') || error.message?.includes('fetch')) {
+        errorMessage = 'Network error - please check your internet connection and try again';
+      } else if (error.message?.includes('upload')) {
+        errorMessage = error.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Submission Failed",
-        description: error.message || "Failed to submit registration. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
