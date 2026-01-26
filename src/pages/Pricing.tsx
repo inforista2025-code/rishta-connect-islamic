@@ -82,8 +82,110 @@ export default function Pricing() {
         </h1>
       </div>
 
-      {/* Pricing Cards */}
+      {/* Quick Access Packs Section */}
       <div className="container max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+            Quick Access Packs ⚡
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Need profile details urgently? Choose a pack and get verified biodata + photos within your selected validity.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-8">
+          {/* ₹50 Quick Pack */}
+          <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-xl text-foreground">₹50 Quick Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹50</div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-center">
+                <p className="text-foreground font-medium">Get 2 profile details</p>
+                <p className="text-sm text-muted-foreground">Validity: 24 Hours</p>
+              </div>
+              <Button 
+                onClick={() => window.open(
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B950%20Quick%20Pack%20(2%20profiles%2C%2024%20hours).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "_blank"
+                )}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
+              >
+                Activate Pack on WhatsApp
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* ₹99 Starter Pack */}
+          <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-xl text-foreground">₹99 Starter Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹99</div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-center">
+                <p className="text-foreground font-medium">Get 4 profile details</p>
+                <p className="text-sm text-muted-foreground">Validity: 7 Days</p>
+              </div>
+              <Button 
+                onClick={() => window.open(
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B999%20Starter%20Pack%20(4%20profiles%2C%207%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "_blank"
+                )}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
+              >
+                Activate Pack on WhatsApp
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* ₹199 Value Pack */}
+          <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-primary/5 to-card relative overflow-hidden">
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-primary text-primary-foreground text-xs shadow-md">
+                Best Value
+              </Badge>
+            </div>
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-xl text-foreground">₹199 Value Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹199</div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-center">
+                <p className="text-foreground font-medium">Get 10 profile details</p>
+                <p className="text-sm text-muted-foreground">Validity: 21 Days</p>
+              </div>
+              <Button 
+                onClick={() => window.open(
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B9199%20Value%20Pack%20(10%20profiles%2C%2021%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "_blank"
+                )}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
+              >
+                Activate Pack on WhatsApp
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Note and Register Button */}
+        <div className="text-center max-w-2xl mx-auto bg-primary/5 border border-primary/20 rounded-2xl p-6">
+          <p className="text-foreground leading-relaxed mb-4">
+            ✅ These benefits are available only for our registered & verified members. Please complete FREE registration today.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/register'}
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold rounded-full px-8"
+          >
+            Register Free
+          </Button>
+        </div>
+      </div>
+
+      {/* Pricing Cards */}
+      <div className="container max-w-7xl mx-auto px-4 py-12 md:py-16 pt-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           
           {/* Free Plan Card */}
