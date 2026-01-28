@@ -150,11 +150,11 @@ export default function Pricing() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-8">
-          {/* ₹49 Quick Pack */}
+          {/* ₹50 Quick Pack */}
           <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl text-foreground">₹49 Quick Pack</CardTitle>
-              <div className="text-3xl font-bold text-primary mt-2">₹49</div>
+              <CardTitle className="text-xl text-foreground">₹50 Quick Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹50</div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 text-center">
@@ -163,7 +163,7 @@ export default function Pricing() {
               </div>
               <Button 
                 onClick={() => window.open(
-                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B949%20Quick%20Pack%20(2%20profiles%2C%2024%20hours).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B950%20Quick%20Pack%20(2%20profiles%2C%2024%20hours).%20Please%20guide%20me%20with%20the%20next%20steps.",
                   "_blank"
                 )}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
@@ -173,11 +173,11 @@ export default function Pricing() {
             </CardContent>
           </Card>
 
-          {/* ₹91 Starter Pack */}
+          {/* ₹99 Starter Pack */}
           <Card className="border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl text-foreground">₹91 Starter Pack</CardTitle>
-              <div className="text-3xl font-bold text-primary mt-2">₹91</div>
+              <CardTitle className="text-xl text-foreground">₹99 Starter Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹99</div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 text-center">
@@ -186,7 +186,7 @@ export default function Pricing() {
               </div>
               <Button 
                 onClick={() => window.open(
-                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B991%20Starter%20Pack%20(4%20profiles%2C%207%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B999%20Starter%20Pack%20(4%20profiles%2C%207%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
                   "_blank"
                 )}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
@@ -196,7 +196,7 @@ export default function Pricing() {
             </CardContent>
           </Card>
 
-          {/* ₹191 Value Pack */}
+          {/* ₹199 Value Pack */}
           <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-primary/5 to-card relative overflow-hidden">
             <div className="absolute top-3 right-3">
               <Badge className="bg-primary text-primary-foreground text-xs shadow-md">
@@ -204,8 +204,8 @@ export default function Pricing() {
               </Badge>
             </div>
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl text-foreground">₹191 Value Pack</CardTitle>
-              <div className="text-3xl font-bold text-primary mt-2">₹191</div>
+              <CardTitle className="text-xl text-foreground">₹199 Value Pack</CardTitle>
+              <div className="text-3xl font-bold text-primary mt-2">₹199</div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 text-center">
@@ -214,7 +214,7 @@ export default function Pricing() {
               </div>
               <Button 
                 onClick={() => window.open(
-                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B9191%20Value%20Pack%20(10%20profiles%2C%2021%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
+                  "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20want%20to%20activate%20the%20%E2%82%B9199%20Value%20Pack%20(10%20profiles%2C%2021%20days).%20Please%20guide%20me%20with%20the%20next%20steps.",
                   "_blank"
                 )}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
