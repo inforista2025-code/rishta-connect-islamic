@@ -409,6 +409,34 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={(registration as any).plan_type === 'premium' ? 'text-[#6C4DF6] hover:text-[#5a3de0]' : 'text-muted-foreground hover:text-[#6C4DF6]'}
+                        onClick={async () => {
+                          const newPlan = (registration as any).plan_type === 'premium' ? 'free' : 'premium';
+                          try {
+                            const { error } = await supabase
+                              .from('registrations')
+                              .update({ plan_type: newPlan, premium_expiry: null } as any)
+                              .eq('id', registration.id);
+                            if (error) throw error;
+                            // Also update profiles_data if linked
+                            await supabase
+                              .from('profiles_data')
+                              .update({ plan_type: newPlan, premium_expiry: null } as any)
+                              .eq('registration_id', registration.id);
+                            toast({ title: newPlan === 'premium' ? '⭐ Premium activated!' : 'Premium removed' });
+                            fetchRegistrations();
+                          } catch (err) {
+                            console.error(err);
+                            toast({ title: 'Error', description: 'Failed to update plan', variant: 'destructive' });
+                          }
+                        }}
+                        title={(registration as any).plan_type === 'premium' ? 'Remove Premium' : 'Make Premium'}
+                      >
+                        <Star className="w-4 h-4" fill={(registration as any).plan_type === 'premium' ? 'currentColor' : 'none'} />
+                      </Button>
                       {registration.verification_status !== 'verified' && (
                         <Button
                           size="sm"
