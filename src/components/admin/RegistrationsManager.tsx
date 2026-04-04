@@ -348,6 +348,7 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                 <TableHead className="hidden lg:table-cell">WhatsApp</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Plan</TableHead>
                 <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
