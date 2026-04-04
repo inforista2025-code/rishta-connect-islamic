@@ -197,6 +197,8 @@ export function RegistrationDetailModal({
         verification_status: formData.verification_status,
         is_live: formData.is_live,
         admin_notes: formData.admin_notes,
+        plan_type: (formData as any).plan_type || 'free',
+        premium_expiry: (formData as any).premium_expiry || null,
       };
 
       const { error } = await supabase
