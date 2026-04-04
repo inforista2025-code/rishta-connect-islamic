@@ -375,6 +375,16 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                   <TableCell className="hidden lg:table-cell">{registration.whatsapp_number}</TableCell>
                   <TableCell className="hidden lg:table-cell">{registration.email}</TableCell>
                   <TableCell>{getStatusBadge(registration.verification_status)}</TableCell>
+                  <TableCell>
+                    {(registration as any).plan_type === 'premium' ? (
+                      <Badge className="bg-[#6C4DF6] hover:bg-[#5a3de0] text-white">
+                        <Star className="w-3 h-3 mr-1" />
+                        Premium
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Free</Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {format(new Date(registration.created_at), 'dd MMM yyyy')}
                   </TableCell>
