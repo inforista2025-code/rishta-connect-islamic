@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, Copy, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star } from 'lucide-react';
 import { RegistrationDetailModal } from './RegistrationDetailModal';
 import { format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
