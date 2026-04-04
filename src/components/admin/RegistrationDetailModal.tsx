@@ -516,6 +516,35 @@ export function RegistrationDetailModal({
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Plan Type</Label>
+                  <Select
+                    value={(formData as any).plan_type || 'free'}
+                    onValueChange={(v) => handleChange('plan_type' as any, v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {(formData as any).plan_type === 'premium' && (
+                  <div className="space-y-2">
+                    <Label>Premium Expiry Date</Label>
+                    <Input
+                      type="date"
+                      value={(formData as any).premium_expiry ? new Date((formData as any).premium_expiry).toISOString().split('T')[0] : ''}
+                      onChange={(e) => handleChange('premium_expiry' as any, e.target.value ? new Date(e.target.value).toISOString() : '')}
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label>Admin Notes (Internal)</Label>
                 <Textarea
