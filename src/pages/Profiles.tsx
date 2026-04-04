@@ -1037,7 +1037,13 @@ const Profiles = () => {
         profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
         profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
       )
-      .sort((a, b) => b.order - a.order),
+      .sort((a, b) => {
+        // Premium profiles first
+        const aIsPremium = a.planType === 'premium' && (!a.premiumExpiry || new Date(a.premiumExpiry) > new Date()) ? 1 : 0;
+        const bIsPremium = b.planType === 'premium' && (!b.premiumExpiry || new Date(b.premiumExpiry) > new Date()) ? 1 : 0;
+        if (bIsPremium !== aIsPremium) return bIsPremium - aIsPremium;
+        return b.order - a.order;
+      }),
     [profiles, activeGender, searchTerm]
   );
 
