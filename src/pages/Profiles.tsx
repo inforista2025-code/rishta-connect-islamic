@@ -80,6 +80,7 @@ interface SortableProfileCardProps {
 }
 
 const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
+  const isPremium = profile.planType === 'premium' && (!profile.premiumExpiry || new Date(profile.premiumExpiry) > new Date());
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
