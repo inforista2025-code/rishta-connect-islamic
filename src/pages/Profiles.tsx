@@ -218,6 +218,11 @@ View full profile here:`;
               )}
               <User className="w-5 h-5 text-primary" />
               <span>{profile.name}</span>
+              {isPremium && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
+                  ⭐ Premium Verified
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{profile.gender}</Badge>
