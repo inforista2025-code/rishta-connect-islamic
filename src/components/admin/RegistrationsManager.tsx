@@ -167,7 +167,9 @@ export function RegistrationsManager() {
         preferred_age: registration.preferred_age_range,
         display_order: newOrder,
         registration_id: id,
-      });
+        plan_type: (registration as any).plan_type || 'free',
+        premium_expiry: (registration as any).premium_expiry || null,
+      } as any);
 
       if (insertError) throw insertError;
 
