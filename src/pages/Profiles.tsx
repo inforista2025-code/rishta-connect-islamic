@@ -68,6 +68,8 @@ interface Profile {
   preferredLocation: string;
   preferredAge: string;
   order: number;
+  planType?: string;
+  premiumExpiry?: string;
 }
 
 interface SortableProfileCardProps {
@@ -78,6 +80,7 @@ interface SortableProfileCardProps {
 }
 
 const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
+  const isPremium = profile.planType === 'premium' && (!profile.premiumExpiry || new Date(profile.premiumExpiry) > new Date());
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -191,7 +194,20 @@ View full profile here:`;
 
   return (
     <div ref={setNodeRef} style={style} className="animate-fade-in" id={`profile-${profile.id}`}>
-      <Card className="hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02]">
+      {isPremium && (
+        <div className="flex justify-start mb-[-1px]">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white" style={{ backgroundColor: '#6C4DF6' }}>
+            ⭐ Featured
+          </span>
+        </div>
+      )}
+      <Card 
+        className={`hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${isPremium ? 'border-[#6C4DF6]' : ''}`}
+        style={isPremium ? { 
+          boxShadow: '0 0 10px rgba(108,77,246,0.3)',
+          backgroundColor: '#F7F5FF'
+        } : undefined}
+      >
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -202,6 +218,11 @@ View full profile here:`;
               )}
               <User className="w-5 h-5 text-primary" />
               <span>{profile.name}</span>
+              {isPremium && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
+                  ⭐ Premium Verified
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{profile.gender}</Badge>
@@ -848,7 +869,9 @@ const Profiles = () => {
             preferredPartner: p.preferred_partner,
             preferredLocation: p.preferred_location,
             preferredAge: p.preferred_age,
-            order: p.display_order
+            order: p.display_order,
+            planType: (p as any).plan_type || 'free',
+            premiumExpiry: (p as any).premium_expiry || undefined,
           }));
           setProfiles(formattedProfiles);
         } else {
@@ -904,7 +927,9 @@ const Profiles = () => {
               preferredPartner: p.preferred_partner,
               preferredLocation: p.preferred_location,
               preferredAge: p.preferred_age,
-              order: p.display_order
+              order: p.display_order,
+              planType: (p as any).plan_type || 'free',
+              premiumExpiry: (p as any).premium_expiry || undefined,
             }));
             setProfiles(formattedProfiles);
           }
@@ -1012,7 +1037,13 @@ const Profiles = () => {
         profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
         profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
       )
-      .sort((a, b) => b.order - a.order),
+      .sort((a, b) => {
+        // Premium profiles first
+        const aIsPremium = a.planType === 'premium' && (!a.premiumExpiry || new Date(a.premiumExpiry) > new Date()) ? 1 : 0;
+        const bIsPremium = b.planType === 'premium' && (!b.premiumExpiry || new Date(b.premiumExpiry) > new Date()) ? 1 : 0;
+        if (bIsPremium !== aIsPremium) return bIsPremium - aIsPremium;
+        return b.order - a.order;
+      }),
     [profiles, activeGender, searchTerm]
   );
 

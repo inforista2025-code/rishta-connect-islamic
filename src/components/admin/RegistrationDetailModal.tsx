@@ -147,6 +147,8 @@ export function RegistrationDetailModal({
       preferred_age: updated.preferred_age_range ?? registration.preferred_age_range,
       display_order: displayOrder,
       registration_id: registration.id,
+      plan_type: (updated as any).plan_type || 'free',
+      premium_expiry: (updated as any).premium_expiry || null,
     };
 
     if (existingProfile?.id) {
@@ -197,6 +199,8 @@ export function RegistrationDetailModal({
         verification_status: formData.verification_status,
         is_live: formData.is_live,
         admin_notes: formData.admin_notes,
+        plan_type: (formData as any).plan_type || 'free',
+        premium_expiry: (formData as any).premium_expiry || null,
       };
 
       const { error } = await supabase
@@ -514,6 +518,35 @@ export function RegistrationDetailModal({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Plan Type</Label>
+                  <Select
+                    value={(formData as any).plan_type || 'free'}
+                    onValueChange={(v) => handleChange('plan_type' as any, v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {(formData as any).plan_type === 'premium' && (
+                  <div className="space-y-2">
+                    <Label>Premium Expiry Date</Label>
+                    <Input
+                      type="date"
+                      value={(formData as any).premium_expiry ? new Date((formData as any).premium_expiry).toISOString().split('T')[0] : ''}
+                      onChange={(e) => handleChange('premium_expiry' as any, e.target.value ? new Date(e.target.value).toISOString() : '')}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

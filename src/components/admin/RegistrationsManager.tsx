@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, Copy, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star } from 'lucide-react';
 import { RegistrationDetailModal } from './RegistrationDetailModal';
 import { format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
@@ -167,7 +167,9 @@ export function RegistrationsManager() {
         preferred_age: registration.preferred_age_range,
         display_order: newOrder,
         registration_id: id,
-      });
+        plan_type: (registration as any).plan_type || 'free',
+        premium_expiry: (registration as any).premium_expiry || null,
+      } as any);
 
       if (insertError) throw insertError;
 
@@ -348,6 +350,7 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                 <TableHead className="hidden lg:table-cell">WhatsApp</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Plan</TableHead>
                 <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -374,6 +377,16 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                   <TableCell className="hidden lg:table-cell">{registration.whatsapp_number}</TableCell>
                   <TableCell className="hidden lg:table-cell">{registration.email}</TableCell>
                   <TableCell>{getStatusBadge(registration.verification_status)}</TableCell>
+                  <TableCell>
+                    {(registration as any).plan_type === 'premium' ? (
+                      <Badge className="bg-[#6C4DF6] hover:bg-[#5a3de0] text-white">
+                        <Star className="w-3 h-3 mr-1" />
+                        Premium
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Free</Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {format(new Date(registration.created_at), 'dd MMM yyyy')}
                   </TableCell>
@@ -397,6 +410,34 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                         title="Copy Profile"
                       >
                         <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={(registration as any).plan_type === 'premium' ? 'text-[#6C4DF6] hover:text-[#5a3de0]' : 'text-muted-foreground hover:text-[#6C4DF6]'}
+                        onClick={async () => {
+                          const newPlan = (registration as any).plan_type === 'premium' ? 'free' : 'premium';
+                          try {
+                            const { error } = await supabase
+                              .from('registrations')
+                              .update({ plan_type: newPlan, premium_expiry: null } as any)
+                              .eq('id', registration.id);
+                            if (error) throw error;
+                            // Also update profiles_data if linked
+                            await supabase
+                              .from('profiles_data')
+                              .update({ plan_type: newPlan, premium_expiry: null } as any)
+                              .eq('registration_id', registration.id);
+                            toast({ title: newPlan === 'premium' ? '⭐ Premium activated!' : 'Premium removed' });
+                            fetchRegistrations();
+                          } catch (err) {
+                            console.error(err);
+                            toast({ title: 'Error', description: 'Failed to update plan', variant: 'destructive' });
+                          }
+                        }}
+                        title={(registration as any).plan_type === 'premium' ? 'Remove Premium' : 'Make Premium'}
+                      >
+                        <Star className="w-4 h-4" fill={(registration as any).plan_type === 'premium' ? 'currentColor' : 'none'} />
                       </Button>
                       {registration.verification_status !== 'verified' && (
                         <Button
