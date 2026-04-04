@@ -147,6 +147,8 @@ export function RegistrationDetailModal({
       preferred_age: updated.preferred_age_range ?? registration.preferred_age_range,
       display_order: displayOrder,
       registration_id: registration.id,
+      plan_type: (updated as any).plan_type || 'free',
+      premium_expiry: (updated as any).premium_expiry || null,
     };
 
     if (existingProfile?.id) {
