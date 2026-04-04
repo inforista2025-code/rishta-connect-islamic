@@ -194,7 +194,20 @@ View full profile here:`;
 
   return (
     <div ref={setNodeRef} style={style} className="animate-fade-in" id={`profile-${profile.id}`}>
-      <Card className="hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02]">
+      {isPremium && (
+        <div className="flex justify-start mb-[-1px]">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white" style={{ backgroundColor: '#6C4DF6' }}>
+            ⭐ Featured
+          </span>
+        </div>
+      )}
+      <Card 
+        className={`hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${isPremium ? 'border-[#6C4DF6]' : ''}`}
+        style={isPremium ? { 
+          boxShadow: '0 0 10px rgba(108,77,246,0.3)',
+          backgroundColor: '#F7F5FF'
+        } : undefined}
+      >
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
