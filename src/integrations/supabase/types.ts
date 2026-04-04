@@ -128,9 +128,11 @@ export type Database = {
           marital_status: string
           maslak: string | null
           name: string
+          plan_type: string
           preferred_age: string
           preferred_location: string
           preferred_partner: string
+          premium_expiry: string | null
           profession: string
           registration_id: string | null
           updated_at: string | null
@@ -152,9 +154,11 @@ export type Database = {
           marital_status: string
           maslak?: string | null
           name: string
+          plan_type?: string
           preferred_age: string
           preferred_location: string
           preferred_partner: string
+          premium_expiry?: string | null
           profession: string
           registration_id?: string | null
           updated_at?: string | null
@@ -176,9 +180,11 @@ export type Database = {
           marital_status?: string
           maslak?: string | null
           name?: string
+          plan_type?: string
           preferred_age?: string
           preferred_location?: string
           preferred_partner?: string
+          premium_expiry?: string | null
           profession?: string
           registration_id?: string | null
           updated_at?: string | null
@@ -324,8 +330,10 @@ export type Database = {
           other_info: string | null
           partner_preferences: string
           photo_urls: string[]
+          plan_type: string
           preferred_age_range: string
           preferred_location: string
+          premium_expiry: string | null
           referral: string | null
           residence_location: string
           updated_at: string
@@ -354,8 +362,10 @@ export type Database = {
           other_info?: string | null
           partner_preferences: string
           photo_urls?: string[]
+          plan_type?: string
           preferred_age_range: string
           preferred_location: string
+          premium_expiry?: string | null
           referral?: string | null
           residence_location: string
           updated_at?: string
@@ -384,8 +394,10 @@ export type Database = {
           other_info?: string | null
           partner_preferences?: string
           photo_urls?: string[]
+          plan_type?: string
           preferred_age_range?: string
           preferred_location?: string
+          premium_expiry?: string | null
           referral?: string | null
           residence_location?: string
           updated_at?: string
