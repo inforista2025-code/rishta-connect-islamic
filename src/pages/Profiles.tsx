@@ -68,6 +68,8 @@ interface Profile {
   preferredLocation: string;
   preferredAge: string;
   order: number;
+  planType?: string;
+  premiumExpiry?: string;
 }
 
 interface SortableProfileCardProps {
