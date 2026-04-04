@@ -927,7 +927,9 @@ const Profiles = () => {
               preferredPartner: p.preferred_partner,
               preferredLocation: p.preferred_location,
               preferredAge: p.preferred_age,
-              order: p.display_order
+              order: p.display_order,
+              planType: (p as any).plan_type || 'free',
+              premiumExpiry: (p as any).premium_expiry || undefined,
             }));
             setProfiles(formattedProfiles);
           }
