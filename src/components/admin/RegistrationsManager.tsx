@@ -13,27 +13,61 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star } from 'lucide-react';
+import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star, Plus, Globe, GlobeLock } from 'lucide-react';
 import { RegistrationDetailModal } from './RegistrationDetailModal';
 import { format } from 'date-fns';
-import type { Tables } from '@/integrations/supabase/types';
 
-type Registration = Tables<'registrations'>;
+interface ProfileRecord {
+  id: number;
+  name: string;
+  gender: string;
+  age: string;
+  dob: string;
+  location: string;
+  height: string;
+  complexion: string;
+  education: string;
+  profession: string;
+  marital_status: string;
+  caste: string | null;
+  maslak: string | null;
+  islamic_knowledge: string | null;
+  family: string;
+  preferred_partner: string;
+  preferred_location: string;
+  preferred_age: string;
+  display_order: number;
+  plan_type: string;
+  premium_expiry: string | null;
+  registration_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  email: string | null;
+  whatsapp_number: string | null;
+  photo_urls: string[] | null;
+  biodata_url: string | null;
+  verification_status: string;
+  is_live: boolean;
+  admin_notes: string | null;
+  other_info: string | null;
+  date_of_birth: string | null;
+}
 
 export function RegistrationsManager() {
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<ProfileRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddMode, setIsAddMode] = useState(false);
   const { toast } = useToast();
 
-  const fetchRegistrations = async () => {
+  const fetchProfiles = async () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('registrations')
+        .from('profiles_data')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -42,246 +76,127 @@ export function RegistrationsManager() {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      setRegistrations(data || []);
+      setProfiles((data as unknown as ProfileRecord[]) || []);
     } catch (error) {
-      console.error('Error fetching registrations:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch registrations',
-        variant: 'destructive',
-      });
+      console.error('Error fetching profiles:', error);
+      toast({ title: 'Error', description: 'Failed to fetch profiles', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRegistrations();
+    fetchProfiles();
   }, [filter]);
 
-  const sendVerificationStatusEmail = async (
-    registration: Registration,
-    status: 'verified' | 'rejected'
-  ) => {
-    const { error } = await supabase.functions.invoke('send-registration-emails', {
-      body: {
-        type: 'verification_status',
-        full_name: registration.full_name,
-        email: registration.email, // MUST match registrations.email
-        verification_status: status,
-      },
-    });
-
-    if (error) {
-      console.error('Failed to send verification status email:', error);
-      throw error;
-    }
-  };
-
-  const handleVerify = async (id: string) => {
+  const handleVerify = async (id: number) => {
     try {
-      // First, get the registration data
-      const registration = registrations.find((r) => r.id === id);
-      if (!registration) throw new Error('Registration not found');
-
-      // Check if profile already exists for this registration
-      const { data: existingProfile } = await supabase
+      const { error } = await supabase
         .from('profiles_data')
-        .select('id')
-        .eq('registration_id', id)
-        .maybeSingle();
-
-      if (existingProfile) {
-        // Profile already exists, just update registration status
-        const { error: updateError } = await supabase
-          .from('registrations')
-          .update({ verification_status: 'verified', is_live: true })
-          .eq('id', id);
-
-        if (updateError) throw updateError;
-
-        // Notify user
-        try {
-          await sendVerificationStatusEmail(registration, 'verified');
-        } catch {
-          // non-blocking for admin flow
-        }
-
-        toast({ title: 'Profile already exists, status updated!' });
-        fetchRegistrations();
-        return;
-      }
-
-      // Update registration status
-      const { error: updateError } = await supabase
-        .from('registrations')
-        .update({ verification_status: 'verified', is_live: true })
+        .update({ verification_status: 'verified', is_live: true } as any)
         .eq('id', id);
-
-      if (updateError) throw updateError;
-
-      // Calculate age from date_of_birth
-      const dob = new Date(registration.date_of_birth);
-      const today = new Date();
-      const age = Math.floor(
-        (today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
-      );
-
-      // Format DOB for display (DD/MM/YYYY)
-      const formattedDob = `${String(dob.getDate()).padStart(2, '0')}/${String(
-        dob.getMonth() + 1
-      ).padStart(2, '0')}/${dob.getFullYear()}`;
-
-      // Get max display_order to add new profile at top
-      const { data: maxOrderData } = await supabase
-        .from('profiles_data')
-        .select('display_order')
-        .order('display_order', { ascending: false })
-        .limit(1);
-
-      const newOrder =
-        maxOrderData && maxOrderData[0]?.display_order
-          ? maxOrderData[0].display_order + 1
-          : 1;
-
-      // Insert into profiles_data table with registration_id link
-      const { error: insertError } = await supabase.from('profiles_data').insert({
-        name: registration.full_name,
-        gender: registration.gender,
-        age: String(age),
-        dob: formattedDob,
-        location: registration.residence_location,
-        height: registration.height,
-        complexion: registration.complexion,
-        education: registration.education_details,
-        profession: registration.occupation_details,
-        marital_status: registration.marital_status,
-        caste: registration.caste,
-        maslak: registration.maslak,
-        islamic_knowledge: registration.islamic_education,
-        family: registration.family_details,
-        preferred_partner: registration.partner_preferences,
-        preferred_location: registration.preferred_location,
-        preferred_age: registration.preferred_age_range,
-        display_order: newOrder,
-        registration_id: id,
-        plan_type: (registration as any).plan_type || 'free',
-        premium_expiry: (registration as any).premium_expiry || null,
-      } as any);
-
-      if (insertError) throw insertError;
-
-      // Notify user
-      try {
-        await sendVerificationStatusEmail(registration, 'verified');
-      } catch {
-        // non-blocking for admin flow
-      }
-
-      toast({ title: 'Profile verified and added to public profiles!' });
-      fetchRegistrations();
+      if (error) throw error;
+      toast({ title: 'Profile verified and set live!' });
+      fetchProfiles();
     } catch (error) {
       console.error('Error verifying:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to verify profile',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to verify profile', variant: 'destructive' });
     }
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (id: number) => {
     try {
-      // Get the registration (for email)
-      let registration = registrations.find((r) => r.id === id) || null;
-      if (!registration) {
-        const { data, error } = await supabase
-          .from('registrations')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle();
-        if (error) throw error;
-        registration = data;
-      }
-      if (!registration) throw new Error('Registration not found');
-
-      // Update registration status
-      const { error: updateError } = await supabase
-        .from('registrations')
-        .update({ verification_status: 'rejected', is_live: false })
-        .eq('id', id);
-
-      if (updateError) throw updateError;
-
-      // Remove profile from profiles_data if it exists
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('profiles_data')
-        .delete()
-        .eq('registration_id', id);
-
-      if (deleteError) {
-        console.error('Error removing profile:', deleteError);
-      }
-
-      // Notify user
-      try {
-        await sendVerificationStatusEmail(registration, 'rejected');
-      } catch {
-        // non-blocking for admin flow
-      }
-
-      toast({ title: 'Profile rejected and removed from public profiles' });
-      fetchRegistrations();
+        .update({ verification_status: 'rejected', is_live: false } as any)
+        .eq('id', id);
+      if (error) throw error;
+      toast({ title: 'Profile rejected and hidden from public' });
+      fetchProfiles();
     } catch (error) {
       console.error('Error rejecting:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to reject profile',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to reject profile', variant: 'destructive' });
     }
   };
 
-  const handleCopyProfile = (registration: Registration) => {
+  const handleToggleLive = async (profile: ProfileRecord) => {
+    try {
+      const { error } = await supabase
+        .from('profiles_data')
+        .update({ is_live: !profile.is_live } as any)
+        .eq('id', profile.id);
+      if (error) throw error;
+      toast({ title: profile.is_live ? 'Profile hidden from public' : 'Profile is now live!' });
+      fetchProfiles();
+    } catch (error) {
+      console.error('Error toggling live:', error);
+      toast({ title: 'Error', description: 'Failed to update', variant: 'destructive' });
+    }
+  };
+
+  const handleTogglePremium = async (profile: ProfileRecord) => {
+    const newPlan = profile.plan_type === 'premium' ? 'free' : 'premium';
+    try {
+      const { error } = await supabase
+        .from('profiles_data')
+        .update({ plan_type: newPlan, premium_expiry: null } as any)
+        .eq('id', profile.id);
+      if (error) throw error;
+      // Also update linked registration if exists
+      if (profile.registration_id) {
+        await supabase
+          .from('registrations')
+          .update({ plan_type: newPlan, premium_expiry: null } as any)
+          .eq('id', profile.registration_id);
+      }
+      toast({ title: newPlan === 'premium' ? '⭐ Premium activated!' : 'Premium removed' });
+      fetchProfiles();
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Error', description: 'Failed to update plan', variant: 'destructive' });
+    }
+  };
+
+  const handleCopyProfile = (profile: ProfileRecord) => {
     const profileText = `
 📋 *RISHTA PROFILE*
 ━━━━━━━━━━━━━━━━━━
 
 👤 *Personal Details*
-Name: ${registration.full_name}
-Gender: ${registration.gender}
-Date of Birth: ${registration.date_of_birth}
-Height: ${registration.height}
-Complexion: ${registration.complexion}
-Marital Status: ${registration.marital_status}
+Name: ${profile.name}
+Gender: ${profile.gender}
+Age: ${profile.age}
+DOB: ${profile.dob}
+Height: ${profile.height}
+Complexion: ${profile.complexion}
+Marital Status: ${profile.marital_status}
 
 📍 *Location*
-${registration.residence_location}
+${profile.location}
 
 🎓 *Education & Profession*
-Education: ${registration.education_details}
-Occupation: ${registration.occupation_details}
+Education: ${profile.education}
+Occupation: ${profile.profession}
 
 🏠 *Family Details*
-${registration.family_details}
+${profile.family}
 
 🕌 *Religious Details*
-Maslak: ${registration.maslak}
-Caste: ${registration.caste}
-${registration.islamic_education ? `Islamic Education: ${registration.islamic_education}` : ''}
+${profile.maslak ? `Maslak: ${profile.maslak}` : ''}
+${profile.caste ? `Caste: ${profile.caste}` : ''}
+${profile.islamic_knowledge ? `Islamic Education: ${profile.islamic_knowledge}` : ''}
 
 💑 *Partner Preferences*
-Age Range: ${registration.preferred_age_range}
-Location: ${registration.preferred_location}
-Other: ${registration.partner_preferences}
+Age Range: ${profile.preferred_age}
+Location: ${profile.preferred_location}
+Other: ${profile.preferred_partner}
 
 📞 *Contact*
-WhatsApp: ${registration.whatsapp_number}
-Email: ${registration.email}
+${profile.whatsapp_number ? `WhatsApp: ${profile.whatsapp_number}` : ''}
+${profile.email ? `Email: ${profile.email}` : ''}
 
-${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` : ''}
+${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
 ━━━━━━━━━━━━━━━━━━
     `.trim();
 
@@ -300,11 +215,17 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
     }
   };
 
-  const filteredRegistrations = registrations.filter(
-    (r) =>
-      r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.whatsapp_number.includes(searchTerm)
+  const handleAddNew = () => {
+    setSelectedProfile(null);
+    setIsAddMode(true);
+    setIsModalOpen(true);
+  };
+
+  const filteredProfiles = profiles.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.whatsapp_number || '').includes(searchTerm)
   );
 
   return (
@@ -319,14 +240,20 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
           </TabsList>
         </Tabs>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, email, phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, email, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button onClick={handleAddNew} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add New
+          </Button>
         </div>
       </div>
 
@@ -334,9 +261,9 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
         <div className="flex justify-center py-10">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : filteredRegistrations.length === 0 ? (
+      ) : filteredProfiles.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">
-          No registrations found.
+          No profiles found.
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
@@ -344,25 +271,26 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
             <TableHeader>
               <TableRow>
                 <TableHead className="w-16">Photo</TableHead>
-                <TableHead>Full Name</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Gender</TableHead>
                 <TableHead className="hidden md:table-cell">Location</TableHead>
                 <TableHead className="hidden lg:table-cell">WhatsApp</TableHead>
                 <TableHead className="hidden lg:table-cell">Email</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Live</TableHead>
                 <TableHead>Plan</TableHead>
                 <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRegistrations.map((registration) => (
-                <TableRow key={registration.id}>
+              {filteredProfiles.map((profile) => (
+                <TableRow key={profile.id}>
                   <TableCell>
-                    {registration.photo_urls && registration.photo_urls[0] ? (
+                    {profile.photo_urls && profile.photo_urls[0] ? (
                       <img
-                        src={registration.photo_urls[0]}
-                        alt={registration.full_name}
+                        src={profile.photo_urls[0]}
+                        alt={profile.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
@@ -371,14 +299,21 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{registration.full_name}</TableCell>
-                  <TableCell>{registration.gender}</TableCell>
-                  <TableCell className="hidden md:table-cell">{registration.residence_location}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{registration.whatsapp_number}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{registration.email}</TableCell>
-                  <TableCell>{getStatusBadge(registration.verification_status)}</TableCell>
+                  <TableCell className="font-medium">{profile.name}</TableCell>
+                  <TableCell>{profile.gender}</TableCell>
+                  <TableCell className="hidden md:table-cell">{profile.location}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{profile.whatsapp_number || '-'}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{profile.email || '-'}</TableCell>
+                  <TableCell>{getStatusBadge(profile.verification_status)}</TableCell>
                   <TableCell>
-                    {(registration as any).plan_type === 'premium' ? (
+                    {profile.is_live ? (
+                      <Badge className="bg-green-500">Live</Badge>
+                    ) : (
+                      <Badge variant="secondary">Hidden</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {profile.plan_type === 'premium' ? (
                       <Badge className="bg-[#6C4DF6] hover:bg-[#5a3de0] text-white">
                         <Star className="w-3 h-3 mr-1" />
                         Premium
@@ -388,7 +323,7 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                     )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {format(new Date(registration.created_at), 'dd MMM yyyy')}
+                    {profile.created_at ? format(new Date(profile.created_at), 'dd MMM yyyy') : '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
@@ -396,7 +331,8 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          setSelectedRegistration(registration);
+                          setSelectedProfile(profile);
+                          setIsAddMode(false);
                           setIsModalOpen(true);
                         }}
                         title="View/Edit"
@@ -406,7 +342,7 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleCopyProfile(registration)}
+                        onClick={() => handleCopyProfile(profile)}
                         title="Copy Profile"
                       >
                         <Copy className="w-4 h-4" />
@@ -414,48 +350,38 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
                       <Button
                         size="sm"
                         variant="ghost"
-                        className={(registration as any).plan_type === 'premium' ? 'text-[#6C4DF6] hover:text-[#5a3de0]' : 'text-muted-foreground hover:text-[#6C4DF6]'}
-                        onClick={async () => {
-                          const newPlan = (registration as any).plan_type === 'premium' ? 'free' : 'premium';
-                          try {
-                            const { error } = await supabase
-                              .from('registrations')
-                              .update({ plan_type: newPlan, premium_expiry: null } as any)
-                              .eq('id', registration.id);
-                            if (error) throw error;
-                            // Also update profiles_data if linked
-                            await supabase
-                              .from('profiles_data')
-                              .update({ plan_type: newPlan, premium_expiry: null } as any)
-                              .eq('registration_id', registration.id);
-                            toast({ title: newPlan === 'premium' ? '⭐ Premium activated!' : 'Premium removed' });
-                            fetchRegistrations();
-                          } catch (err) {
-                            console.error(err);
-                            toast({ title: 'Error', description: 'Failed to update plan', variant: 'destructive' });
-                          }
-                        }}
-                        title={(registration as any).plan_type === 'premium' ? 'Remove Premium' : 'Make Premium'}
+                        className={profile.plan_type === 'premium' ? 'text-[#6C4DF6] hover:text-[#5a3de0]' : 'text-muted-foreground hover:text-[#6C4DF6]'}
+                        onClick={() => handleTogglePremium(profile)}
+                        title={profile.plan_type === 'premium' ? 'Remove Premium' : 'Make Premium'}
                       >
-                        <Star className="w-4 h-4" fill={(registration as any).plan_type === 'premium' ? 'currentColor' : 'none'} />
+                        <Star className="w-4 h-4" fill={profile.plan_type === 'premium' ? 'currentColor' : 'none'} />
                       </Button>
-                      {registration.verification_status !== 'verified' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={profile.is_live ? 'text-green-600 hover:text-red-600' : 'text-muted-foreground hover:text-green-600'}
+                        onClick={() => handleToggleLive(profile)}
+                        title={profile.is_live ? 'Remove from Live' : 'Make Live'}
+                      >
+                        {profile.is_live ? <Globe className="w-4 h-4" /> : <GlobeLock className="w-4 h-4" />}
+                      </Button>
+                      {profile.verification_status !== 'verified' && (
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-green-600 hover:text-green-700"
-                          onClick={() => handleVerify(registration.id)}
+                          onClick={() => handleVerify(profile.id)}
                           title="Verify"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </Button>
                       )}
-                      {registration.verification_status !== 'rejected' && (
+                      {profile.verification_status !== 'rejected' && (
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-red-600 hover:text-red-700"
-                          onClick={() => handleReject(registration.id)}
+                          onClick={() => handleReject(profile.id)}
                           title="Reject"
                         >
                           <XCircle className="w-4 h-4" />
@@ -471,13 +397,15 @@ ${registration.other_info ? `📝 Additional Info:\n${registration.other_info}` 
       )}
 
       <RegistrationDetailModal
-        registration={selectedRegistration}
+        profile={selectedProfile}
         isOpen={isModalOpen}
+        isAddMode={isAddMode}
         onClose={() => {
           setIsModalOpen(false);
-          setSelectedRegistration(null);
+          setSelectedProfile(null);
+          setIsAddMode(false);
         }}
-        onUpdate={fetchRegistrations}
+        onUpdate={fetchProfiles}
       />
     </div>
   );
