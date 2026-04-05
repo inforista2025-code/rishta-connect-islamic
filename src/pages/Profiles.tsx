@@ -1181,8 +1181,10 @@ const Profiles = () => {
           preferred_partner: newProfileData.preferredPartner || "N/A",
           preferred_location: newProfileData.preferredLocation || "Any",
           preferred_age: newProfileData.preferredAge || "N/A",
-          display_order: maxOrder + 1
-        })
+          display_order: maxOrder + 1,
+          verification_status: 'verified',
+          is_live: true,
+        } as any)
         .select()
         .single();
 
