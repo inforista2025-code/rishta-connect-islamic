@@ -845,6 +845,8 @@ const Profiles = () => {
         const { data: dbProfiles, error } = await supabase
           .from('profiles_data')
           .select('*')
+          .eq('verification_status', 'verified')
+          .eq('is_live', true)
           .order('display_order', { ascending: false });
 
         if (error) throw error;
@@ -905,6 +907,8 @@ const Profiles = () => {
           const { data: dbProfiles } = await supabase
             .from('profiles_data')
             .select('*')
+            .eq('verification_status', 'verified')
+            .eq('is_live', true)
             .order('display_order', { ascending: false });
 
           if (dbProfiles) {
