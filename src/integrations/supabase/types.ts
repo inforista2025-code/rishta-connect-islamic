@@ -112,22 +112,29 @@ export type Database = {
       }
       profiles_data: {
         Row: {
+          admin_notes: string | null
           age: string
+          biodata_url: string | null
           caste: string | null
           complexion: string
           created_at: string | null
+          date_of_birth: string | null
           display_order: number
           dob: string
           education: string
+          email: string | null
           family: string
           gender: string
           height: string
           id: number
+          is_live: boolean
           islamic_knowledge: string | null
           location: string
           marital_status: string
           maslak: string | null
           name: string
+          other_info: string | null
+          photo_urls: string[] | null
           plan_type: string
           preferred_age: string
           preferred_location: string
@@ -136,24 +143,33 @@ export type Database = {
           profession: string
           registration_id: string | null
           updated_at: string | null
+          verification_status: string
+          whatsapp_number: string | null
         }
         Insert: {
+          admin_notes?: string | null
           age: string
+          biodata_url?: string | null
           caste?: string | null
           complexion: string
           created_at?: string | null
+          date_of_birth?: string | null
           display_order?: number
           dob: string
           education: string
+          email?: string | null
           family: string
           gender: string
           height: string
           id?: number
+          is_live?: boolean
           islamic_knowledge?: string | null
           location: string
           marital_status: string
           maslak?: string | null
           name: string
+          other_info?: string | null
+          photo_urls?: string[] | null
           plan_type?: string
           preferred_age: string
           preferred_location: string
@@ -162,24 +178,33 @@ export type Database = {
           profession: string
           registration_id?: string | null
           updated_at?: string | null
+          verification_status?: string
+          whatsapp_number?: string | null
         }
         Update: {
+          admin_notes?: string | null
           age?: string
+          biodata_url?: string | null
           caste?: string | null
           complexion?: string
           created_at?: string | null
+          date_of_birth?: string | null
           display_order?: number
           dob?: string
           education?: string
+          email?: string | null
           family?: string
           gender?: string
           height?: string
           id?: number
+          is_live?: boolean
           islamic_knowledge?: string | null
           location?: string
           marital_status?: string
           maslak?: string | null
           name?: string
+          other_info?: string | null
+          photo_urls?: string[] | null
           plan_type?: string
           preferred_age?: string
           preferred_location?: string
@@ -188,6 +213,8 @@ export type Database = {
           profession?: string
           registration_id?: string | null
           updated_at?: string | null
+          verification_status?: string
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
