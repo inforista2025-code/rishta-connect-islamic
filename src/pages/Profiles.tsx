@@ -948,6 +948,7 @@ const Profiles = () => {
               order: p.display_order,
               planType: (p as any).plan_type || 'free',
               premiumExpiry: (p as any).premium_expiry || undefined,
+              photoUrls: p.photo_urls || undefined,
             }));
             setProfiles(formattedProfiles);
           }
