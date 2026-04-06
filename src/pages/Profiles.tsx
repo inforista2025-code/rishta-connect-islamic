@@ -70,6 +70,7 @@ interface Profile {
   order: number;
   planType?: string;
   premiumExpiry?: string;
+  photoUrls?: string[];
 }
 
 interface SortableProfileCardProps {
@@ -251,6 +252,18 @@ View full profile here:`;
         </CardHeader>
         
         <CardContent className="pt-6 space-y-4">
+          {/* Profile Photo */}
+          {profile.photoUrls && profile.photoUrls.length > 0 && (
+            <div className="flex justify-center -mt-2 mb-2">
+              <img
+                src={profile.photoUrls[0]}
+                alt={profile.name}
+                className="w-28 h-28 rounded-full object-cover border-2 border-primary/20 shadow-md"
+                loading="lazy"
+              />
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-start gap-2">
@@ -874,6 +887,7 @@ const Profiles = () => {
             order: p.display_order,
             planType: (p as any).plan_type || 'free',
             premiumExpiry: (p as any).premium_expiry || undefined,
+            photoUrls: p.photo_urls || undefined,
           }));
           setProfiles(formattedProfiles);
         } else {
@@ -934,6 +948,7 @@ const Profiles = () => {
               order: p.display_order,
               planType: (p as any).plan_type || 'free',
               premiumExpiry: (p as any).premium_expiry || undefined,
+              photoUrls: p.photo_urls || undefined,
             }));
             setProfiles(formattedProfiles);
           }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, Upload, Trash2, RefreshCw } from 'lucide-react';
+import { compressImage } from '@/lib/imageCompression';
 
 interface ProfileRecord {
   id: number;
@@ -105,6 +106,10 @@ export function RegistrationDetailModal({
 }: RegistrationDetailModalProps) {
   const [formData, setFormData] = useState<Partial<ProfileRecord>>({});
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -119,6 +124,83 @@ export function RegistrationDetailModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const uploadCompressedPhoto = async (file: File): Promise<string> => {
+    toast({ title: 'Compressing image...', description: 'Resizing & converting to WebP' });
+    const compressed = await compressImage(file);
+    
+    const sanitizedName = compressed.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `admin-${Date.now()}-${sanitizedName}`;
+    
+    const { data, error } = await supabase.storage
+      .from('registration-photos')
+      .upload(fileName, compressed, { cacheControl: '3600', upsert: false });
+
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+
+    const { data: urlData } = supabase.storage
+      .from('registration-photos')
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadCompressedPhoto(files[i]);
+        newUrls.push(url);
+      }
+
+      const currentUrls = formData.photo_urls || [];
+      handleChange('photo_urls', [...currentUrls, ...newUrls]);
+      toast({ title: `${newUrls.length} photo(s) uploaded successfully!` });
+    } catch (error: any) {
+      console.error('Photo upload error:', error);
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleReplacePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || replacingIndex === null) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadCompressedPhoto(files[0]);
+      const updatedUrls = [...(formData.photo_urls || [])];
+      updatedUrls[replacingIndex] = url;
+      handleChange('photo_urls', updatedUrls);
+      toast({ title: 'Photo replaced successfully!' });
+    } catch (error: any) {
+      console.error('Photo replace error:', error);
+      toast({ title: 'Replace failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
+      setReplacingIndex(null);
+      if (replaceFileInputRef.current) replaceFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    const updatedUrls = [...(formData.photo_urls || [])];
+    updatedUrls.splice(index, 1);
+    handleChange('photo_urls', updatedUrls);
+    toast({ title: 'Photo removed' });
+  };
+
+  const triggerReplace = (index: number) => {
+    setReplacingIndex(index);
+    replaceFileInputRef.current?.click();
+  };
+
   const handleSave = async () => {
     if (!formData.name || !formData.gender) {
       toast({ title: 'Name and Gender are required', variant: 'destructive' });
@@ -127,7 +209,6 @@ export function RegistrationDetailModal({
 
     setSaving(true);
     try {
-      // Calculate age from date_of_birth if provided
       let age = formData.age || '';
       let dob = formData.dob || '';
       if (formData.date_of_birth) {
@@ -164,10 +245,10 @@ export function RegistrationDetailModal({
         premium_expiry: formData.premium_expiry || null,
         admin_notes: formData.admin_notes || null,
         date_of_birth: formData.date_of_birth || null,
+        photo_urls: formData.photo_urls || [],
       };
 
       if (isAddMode) {
-        // Get max display_order
         const { data: maxOrderData } = await supabase
           .from('profiles_data')
           .select('display_order')
@@ -185,7 +266,6 @@ export function RegistrationDetailModal({
           .eq('id', profile.id);
         if (error) throw error;
 
-        // Sync linked registration if exists
         if (profile.registration_id) {
           await supabase
             .from('registrations')
@@ -213,6 +293,7 @@ export function RegistrationDetailModal({
               plan_type: payload.plan_type,
               premium_expiry: payload.premium_expiry,
               admin_notes: payload.admin_notes,
+              photo_urls: payload.photo_urls,
             } as any)
             .eq('id', profile.registration_id);
         }
@@ -239,28 +320,86 @@ export function RegistrationDetailModal({
           </DialogTitle>
         </DialogHeader>
 
+        {/* Hidden file inputs */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="hidden"
+          onChange={handlePhotoUpload}
+        />
+        <input
+          ref={replaceFileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleReplacePhoto}
+        />
+
         <ScrollArea className="max-h-[70vh] pr-4">
           <div className="space-y-6">
             {/* Photos Section */}
-            {!isAddMode && formData.photo_urls && formData.photo_urls.length > 0 && (
-              <div>
-                <Label className="text-base font-semibold">Photos</Label>
-                <div className="flex gap-3 mt-2 flex-wrap">
-                  {formData.photo_urls.map((url, index) => (
-                    <a key={index} href={url} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={url}
-                        alt={`Photo ${index + 1}`}
-                        className="w-24 h-24 rounded-lg object-cover border hover:opacity-80 transition-opacity"
-                      />
-                    </a>
-                  ))}
-                </div>
+            <div>
+              <Label className="text-base font-semibold">Photos</Label>
+              <div className="flex gap-3 mt-2 flex-wrap">
+                {(formData.photo_urls || []).map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`Photo ${index + 1}`}
+                      className="w-24 h-24 rounded-lg object-cover border"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-white hover:bg-white/20"
+                        onClick={() => triggerReplace(index)}
+                        disabled={uploading}
+                        title="Replace"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-white hover:bg-red-500/50"
+                        onClick={() => handleRemovePhoto(index)}
+                        title="Remove"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Upload button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-24 h-24 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5" />
+                      <span className="text-[10px]">Add Photo</span>
+                    </>
+                  )}
+                </button>
               </div>
-            )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Images auto-compressed to WebP (max 800px, ~300KB)
+              </p>
+            </div>
 
             {/* Biodata */}
-            {!isAddMode && formData.biodata_url && (
+            {formData.biodata_url && (
               <div>
                 <Label className="text-base font-semibold">Biodata</Label>
                 <a
@@ -555,7 +694,7 @@ export function RegistrationDetailModal({
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving || uploading}>
             {saving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
