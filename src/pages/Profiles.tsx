@@ -70,6 +70,7 @@ interface Profile {
   order: number;
   planType?: string;
   premiumExpiry?: string;
+  photoUrls?: string[];
 }
 
 interface SortableProfileCardProps {
@@ -874,6 +875,7 @@ const Profiles = () => {
             order: p.display_order,
             planType: (p as any).plan_type || 'free',
             premiumExpiry: (p as any).premium_expiry || undefined,
+            photoUrls: p.photo_urls || undefined,
           }));
           setProfiles(formattedProfiles);
         } else {
