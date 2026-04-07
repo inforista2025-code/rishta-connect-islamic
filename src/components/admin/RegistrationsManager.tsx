@@ -299,7 +299,14 @@ ${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{profile.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <span className="flex items-center gap-1.5">
+                      {profile.name}
+                      {profile.created_at && (Date.now() - new Date(profile.created_at).getTime()) < 24 * 60 * 60 * 1000 && (
+                        <Badge className="bg-blue-500 text-[10px] px-1.5 py-0">New</Badge>
+                      )}
+                    </span>
+                  </TableCell>
                   <TableCell>{profile.gender}</TableCell>
                   <TableCell className="hidden md:table-cell">{profile.location}</TableCell>
                   <TableCell className="hidden lg:table-cell">{profile.whatsapp_number || '-'}</TableCell>
