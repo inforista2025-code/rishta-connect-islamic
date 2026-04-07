@@ -206,35 +206,47 @@ export function RegistrationForm() {
         description: "Almost done!",
       });
 
-      // Insert registration data
+      // Calculate age from DOB
+      const today = new Date();
+      const birthDate = new Date(data.dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      const dobFormatted = data.dateOfBirth.toISOString().split('T')[0];
+
+      // Insert into profiles_data table
       const { error: insertError } = await supabase
-        .from('registrations')
+        .from('profiles_data')
         .insert({
-          email: data.email,
-          full_name: data.fullName,
+          name: data.fullName,
           gender: data.gender,
-          date_of_birth: data.dateOfBirth.toISOString().split('T')[0],
+          age: String(age),
+          dob: dobFormatted,
+          date_of_birth: dobFormatted,
+          location: data.residenceLocation,
           height: data.height,
-          caste: data.caste,
           complexion: data.complexion,
+          education: data.educationDetails,
+          profession: data.occupationDetails,
           marital_status: data.maritalStatus,
+          caste: data.caste,
           maslak: data.maslak,
-          residence_location: data.residenceLocation,
-          education_details: data.educationDetails,
-          occupation_details: data.occupationDetails,
-          family_details: data.familyDetails,
-          whatsapp_number: data.whatsappNumber,
-          preferred_age_range: data.preferredAgeRange,
+          islamic_knowledge: data.islamicEducation || null,
+          family: data.familyDetails,
+          preferred_partner: data.partnerPreferences,
           preferred_location: data.preferredLocation,
-          partner_preferences: data.partnerPreferences,
-          islamic_education: data.islamicEducation || null,
-          other_info: data.otherInfo || null,
+          preferred_age: data.preferredAgeRange,
+          email: data.email,
+          whatsapp_number: data.whatsappNumber,
           photo_urls: photoFullUrls,
           biodata_url: biodataFullUrl,
-          referral: data.referral || null,
+          other_info: data.otherInfo || null,
           verification_status: 'pending',
-          is_live: false
-        });
+          is_live: false,
+          plan_type: 'free',
+        } as any);
 
       if (insertError) {
         console.error('Database insert error:', insertError);
