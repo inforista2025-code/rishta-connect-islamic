@@ -9,7 +9,7 @@ export function WhyChooseUsSection() {
       description: "Manual verification ensures genuine profiles",
     },
     {
-      icon: Mosque,
+      icon: BookOpen,
       title: "Islamic Values Focused",
       description: "Matching based on faith and compatibility",
     },
