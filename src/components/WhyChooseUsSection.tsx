@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldCheck, Mosque, Zap, HeadphonesIcon } from "lucide-react";
+import { ShieldCheck, BookOpen, Zap, HeadphonesIcon } from "lucide-react";
 
 export function WhyChooseUsSection() {
   const features = [
