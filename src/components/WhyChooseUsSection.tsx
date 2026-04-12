@@ -21,7 +21,7 @@ export function WhyChooseUsSection() {
     {
       icon: HeadphonesIcon,
       title: "Dedicated Support",
-      description: "",
+      description: "\n",
     },
   ];
 
