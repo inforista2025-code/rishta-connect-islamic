@@ -41,12 +41,12 @@ export function CommunityLinksSection() {
       name: "Instagram",
       description: "Tips, stories & inspiration",
       icon: Instagram,
-      url: "https://www.instagram.com/rishtamatrimony",
-      available: true,
-      buttonText: "Follow Us",
+      url: "#",
+      available: false,
+      buttonText: "Coming Soon",
       iconBg: "bg-pink-100 dark:bg-pink-900/30",
       iconColor: "text-pink-600 dark:text-pink-400",
-      btnVariant: "default" as const,
+      btnVariant: "outline" as const,
     },
   ];
 
