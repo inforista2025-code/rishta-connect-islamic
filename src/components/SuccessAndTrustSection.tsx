@@ -22,8 +22,8 @@ export function SuccessAndTrustSection() {
     {
       quote: "Thank you Rishta Matrimony for helping us find our perfect match. The verification process gave us confidence.",
       names: "Haseeb & Sana",
-      location: "Bangalore",
-      date: "Married Nov 2026",
+      location: "Ranchi",
+      date: "Married Nov 2025",
     },
   ];
 
