@@ -1,8 +1,9 @@
 import { useRef } from "react";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
-import { HowToJoinSection } from "./HowToJoinSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
+import { HowToJoinSection } from "./HowToJoinSection";
+import { PremiumSection } from "./PremiumSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { FAQSection } from "./FAQSection";
@@ -22,35 +23,34 @@ export function RishtaMatrimonyLanding() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Menu */}
       <Navbar />
-      
-      {/* Hero Section */}
       <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
 
-      {/* How to Join Section */}
+      {/* Success Stories */}
+      <SuccessAndTrustSection />
+
+      {/* How It Works - 3 Steps */}
       <div ref={howToJoinRef}>
         <HowToJoinSection />
       </div>
 
-      {/* Success & Trust Section */}
-      <SuccessAndTrustSection />
+      {/* Premium Banner */}
+      <PremiumSection />
 
-      {/* Why Choose Us Section */}
+      {/* Why Choose Us */}
       <WhyChooseUsSection />
 
-      {/* Community Links Section */}
+      {/* Communities */}
       <CommunityLinksSection />
 
-      {/* FAQ Section */}
+      {/* FAQ */}
       <FAQSection />
 
-      {/* Contact Section */}
+      {/* Contact */}
       <div ref={contactRef} id="contact">
         <ContactSection />
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

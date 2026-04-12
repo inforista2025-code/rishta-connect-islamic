@@ -1,150 +1,62 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { FileText, CheckCircle2 } from "lucide-react";
+import { FileText, ShieldCheck, Heart } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function HowToJoinSection() {
-  const [language, setLanguage] = useState<'en' | 'hi'>('en');
-  const navigate = useNavigate();
-
-  const handleRegisterClick = () => {
-    navigate('/register');
-  };
-
-  const stepsHindi = [
+  const steps = [
     {
-      number: "१",
-      title: "व्हाट्सएप कम्युनिटी और चैनल ज्वाइन करें",
-      description: "सबसे पहले हमारे व्हाट्सएप कम्युनिटी और चैनल को ज्वाइन करें और नियमित अपडेट पाएं।"
+      number: 1,
+      icon: FileText,
+      title: "Register & Create a Profile",
+      description: "Fill basic details and create your profile in minutes",
     },
     {
-      number: "२",
-      title: "प्रोफाइल रजिस्टर करें",
-      description: "अपनी सभी जानकारी सही-सही भरें: नाम, उम्र, शहर, शिक्षा, व्यवसाय, व्हाट्सएप नंबर।"
+      number: 2,
+      icon: ShieldCheck,
+      title: "Get Verified",
+      description: "Our team reviews and verifies your profile for authenticity",
     },
     {
-      number: "३",
-      title: "फोटो अपलोड करें", 
-      description: "अपनी हाल की फोटो अपलोड करें (चेहरा साफ दिखना चाहिए)।"
+      number: 3,
+      icon: Heart,
+      title: "Find & Connect",
+      description: "Browse verified profiles and connect with your match",
     },
-    {
-      number: "४",
-      title: "बायो और preference लिखें",
-      description: "अपने बारे में संक्षिप्त जानकारी और आप क्या खोज रहे हैं, वो लिखें।"
-    },
-    {
-      number: "५",
-      title: "सबमिट करें और इंतजार करें",
-      description: "फॉर्म सबमिट करने के बाद एडमिन टीम आपकी प्रोफाइल रिव्यू करके संपर्क करेगी।"
-    }
   ];
-
-  const stepsEnglish = [
-    {
-      number: "1",
-      title: "Join WhatsApp Community and Channel",
-      description: "First, join our WhatsApp community and channel for regular updates and announcements."
-    },
-    {
-      number: "2",
-      title: "Register Profile",
-      description: "Fill all details correctly: Name, Age, City, Education, Profession, WhatsApp number."
-    },
-    {
-      number: "3",
-      title: "Upload Photo",
-      description: "Upload your recent photo (face should be clearly visible)."
-    },
-    {
-      number: "4",
-      title: "Write Bio & Preferences",
-      description: "Write a brief bio about yourself and what you're looking for in a partner."
-    },
-    {
-      number: "5", 
-      title: "Submit & Wait",
-      description: "After submission, our admin team will review your profile and contact you."
-    }
-  ];
-
-  const currentSteps = language === 'hi' ? stepsHindi : stepsEnglish;
 
   return (
-    <section id="how-to-join" className="py-20 section-gradient">
+    <section id="how-to-join" className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                How to Join — Step-by-Step
-              </CardTitle>
-              
-              {/* Language Toggle */}
-              <div className="flex justify-center gap-2 mb-6">
-                <Button
-                  variant={language === 'hi' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setLanguage('hi')}
-                >
-                  हिंदी
-                </Button>
-                <Button
-                  variant={language === 'en' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setLanguage('en')}
-                >
-                  English
-                </Button>
-              </div>
+        <div className="text-center mb-10">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+            HOW IT WORKS
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+            Find Your Match in 3 Simple Steps
+          </h2>
+        </div>
 
-              {/* Action Button */}
-              <div className="flex justify-center mb-8">
-                <Button variant="community" size="lg" onClick={handleRegisterClick}>
-                  <FileText className="w-5 h-5" />
-                  Register Now
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              {/* Steps Accordion */}
-              <Accordion type="multiple" defaultValue={["item-0", "item-1", "item-2", "item-3", "item-4"]} className="w-full">
-                {currentSteps.map((step, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
-                    <AccordionTrigger className="text-left hover:no-underline py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg">
-                          {step.number}
-                        </div>
-                        <span className="font-semibold text-lg">{step.title}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 pl-14 text-muted-foreground">
-                      {step.description}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-
-              {/* Admin Review Note */}
-              <div className="mt-8 p-6 bg-accent/30 rounded-xl border-l-4 border-primary">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">
-                    {language === 'hi' ? 'महत्वपूर्ण नोट' : 'Important Note'}
-                  </span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {steps.map((step) => (
+            <Card
+              key={step.number}
+              className="text-center border shadow-sm hover:shadow-md transition-shadow duration-300"
+            >
+              <CardContent className="p-8">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                    {step.number}
+                  </div>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <step.icon className="w-6 h-6 text-primary" />
+                  </div>
                 </div>
-                <p className="text-muted-foreground">
-                  {language === 'hi' 
-                    ? 'फॉर्म सबमिट करने के बाद एडमिन टीम आपकी प्रोफाइल रिव्यू करके आपसे संपर्क करेगी।'
-                    : 'After submission, our admin team will review your profile and contact you.'
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                <h3 className="font-semibold text-foreground text-lg mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">{step.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>
