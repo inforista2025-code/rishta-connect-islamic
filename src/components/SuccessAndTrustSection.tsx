@@ -14,7 +14,7 @@ export function SuccessAndTrustSection() {
       quote: "We found each other on Rishta Matrimony. The profiles were genuine and our families are happy. JazakAllah Khair!",
       names: "Ahmed & Fatima",
       location: "Mumbai",
-      date: "Married Jan 2025",
+      date: "Married Jan 2026",
       image: couple1,
     },
     {
@@ -89,7 +89,7 @@ export function SuccessAndTrustSection() {
             <Button
               variant="default"
               size="sm"
-              className="rounded-full whitespace-nowrap"
+              className="rounded-full whitespace-nowrap transition-transform duration-200 hover:scale-105"
               onClick={() => navigate("/register")}
             >
               <UserPlus className="w-4 h-4" />

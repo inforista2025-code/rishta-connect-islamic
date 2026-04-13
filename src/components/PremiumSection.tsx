@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, User, Phone, Eye, Award, Zap } from "lucide-react";
+import { Star, Unlock, Phone, Eye, Award, Zap } from "lucide-react";
 
 export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: User, text: "View Full Profile Details with Photos" },
+    { icon: Unlock, text: "Unlimited Access", description: "Instantly get unlimited access to any posted profile with photos—for free." },
     { icon: Phone, text: "Access Contact Numbers" },
     { icon: Eye, text: "Priority Profile Visibility" },
     { icon: Award, text: "Profile Highlight Badge" },
@@ -41,8 +41,9 @@ export function PremiumSection() {
                     <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
                       <feature.icon className="w-3.5 h-3.5 text-primary" />
                     </div>
-                    <span className="text-sm font-medium text-foreground">
-                      {feature.text}
+                    <span className="text-sm text-foreground">
+                      {feature.text && <strong>{feature.text}</strong>}
+                      {feature.description && <span className="font-normal"> {feature.description}</span>}
                     </span>
                   </div>
                 ))}
@@ -53,13 +54,13 @@ export function PremiumSection() {
             <div className="flex-shrink-0 w-full md:w-auto text-center">
               <Button
                 onClick={() => navigate("/pricing")}
-                className="w-full md:w-auto bg-foreground text-background hover:bg-foreground/90 rounded-full px-6"
+                className="w-full md:w-auto bg-foreground text-background hover:bg-foreground/90 rounded-full px-6 transition-transform duration-200 hover:scale-105"
                 size="lg"
               >
                 <Star className="w-4 h-4" />
                 View Pricing Plans
               </Button>
-              <p className="text-sm font-semibold text-primary mt-2">₹491 / 2 Months</p>
+              <p className="text-base font-bold text-primary mt-2">₹491 / 2 Months</p>
             </div>
           </div>
         </div>
