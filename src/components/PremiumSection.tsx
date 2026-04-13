@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, User, Phone, Eye, MessageCircle, Award, Zap } from "lucide-react";
+import { Star, User, Phone, Eye, Award, Zap } from "lucide-react";
 
 export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: User, text: "View Full Profile Details" },
+    { icon: User, text: "View Full Profile Details with Photos" },
     { icon: Phone, text: "Access Contact Numbers" },
     { icon: Eye, text: "Priority Profile Visibility" },
-    { icon: MessageCircle, text: "Direct WhatsApp Number" },
     { icon: Award, text: "Profile Highlight Badge" },
     { icon: Zap, text: "Faster Matchmaking Support" },
   ];
@@ -51,7 +50,7 @@ export function PremiumSection() {
             </div>
 
             {/* CTA */}
-            <div className="flex-shrink-0 w-full md:w-auto">
+            <div className="flex-shrink-0 w-full md:w-auto text-center">
               <Button
                 onClick={() => navigate("/pricing")}
                 className="w-full md:w-auto bg-foreground text-background hover:bg-foreground/90 rounded-full px-6"
@@ -60,6 +59,7 @@ export function PremiumSection() {
                 <Star className="w-4 h-4" />
                 View Pricing Plans
               </Button>
+              <p className="text-sm font-semibold text-primary mt-2">₹491 / 2 Months</p>
             </div>
           </div>
         </div>
