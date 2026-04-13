@@ -2,6 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import couple1 from "@/assets/couple1.jpg";
+import couple2 from "@/assets/couple2.jpg";
+import couple3 from "@/assets/couple3.jpg";
 
 export function SuccessAndTrustSection() {
   const navigate = useNavigate();
@@ -12,18 +15,21 @@ export function SuccessAndTrustSection() {
       names: "Ahmed & Fatima",
       location: "Mumbai",
       date: "Married Jan 2025",
+      image: couple1,
     },
     {
       quote: "A simple registration changed our lives. We got married last month and started our beautiful journey. Highly recommended!",
       names: "Imran & Ayesha",
       location: "Delhi",
       date: "Married Dec 2025",
+      image: couple2,
     },
     {
       quote: "Thank you Rishta Matrimony for helping us find our perfect match. The verification process gave us confidence.",
       names: "Haseeb & Sana",
       location: "Ranchi",
       date: "Married Nov 2025",
+      image: couple3,
     },
   ];
 
@@ -48,9 +54,16 @@ export function SuccessAndTrustSection() {
               key={index}
               className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
             >
-              {/* Placeholder image area */}
-              <div className="h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 flex items-center justify-center">
-                <div className="text-6xl">💑</div>
+              {/* Couple photo */}
+              <div className="h-48 overflow-hidden">
+                <img
+                  src={story.image}
+                  alt={`${story.names} - Success Story`}
+                  className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                  width={640}
+                  height={512}
+                />
               </div>
               <CardContent className="p-5">
                 <p className="text-muted-foreground text-sm leading-relaxed mb-4">
