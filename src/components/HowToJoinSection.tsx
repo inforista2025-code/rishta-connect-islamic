@@ -1,13 +1,16 @@
 import { FileText, ShieldCheck, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 export function HowToJoinSection() {
+  const navigate = useNavigate();
   const steps = [
     {
       number: 1,
       icon: FileText,
       title: "Register & Create a Profile",
       description: "Fill basic details and create your profile in minutes",
+      clickable: true,
     },
     {
       number: 2,
@@ -46,7 +49,10 @@ export function HowToJoinSection() {
                   <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
                     {step.number}
                   </div>
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <div
+                    className={`w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center ${step.clickable ? 'cursor-pointer hover:bg-primary/20 transition-colors' : ''}`}
+                    onClick={() => step.clickable && navigate('/register')}
+                  >
                     <step.icon className="w-6 h-6 text-primary" />
                   </div>
                 </div>
