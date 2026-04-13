@@ -41,9 +41,9 @@ export function PremiumSection() {
                     <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
                       <feature.icon className="w-3.5 h-3.5 text-primary" />
                     </div>
-                    <span className="text-sm text-foreground">
-                      {feature.text && <strong>{feature.text}</strong>}
-                      {feature.description && <span className="font-normal"> {feature.description}</span>}
+                    <span className="text-sm font-bold text-foreground">
+                      {feature.text}
+                      {feature.description && <span> {feature.description}</span>}
                     </span>
                   </div>
                 ))}
