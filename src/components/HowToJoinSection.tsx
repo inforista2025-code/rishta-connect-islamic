@@ -54,7 +54,7 @@ export function HowToJoinSection() {
                   </div>
                   <div
                     className={`w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center ${step.clickable ? 'cursor-pointer hover:bg-primary/20 transition-colors' : ''}`}
-                    onClick={() => step.clickable && navigate('/register')}
+                    onClick={() => step.clickable && navigate(step.link || '/')}
                   >
                     <step.icon className="w-6 h-6 text-primary" />
                   </div>
