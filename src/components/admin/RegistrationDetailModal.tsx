@@ -349,7 +349,8 @@ export function RegistrationDetailModal({
                     <img
                       src={url}
                       alt={`Photo ${index + 1}`}
-                      className="w-24 h-24 rounded-lg object-cover border"
+                      className="w-24 h-24 rounded-lg object-cover border cursor-pointer"
+                      onClick={() => setPreviewPhoto(url)}
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
                       <Button
