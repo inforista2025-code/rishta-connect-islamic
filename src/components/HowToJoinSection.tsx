@@ -11,6 +11,7 @@ export function HowToJoinSection() {
       title: "Register & Create a Profile",
       description: "Fill basic details and create your profile in minutes",
       clickable: true,
+      link: '/register',
     },
     {
       number: 2,
