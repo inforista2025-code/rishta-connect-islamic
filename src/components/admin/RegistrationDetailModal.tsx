@@ -723,5 +723,6 @@ export function RegistrationDetailModal({
           )}
         </DialogContent>
       </Dialog>
+    </>
   );
 }
