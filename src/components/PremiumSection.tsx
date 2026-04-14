@@ -6,7 +6,7 @@ export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: Unlock, text: "Unlimited Access", description: "Instantly view all posted profiles with photos—100% free." },
+    { icon: Unlock, text: "Unlimited Access -", description: "Instantly view all posted profiles with photos—100% free." },
     { icon: Phone, text: "Access Contact Numbers" },
     { icon: Eye, text: "Priority Profile Visibility" },
     { icon: Award, text: "Profile Highlight Badge" },
@@ -43,7 +43,7 @@ export function PremiumSection() {
                     </div>
                     <span className="text-sm font-bold text-foreground">
                       {feature.text}
-                      {feature.description && <span> {feature.description}</span>}
+                      {feature.description && <span>{feature.description}</span>}
                     </span>
                   </div>
                 ))}
