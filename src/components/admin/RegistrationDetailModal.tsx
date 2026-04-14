@@ -707,5 +707,21 @@ export function RegistrationDetailModal({
         </div>
       </DialogContent>
     </Dialog>
+
+      {/* Photo Preview Lightbox */}
+      <Dialog open={!!previewPhoto} onOpenChange={() => setPreviewPhoto(null)}>
+        <DialogContent className="max-w-3xl p-2 bg-black/90 border-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo Preview</DialogTitle>
+          </DialogHeader>
+          {previewPhoto && (
+            <img
+              src={previewPhoto}
+              alt="Full preview"
+              className="w-full h-auto max-h-[85vh] object-contain rounded"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
   );
 }
