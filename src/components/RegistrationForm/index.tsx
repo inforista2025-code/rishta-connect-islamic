@@ -332,7 +332,7 @@ export function RegistrationForm() {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !form.formState.isValid}
+                    disabled={isSubmitting}
                     className="flex-1"
                   >
                     {isSubmitting ? (
