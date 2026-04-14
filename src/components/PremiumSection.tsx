@@ -43,7 +43,7 @@ export function PremiumSection() {
                     </div>
                     <span className="text-sm font-bold text-foreground">
                       {feature.text}
-                      {feature.description && <span>{feature.description}</span>}
+                      {feature.description && <span> {feature.description}</span>}
                     </span>
                   </div>
                 ))}
