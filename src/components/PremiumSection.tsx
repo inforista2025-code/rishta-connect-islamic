@@ -6,7 +6,7 @@ export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: Unlock, text: "Unlimited Access", description: "Instantly get unlimited access to any posted profile with photos—for free." },
+    { icon: Unlock, text: "Unlimited Access", description: "Instantly view all posted profiles with photos—100% free." },
     { icon: Phone, text: "Access Contact Numbers" },
     { icon: Eye, text: "Priority Profile Visibility" },
     { icon: Award, text: "Profile Highlight Badge" },
