@@ -313,6 +313,7 @@ export function RegistrationDetailModal({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
