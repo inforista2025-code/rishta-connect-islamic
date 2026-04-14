@@ -23,6 +23,8 @@ export function HowToJoinSection() {
       icon: Heart,
       title: "Find & Connect",
       description: "Browse verified profiles and connect with your match",
+      clickable: true,
+      link: '/profiles',
     },
   ];
 
