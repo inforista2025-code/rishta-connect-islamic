@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -108,6 +108,7 @@ export function RegistrationDetailModal({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -312,6 +313,7 @@ export function RegistrationDetailModal({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
@@ -348,7 +350,8 @@ export function RegistrationDetailModal({
                     <img
                       src={url}
                       alt={`Photo ${index + 1}`}
-                      className="w-24 h-24 rounded-lg object-cover border"
+                      className="w-24 h-24 rounded-lg object-cover border cursor-pointer"
+                      onClick={() => setPreviewPhoto(url)}
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
                       <Button
@@ -705,5 +708,22 @@ export function RegistrationDetailModal({
         </div>
       </DialogContent>
     </Dialog>
+
+      {/* Photo Preview Lightbox */}
+      <Dialog open={!!previewPhoto} onOpenChange={() => setPreviewPhoto(null)}>
+        <DialogContent className="max-w-3xl p-2 bg-black/90 border-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo Preview</DialogTitle>
+          </DialogHeader>
+          {previewPhoto && (
+            <img
+              src={previewPhoto}
+              alt="Full preview"
+              className="w-full h-auto max-h-[85vh] object-contain rounded"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
