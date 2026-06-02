@@ -18,6 +18,10 @@ import AboutUs from "./pages/AboutUs";
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import MemberLogin from "./pages/MemberLogin";
+import MemberDashboard from "./pages/MemberDashboard";
+import PremiumDashboard from "./pages/PremiumDashboard";
+import { MemberProtectedRoute } from "./components/MemberProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +46,9 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/member/login" element={<MemberLogin />} />
+            <Route path="/member/dashboard" element={<MemberProtectedRoute><MemberDashboard /></MemberProtectedRoute>} />
+            <Route path="/member/premium" element={<MemberProtectedRoute><PremiumDashboard /></MemberProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
