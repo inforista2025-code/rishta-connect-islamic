@@ -7,3 +7,15 @@ verify_jwt = false
 [functions.send-registration-emails]
 enabled = true
 verify_jwt = false
+
+[functions.member-login-request]
+enabled = true
+verify_jwt = false
+
+[functions.member-login-verify]
+enabled = true
+verify_jwt = false
+
+[functions.member-session-validate]
+enabled = true
+verify_jwt = false
