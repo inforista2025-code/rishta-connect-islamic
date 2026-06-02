@@ -89,6 +89,69 @@ export type Database = {
         }
         Relationships: []
       }
+      member_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          registration_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          registration_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          registration_id?: string
+        }
+        Relationships: []
+      }
+      member_sessions: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          expires_at: string
+          id: string
+          last_active_at: string
+          registration_id: string
+          revoked_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at: string
+          id?: string
+          last_active_at?: string
+          registration_id: string
+          revoked_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          last_active_at?: string
+          registration_id?: string
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
       privacy_policy_content: {
         Row: {
           content: string | null
@@ -336,6 +399,8 @@ export type Database = {
       }
       registrations: {
         Row: {
+          active_device_info: Json | null
+          active_session_id: string | null
           admin_notes: string | null
           biodata_url: string | null
           caste: string
@@ -351,6 +416,7 @@ export type Database = {
           id: string
           is_live: boolean
           islamic_education: string | null
+          last_login_at: string | null
           marital_status: string
           maslak: string
           occupation_details: string
@@ -368,6 +434,8 @@ export type Database = {
           whatsapp_number: string
         }
         Insert: {
+          active_device_info?: Json | null
+          active_session_id?: string | null
           admin_notes?: string | null
           biodata_url?: string | null
           caste: string
@@ -383,6 +451,7 @@ export type Database = {
           id?: string
           is_live?: boolean
           islamic_education?: string | null
+          last_login_at?: string | null
           marital_status: string
           maslak: string
           occupation_details: string
@@ -400,6 +469,8 @@ export type Database = {
           whatsapp_number: string
         }
         Update: {
+          active_device_info?: Json | null
+          active_session_id?: string | null
           admin_notes?: string | null
           biodata_url?: string | null
           caste?: string
@@ -415,6 +486,7 @@ export type Database = {
           id?: string
           is_live?: boolean
           islamic_education?: string | null
+          last_login_at?: string | null
           marital_status?: string
           maslak?: string
           occupation_details?: string

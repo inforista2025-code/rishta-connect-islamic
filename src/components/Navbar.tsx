@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useMemberAuth } from "@/hooks/useMemberAuth";
 import logo from "@/assets/logo.png";
 
 const navLinks = [{
@@ -28,6 +29,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const { isAdmin } = useAdmin();
+  const { member, logout: memberLogout } = useMemberAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isActive = (path: string) => location.pathname === path;
@@ -53,6 +55,12 @@ export function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    navigate("/");
+    setIsOpen(false);
+  };
+
+  const handleMemberLogout = async () => {
+    await memberLogout();
     navigate("/");
     setIsOpen(false);
   };
@@ -116,6 +124,34 @@ export function Navbar() {
                 Logout
               </Button>
             )}
+
+            {/* Member Login / Dashboard */}
+            {!member && !user && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/member/login")}
+                className="ml-2"
+              >
+                Member Login
+              </Button>
+            )}
+            {member && (
+              <>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard")}
+                  className="ml-2"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-1" />
+                  My Dashboard
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleMemberLogout} className="ml-2">
+                  <LogOut className="w-4 h-4 mr-1" /> Logout
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -175,6 +211,35 @@ export function Navbar() {
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
                 </Button>
+              )}
+
+              {/* Member - Mobile */}
+              {!member && !user && (
+                <Button
+                  variant="outline"
+                  onClick={() => { navigate("/member/login"); setIsOpen(false); }}
+                  className="justify-start px-4 py-3 h-auto text-sm font-medium"
+                >
+                  Member Login
+                </Button>
+              )}
+              {member && (
+                <>
+                  <Button
+                    variant="default"
+                    onClick={() => { navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard"); setIsOpen(false); }}
+                    className="justify-start px-4 py-3 h-auto text-sm font-medium"
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" /> My Dashboard
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleMemberLogout}
+                    className="justify-start px-4 py-3 h-auto text-sm font-medium"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" /> Logout
+                  </Button>
+                </>
               )}
             </div>
           </div>
