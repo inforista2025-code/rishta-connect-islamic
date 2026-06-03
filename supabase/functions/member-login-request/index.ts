@@ -37,7 +37,7 @@ function toProfileMember(row: any) {
   return {
     source: "profiles_data",
     profile_data_id: row.id,
-    registration_id: row.registration_id ?? null,
+    registration_id: null,
     full_name: row.name,
     email: row.email,
     whatsapp_number: row.whatsapp_number,
@@ -104,7 +104,7 @@ serve(async (req) => {
     const match = registrationMatch ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch } : (profileMatch ? toProfileMember(profileMatch) : null);
 
     if (!match) {
-      console.log("No matching registration for key", key);
+      console.log("No matching member profile for key", key);
       return json({ error: "Account not found or not verified." });
     }
     if (String(match.verification_status).toLowerCase() !== "verified") {
