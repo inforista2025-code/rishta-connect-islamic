@@ -127,6 +127,12 @@ serve(async (req) => {
         active_session_id: session.id,
         active_device_info: device_info ?? null,
       }).eq("id", reg.registration_id);
+    } else {
+      await supabase.from("profiles_data").update({
+        last_login_at: new Date().toISOString(),
+        active_session_id: session.id,
+        active_device_info: device_info ?? null,
+      }).eq("id", reg.profile_data_id);
     }
 
     return json({
