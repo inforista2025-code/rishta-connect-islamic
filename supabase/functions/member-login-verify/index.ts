@@ -55,7 +55,7 @@ serve(async (req) => {
   try {
     const { whatsapp_number, code, device_info } = await req.json();
     if (!whatsapp_number || !code) {
-      return json({ error: "Missing fields" }, 400);
+      return json({ error: "Missing fields" });
     }
     const key = matchKey(whatsapp_number);
 
@@ -82,7 +82,7 @@ serve(async (req) => {
     const reg = registrationMatch ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch } : (profileMatch ? toProfileMember(profileMatch) : null);
 
     if (!reg || String(reg.verification_status).toLowerCase() !== "verified") {
-      return json({ error: "Account not found or not verified." }, 404);
+      return json({ error: "Account not found or not verified." });
     }
 
     let otpQuery = supabase
@@ -95,14 +95,14 @@ serve(async (req) => {
     const { data: otp, error: otpError } = await otpQuery.maybeSingle();
     if (otpError) throw otpError;
 
-    if (!otp) return json({ error: "No active code. Please request a new one." }, 400);
-    if (new Date(otp.expires_at) < new Date()) return json({ error: "Code expired. Please request a new one." }, 400);
-    if (otp.attempts >= 5) return json({ error: "Too many attempts. Please request a new code." }, 429);
+    if (!otp) return json({ error: "No active code. Please request a new one." });
+    if (new Date(otp.expires_at) < new Date()) return json({ error: "Code expired. Please request a new one." });
+    if (otp.attempts >= 5) return json({ error: "Too many attempts. Please request a new code." });
 
     const code_hash = await hashCode(String(code).trim());
     if (code_hash !== otp.code_hash) {
       await supabase.from("member_otps").update({ attempts: otp.attempts + 1 }).eq("id", otp.id);
-      return json({ error: "Invalid verification code." }, 400);
+      return json({ error: "Invalid verification code." });
     }
 
     await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("id", otp.id);
