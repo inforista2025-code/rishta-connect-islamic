@@ -66,12 +66,12 @@ serve(async (req) => {
     }
     const { whatsapp_number } = await req.json();
     if (!whatsapp_number || typeof whatsapp_number !== "string") {
-      return json({ error: "WhatsApp number is required" });
+      return json({ error: "WhatsApp number is required" }, 400);
     }
     const digits = normalizeWA(whatsapp_number);
     const key = matchKey(whatsapp_number);
     if (digits.length < 7) {
-      return json({ error: "Invalid WhatsApp number" });
+      return json({ error: "Invalid WhatsApp number" }, 400);
     }
     console.log("login-request digits=", digits, "key=", key);
 
@@ -150,7 +150,8 @@ serve(async (req) => {
     });
     if (emailRes?.error) {
       console.error("Resend error", emailRes.error);
-      return json({ error: `Failed to send email: ${emailRes.error.message || "unknown"}` }, 502);
+      await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("code_hash", code_hash);
+      return json({ error: `Email sending is not ready yet: ${emailRes.error.message || "unknown"}` });
     }
 
     // Return masked email
