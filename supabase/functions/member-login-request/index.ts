@@ -9,15 +9,21 @@ const corsHeaders = {
 };
 
 const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "Rista Matrimony <onboarding@resend.dev>";
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-);
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+const supabase = (SUPABASE_URL && SERVICE_ROLE) ? createClient(SUPABASE_URL, SERVICE_ROLE) : null as any;
 
+// International phone normalization. Returns last 10 digits for matching
+// (covers most countries' subscriber numbers reliably).
 function normalizeWA(input: string): string {
   return (input || "").replace(/[^\d]/g, "");
+}
+function matchKey(input: string): string {
+  const d = normalizeWA(input);
+  return d.length > 10 ? d.slice(-10) : d;
 }
 
 async function hashCode(code: string): Promise<string> {
@@ -29,27 +35,44 @@ async function hashCode(code: string): Promise<string> {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    if (!SUPABASE_URL || !SERVICE_ROLE) {
+      console.error("Missing SUPABASE_URL or SERVICE_ROLE_KEY");
+      return new Response(JSON.stringify({ error: "Server configuration error (database)." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!RESEND_API_KEY || !resend) {
+      console.error("Missing RESEND_API_KEY");
+      return new Response(JSON.stringify({ error: "Server configuration error (email)." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const { whatsapp_number } = await req.json();
     if (!whatsapp_number || typeof whatsapp_number !== "string") {
       return new Response(JSON.stringify({ error: "WhatsApp number is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const digits = normalizeWA(whatsapp_number);
+    const key = matchKey(whatsapp_number);
     if (digits.length < 7) {
       return new Response(JSON.stringify({ error: "Invalid WhatsApp number" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    console.log("login-request digits=", digits, "key=", key);
 
-    // Find any registration with matching trailing digits (handle +country variations)
+    // Match by last 10 digits to ignore country-code formatting differences.
     const { data: rows, error } = await supabase
       .from("registrations")
-      .select("id, full_name, email, whatsapp_number, verification_status, plan_type");
-    if (error) throw error;
+      .select("id, full_name, email, whatsapp_number, verification_status, plan_type")
+      .limit(2000);
+    if (error) { console.error("DB error", error); throw error; }
+    console.log("Scanned rows:", rows?.length ?? 0);
 
-    const match = (rows || []).find(r => normalizeWA(r.whatsapp_number).endsWith(digits) || digits.endsWith(normalizeWA(r.whatsapp_number)));
+    const match = (rows || []).find((r: any) => {
+      const rk = matchKey(r.whatsapp_number || "");
+      return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
+    });
 
     if (!match) {
+      console.log("No matching registration for key", key);
       return new Response(JSON.stringify({ error: "Account not found or not verified." }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (match.verification_status !== "verified") {
+    if (String(match.verification_status).toLowerCase() !== "verified") {
+      console.log("Match found but status =", match.verification_status);
       return new Response(JSON.stringify({ error: "Your profile is not verified yet. Please wait for admin approval." }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -68,7 +91,7 @@ serve(async (req) => {
     });
     if (insErr) throw insErr;
 
-    await resend.emails.send({
+    const emailRes: any = await resend.emails.send({
       from: FROM_EMAIL,
       to: [match.email],
       subject: "Your Rista Matrimony login code",
@@ -82,6 +105,10 @@ serve(async (req) => {
         </div>
       `,
     });
+    if (emailRes?.error) {
+      console.error("Resend error", emailRes.error);
+      return new Response(JSON.stringify({ error: `Failed to send email: ${emailRes.error.message || "unknown"}` }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Return masked email
     const masked = match.email.replace(/(.{2}).+(@.+)/, "$1***$2");
