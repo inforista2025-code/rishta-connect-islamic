@@ -15,6 +15,10 @@ const supabase = createClient(
 function normalizeWA(input: string): string {
   return (input || "").replace(/[^\d]/g, "");
 }
+function matchKey(input: string): string {
+  const d = normalizeWA(input);
+  return d.length > 10 ? d.slice(-10) : d;
+}
 
 async function hashCode(code: string): Promise<string> {
   const data = new TextEncoder().encode(code);
@@ -29,13 +33,16 @@ serve(async (req) => {
     if (!whatsapp_number || !code) {
       return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const digits = normalizeWA(whatsapp_number);
+    const key = matchKey(whatsapp_number);
 
     const { data: rows } = await supabase
       .from("registrations")
       .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry");
-    const reg = (rows || []).find(r => normalizeWA(r.whatsapp_number).endsWith(digits) || digits.endsWith(normalizeWA(r.whatsapp_number)));
-    if (!reg || reg.verification_status !== "verified") {
+    const reg = (rows || []).find((r: any) => {
+      const rk = matchKey(r.whatsapp_number || "");
+      return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
+    });
+    if (!reg || String(reg.verification_status).toLowerCase() !== "verified") {
       return new Response(JSON.stringify({ error: "Account not found or not verified." }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
