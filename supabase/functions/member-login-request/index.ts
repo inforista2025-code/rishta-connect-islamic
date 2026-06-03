@@ -26,6 +26,27 @@ function matchKey(input: string): string {
   return d.length > 10 ? d.slice(-10) : d;
 }
 
+function json(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function toProfileMember(row: any) {
+  return {
+    source: "profiles_data",
+    profile_data_id: row.id,
+    registration_id: null,
+    full_name: row.name,
+    email: row.email,
+    whatsapp_number: row.whatsapp_number,
+    verification_status: row.verification_status,
+    plan_type: row.plan_type,
+    premium_expiry: row.premium_expiry ?? null,
+  };
+}
+
 async function hashCode(code: string): Promise<string> {
   const data = new TextEncoder().encode(code);
   const buf = await crypto.subtle.digest("SHA-256", data);
@@ -37,43 +58,62 @@ serve(async (req) => {
   try {
     if (!SUPABASE_URL || !SERVICE_ROLE) {
       console.error("Missing SUPABASE_URL or SERVICE_ROLE_KEY");
-      return new Response(JSON.stringify({ error: "Server configuration error (database)." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Server configuration error (database)." }, 500);
     }
     if (!RESEND_API_KEY || !resend) {
       console.error("Missing RESEND_API_KEY");
-      return new Response(JSON.stringify({ error: "Server configuration error (email)." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Server configuration error (email)." }, 500);
     }
     const { whatsapp_number } = await req.json();
     if (!whatsapp_number || typeof whatsapp_number !== "string") {
-      return new Response(JSON.stringify({ error: "WhatsApp number is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "WhatsApp number is required" }, 400);
     }
     const digits = normalizeWA(whatsapp_number);
     const key = matchKey(whatsapp_number);
     if (digits.length < 7) {
-      return new Response(JSON.stringify({ error: "Invalid WhatsApp number" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Invalid WhatsApp number" }, 400);
     }
     console.log("login-request digits=", digits, "key=", key);
 
     // Match by last 10 digits to ignore country-code formatting differences.
-    const { data: rows, error } = await supabase
+    // Admin Dashboard's canonical profile list is profiles_data, while newer
+    // form submissions can also exist in registrations. Check both without
+    // creating duplicate user/member rows.
+    const { data: registrationRows, error: regError } = await supabase
       .from("registrations")
-      .select("id, full_name, email, whatsapp_number, verification_status, plan_type")
+      .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
       .limit(2000);
-    if (error) { console.error("DB error", error); throw error; }
-    console.log("Scanned rows:", rows?.length ?? 0);
+    if (regError) { console.error("registrations DB error", regError); throw regError; }
 
-    const match = (rows || []).find((r: any) => {
+    const { data: profileRows, error: profileError } = await supabase
+      .from("profiles_data")
+      .select("id, registration_id, name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
+      .not("email", "is", null)
+      .limit(5000);
+    if (profileError) { console.error("profiles_data DB error", profileError); throw profileError; }
+    console.log("Scanned registrations:", registrationRows?.length ?? 0, "profiles_data:", profileRows?.length ?? 0);
+
+    const registrationMatch = (registrationRows || []).find((r: any) => {
       const rk = matchKey(r.whatsapp_number || "");
       return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
     });
+    const profileMatch = (profileRows || []).find((r: any) => {
+      const rk = matchKey(r.whatsapp_number || "");
+      return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
+    });
+    const match = registrationMatch ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch } : (profileMatch ? toProfileMember(profileMatch) : null);
 
     if (!match) {
-      console.log("No matching registration for key", key);
-      return new Response(JSON.stringify({ error: "Account not found or not verified." }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      console.log("No matching member profile for key", key);
+      return json({ error: "Account not found or not verified." });
     }
     if (String(match.verification_status).toLowerCase() !== "verified") {
       console.log("Match found but status =", match.verification_status);
-      return new Response(JSON.stringify({ error: "Your profile is not verified yet. Please wait for admin approval." }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Your profile is not verified yet. Please wait for admin approval." });
+    }
+    if (!match.email) {
+      console.log("Match found but no email", match.source, match.registration_id ?? match.profile_data_id);
+      return json({ error: "No email is linked with this profile. Please contact admin." });
     }
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
@@ -81,10 +121,13 @@ serve(async (req) => {
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     // invalidate prior unconsumed OTPs
-    await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).is("consumed_at", null).eq("registration_id", match.id);
+    const otpUpdate = supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).is("consumed_at", null);
+    if (match.registration_id) await otpUpdate.eq("registration_id", match.registration_id);
+    else await otpUpdate.eq("profile_data_id", match.profile_data_id);
 
     const { error: insErr } = await supabase.from("member_otps").insert({
-      registration_id: match.id,
+      registration_id: match.registration_id,
+      profile_data_id: match.profile_data_id,
       email: match.email,
       code_hash,
       expires_at,
@@ -107,14 +150,15 @@ serve(async (req) => {
     });
     if (emailRes?.error) {
       console.error("Resend error", emailRes.error);
-      return new Response(JSON.stringify({ error: `Failed to send email: ${emailRes.error.message || "unknown"}` }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("code_hash", code_hash);
+      return json({ error: `Email sending is not ready yet: ${emailRes.error.message || "unknown"}` });
     }
 
     // Return masked email
     const masked = match.email.replace(/(.{2}).+(@.+)/, "$1***$2");
-    return new Response(JSON.stringify({ success: true, email_hint: masked }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ success: true, email_hint: masked });
   } catch (e: any) {
     console.error("member-login-request error", e);
-    return new Response(JSON.stringify({ error: e.message || "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ error: e.message || "Server error" }, 500);
   }
 });

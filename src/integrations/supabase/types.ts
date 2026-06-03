@@ -98,7 +98,8 @@ export type Database = {
           email: string
           expires_at: string
           id: string
-          registration_id: string
+          profile_data_id: number | null
+          registration_id: string | null
         }
         Insert: {
           attempts?: number
@@ -108,7 +109,8 @@ export type Database = {
           email: string
           expires_at: string
           id?: string
-          registration_id: string
+          profile_data_id?: number | null
+          registration_id?: string | null
         }
         Update: {
           attempts?: number
@@ -118,7 +120,8 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
-          registration_id?: string
+          profile_data_id?: number | null
+          registration_id?: string | null
         }
         Relationships: []
       }
@@ -129,7 +132,8 @@ export type Database = {
           expires_at: string
           id: string
           last_active_at: string
-          registration_id: string
+          profile_data_id: number | null
+          registration_id: string | null
           revoked_at: string | null
         }
         Insert: {
@@ -138,7 +142,8 @@ export type Database = {
           expires_at: string
           id?: string
           last_active_at?: string
-          registration_id: string
+          profile_data_id?: number | null
+          registration_id?: string | null
           revoked_at?: string | null
         }
         Update: {
@@ -147,7 +152,8 @@ export type Database = {
           expires_at?: string
           id?: string
           last_active_at?: string
-          registration_id?: string
+          profile_data_id?: number | null
+          registration_id?: string | null
           revoked_at?: string | null
         }
         Relationships: []
@@ -175,6 +181,8 @@ export type Database = {
       }
       profiles_data: {
         Row: {
+          active_device_info: Json | null
+          active_session_id: string | null
           admin_notes: string | null
           age: string
           biodata_url: string | null
@@ -192,6 +200,7 @@ export type Database = {
           id: number
           is_live: boolean
           islamic_knowledge: string | null
+          last_login_at: string | null
           location: string
           marital_status: string
           maslak: string | null
@@ -210,6 +219,8 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          active_device_info?: Json | null
+          active_session_id?: string | null
           admin_notes?: string | null
           age: string
           biodata_url?: string | null
@@ -227,6 +238,7 @@ export type Database = {
           id?: number
           is_live?: boolean
           islamic_knowledge?: string | null
+          last_login_at?: string | null
           location: string
           marital_status: string
           maslak?: string | null
@@ -245,6 +257,8 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          active_device_info?: Json | null
+          active_session_id?: string | null
           admin_notes?: string | null
           age?: string
           biodata_url?: string | null
@@ -262,6 +276,7 @@ export type Database = {
           id?: number
           is_live?: boolean
           islamic_knowledge?: string | null
+          last_login_at?: string | null
           location?: string
           marital_status?: string
           maslak?: string | null

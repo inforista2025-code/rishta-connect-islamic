@@ -12,43 +12,72 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
+function json(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const { session_token, action } = await req.json();
-    if (!session_token) return new Response(JSON.stringify({ valid: false, error: "No session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!session_token) return json({ valid: false, error: "No session" }, 401);
 
     const { data: session } = await supabase.from("member_sessions").select("*").eq("id", session_token).maybeSingle();
-    if (!session) return new Response(JSON.stringify({ valid: false, error: "Invalid session" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (session.revoked_at) return new Response(JSON.stringify({ valid: false, error: "Logged out from another device" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (new Date(session.expires_at) < new Date()) return new Response(JSON.stringify({ valid: false, error: "Session expired" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!session) return json({ valid: false, error: "Invalid session" }, 401);
+    if (session.revoked_at) return json({ valid: false, error: "Logged out from another device" }, 401);
+    if (new Date(session.expires_at) < new Date()) return json({ valid: false, error: "Session expired" }, 401);
 
     // Idle timeout — 14 days since last_active
     const idleMs = Date.now() - new Date(session.last_active_at).getTime();
     if (idleMs > 14 * 24 * 60 * 60 * 1000) {
       await supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
-      return new Response(JSON.stringify({ valid: false, error: "Session expired due to inactivity" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ valid: false, error: "Session expired due to inactivity" }, 401);
     }
 
     if (action === "logout") {
       await supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
-      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ success: true });
     }
 
     await supabase.from("member_sessions").update({ last_active_at: new Date().toISOString() }).eq("id", session.id);
 
-    const { data: reg } = await supabase.from("registrations")
-      .select("id, full_name, email, whatsapp_number, plan_type, premium_expiry, verification_status, residence_location, gender, date_of_birth")
-      .eq("id", session.registration_id).maybeSingle();
-
-    if (!reg || reg.verification_status !== "verified") {
-      await supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
-      return new Response(JSON.stringify({ valid: false, error: "Account no longer active" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    let reg: any = null;
+    if (session.registration_id) {
+      const { data } = await supabase.from("registrations")
+        .select("id, full_name, email, whatsapp_number, plan_type, premium_expiry, verification_status, residence_location, gender, date_of_birth")
+        .eq("id", session.registration_id).maybeSingle();
+      reg = data;
+    } else if (session.profile_data_id) {
+      const { data } = await supabase.from("profiles_data")
+        .select("id, name, email, whatsapp_number, plan_type, premium_expiry, verification_status, location, gender, date_of_birth")
+        .eq("id", session.profile_data_id).maybeSingle();
+      if (data) {
+        reg = {
+          id: String(data.id),
+          full_name: data.name,
+          email: data.email,
+          whatsapp_number: data.whatsapp_number,
+          plan_type: data.plan_type,
+          premium_expiry: data.premium_expiry,
+          verification_status: data.verification_status,
+          residence_location: data.location,
+          gender: data.gender,
+          date_of_birth: data.date_of_birth,
+        };
+      }
     }
 
-    return new Response(JSON.stringify({ valid: true, member: reg }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!reg || String(reg.verification_status).toLowerCase() !== "verified") {
+      await supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
+      return json({ valid: false, error: "Account no longer active" }, 401);
+    }
+
+    return json({ valid: true, member: reg });
   } catch (e: any) {
     console.error("member-session-validate error", e);
-    return new Response(JSON.stringify({ valid: false, error: e.message || "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ valid: false, error: e.message || "Server error" }, 500);
   }
 });
