@@ -98,7 +98,8 @@ export type Database = {
           email: string
           expires_at: string
           id: string
-          registration_id: string
+          profile_data_id: number | null
+          registration_id: string | null
         }
         Insert: {
           attempts?: number
@@ -108,7 +109,8 @@ export type Database = {
           email: string
           expires_at: string
           id?: string
-          registration_id: string
+          profile_data_id?: number | null
+          registration_id?: string | null
         }
         Update: {
           attempts?: number
@@ -118,7 +120,8 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
-          registration_id?: string
+          profile_data_id?: number | null
+          registration_id?: string | null
         }
         Relationships: []
       }
@@ -129,7 +132,8 @@ export type Database = {
           expires_at: string
           id: string
           last_active_at: string
-          registration_id: string
+          profile_data_id: number | null
+          registration_id: string | null
           revoked_at: string | null
         }
         Insert: {
@@ -138,7 +142,8 @@ export type Database = {
           expires_at: string
           id?: string
           last_active_at?: string
-          registration_id: string
+          profile_data_id?: number | null
+          registration_id?: string | null
           revoked_at?: string | null
         }
         Update: {
@@ -147,7 +152,8 @@ export type Database = {
           expires_at?: string
           id?: string
           last_active_at?: string
-          registration_id?: string
+          profile_data_id?: number | null
+          registration_id?: string | null
           revoked_at?: string | null
         }
         Relationships: []
