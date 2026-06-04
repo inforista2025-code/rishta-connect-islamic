@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
-import { Resend } from "npm:resend@2.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,12 +8,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ?? "Rista Matrimony <onboarding@resend.dev>";
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+const GMAIL_SMTP_HOST = Deno.env.get("GMAIL_SMTP_HOST") ?? "smtp.gmail.com";
+const GMAIL_SMTP_PORT = parseInt(Deno.env.get("GMAIL_SMTP_PORT") ?? "465", 10);
+const GMAIL_ADDRESS = Deno.env.get("GMAIL_ADDRESS");
+const GMAIL_APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD");
+const FROM_NAME = "Rista Matrimony";
 const supabase = (SUPABASE_URL && SERVICE_ROLE) ? createClient(SUPABASE_URL, SERVICE_ROLE) : null as any;
 
 // International phone normalization. Returns last 10 digits for matching
@@ -53,6 +55,39 @@ async function hashCode(code: string): Promise<string> {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+async function sendOtpEmail(to: string, fullName: string, code: string) {
+  if (!GMAIL_ADDRESS || !GMAIL_APP_PASSWORD) {
+    throw new Error("SMTP configuration missing. Please set GMAIL_ADDRESS and GMAIL_APP_PASSWORD.");
+  }
+  const client = new SMTPClient({
+    connection: {
+      hostname: GMAIL_SMTP_HOST,
+      port: GMAIL_SMTP_PORT,
+      tls: GMAIL_SMTP_PORT === 465,
+      auth: { username: GMAIL_ADDRESS, password: GMAIL_APP_PASSWORD },
+    },
+  });
+  try {
+    await client.send({
+      from: `${FROM_NAME} <${GMAIL_ADDRESS}>`,
+      to,
+      subject: "Your Rista Matrimony login code",
+      content: `Assalamu Alaikum ${fullName},\n\nYour verification code is: ${code}\n\nThis code expires in 10 minutes.\n\n— Rista Matrimony Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #e91e63;">Assalamu Alaikum ${fullName},</h2>
+          <p style="font-size:16px;color:#333;">Use the verification code below to sign in to your member account.</p>
+          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;background:#fdf2f8;color:#e91e63;padding:16px;text-align:center;border-radius:8px;margin:16px 0;">${code}</div>
+          <p style="font-size:14px;color:#666;">This code will expire in 10 minutes. If you did not request it, please ignore this email.</p>
+          <p style="font-size:14px;color:#666;">— Rista Matrimony Team</p>
+        </div>
+      `,
+    });
+  } finally {
+    try { await client.close(); } catch {}
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -60,9 +95,9 @@ serve(async (req) => {
       console.error("Missing SUPABASE_URL or SERVICE_ROLE_KEY");
       return json({ error: "Server configuration error (database)." }, 500);
     }
-    if (!RESEND_API_KEY || !resend) {
-      console.error("Missing RESEND_API_KEY");
-      return json({ error: "Server configuration error (email)." }, 500);
+    if (!GMAIL_ADDRESS || !GMAIL_APP_PASSWORD) {
+      console.error("Missing GMAIL_ADDRESS or GMAIL_APP_PASSWORD");
+      return json({ error: "SMTP configuration missing. Please configure Gmail SMTP credentials." }, 500);
     }
     const { whatsapp_number } = await req.json();
     if (!whatsapp_number || typeof whatsapp_number !== "string") {
@@ -134,24 +169,12 @@ serve(async (req) => {
     });
     if (insErr) throw insErr;
 
-    const emailRes: any = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: [match.email],
-      subject: "Your Rista Matrimony login code",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #e91e63;">Assalamu Alaikum ${match.full_name},</h2>
-          <p style="font-size:16px;color:#333;">Use the verification code below to sign in to your member account.</p>
-          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;background:#fdf2f8;color:#e91e63;padding:16px;text-align:center;border-radius:8px;margin:16px 0;">${code}</div>
-          <p style="font-size:14px;color:#666;">This code will expire in 10 minutes. If you did not request it, please ignore this email.</p>
-          <p style="font-size:14px;color:#666;">— Rista Matrimony Team</p>
-        </div>
-      `,
-    });
-    if (emailRes?.error) {
-      console.error("Resend error", emailRes.error);
+    try {
+      await sendOtpEmail(match.email, match.full_name, code);
+    } catch (mailErr: any) {
+      console.error("SMTP send error", mailErr);
       await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("code_hash", code_hash);
-      return json({ error: `Email sending is not ready yet: ${emailRes.error.message || "unknown"}` });
+      return json({ error: `Failed to send verification email: ${mailErr.message || "SMTP error"}` }, 502);
     }
 
     // Return masked email
