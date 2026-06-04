@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import nodemailer from "npm:nodemailer@6.9.14";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,21 +59,18 @@ async function sendOtpEmail(to: string, fullName: string, code: string) {
   if (!GMAIL_ADDRESS || !GMAIL_APP_PASSWORD) {
     throw new Error("SMTP configuration missing. Please set GMAIL_ADDRESS and GMAIL_APP_PASSWORD.");
   }
-  const client = new SMTPClient({
-    connection: {
-      hostname: GMAIL_SMTP_HOST,
-      port: GMAIL_SMTP_PORT,
-      tls: GMAIL_SMTP_PORT === 465,
-      auth: { username: GMAIL_ADDRESS, password: GMAIL_APP_PASSWORD },
-    },
+  const transporter = nodemailer.createTransport({
+    host: GMAIL_SMTP_HOST,
+    port: GMAIL_SMTP_PORT,
+    secure: GMAIL_SMTP_PORT === 465,
+    auth: { user: GMAIL_ADDRESS, pass: GMAIL_APP_PASSWORD },
   });
-  try {
-    await client.send({
-      from: `${FROM_NAME} <${GMAIL_ADDRESS}>`,
-      to,
-      subject: "Your Rista Matrimony login code",
-      content: `Assalamu Alaikum ${fullName},\n\nYour verification code is: ${code}\n\nThis code expires in 10 minutes.\n\n— Rista Matrimony Team`,
-      html: `
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${GMAIL_ADDRESS}>`,
+    to,
+    subject: "Your Rista Matrimony login code",
+    text: `Assalamu Alaikum ${fullName},\n\nYour verification code is: ${code}\n\nThis code expires in 10 minutes.\n\n— Rista Matrimony Team`,
+    html: `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #e91e63;">Assalamu Alaikum ${fullName},</h2>
           <p style="font-size:16px;color:#333;">Use the verification code below to sign in to your member account.</p>
@@ -82,10 +79,7 @@ async function sendOtpEmail(to: string, fullName: string, code: string) {
           <p style="font-size:14px;color:#666;">— Rista Matrimony Team</p>
         </div>
       `,
-    });
-  } finally {
-    try { await client.close(); } catch {}
-  }
+  });
 }
 
 serve(async (req) => {
