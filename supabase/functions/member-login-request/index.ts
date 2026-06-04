@@ -216,9 +216,10 @@ serve(async (req) => {
     try {
       await sendOtpEmail(match.email, match.full_name, code);
     } catch (mailErr: any) {
-      console.error("SMTP send error", mailErr);
+      const details = smtpErrorDetails(mailErr);
+      console.error("SMTP delivery failed", details);
       await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("code_hash", code_hash);
-      return json({ error: `Failed to send verification email: ${mailErr.message || "SMTP error"}` }, 502);
+      return json({ error: `Failed to send verification email: ${details.response || details.message || "SMTP error"}` }, 502);
     }
 
     // Return masked email
