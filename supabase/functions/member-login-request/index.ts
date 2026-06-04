@@ -180,7 +180,24 @@ serve(async (req) => {
       const rk = matchKey(r.whatsapp_number || "");
       return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
     });
-    const match = registrationMatch ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch } : (profileMatch ? toProfileMember(profileMatch) : null);
+    // profiles_data is the source of truth (admin dashboard edits live there).
+    // Always prefer profiles_data so the latest admin-updated email is used.
+    // If only registrations has the record (legacy), fall back to it.
+    const match = profileMatch
+      ? toProfileMember(profileMatch)
+      : (registrationMatch
+          ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch }
+          : null);
+
+    console.log("MATCH RESOLUTION", {
+      whatsapp_entered: whatsapp_number,
+      key,
+      profile_data_match: profileMatch ? { id: profileMatch.id, email: maskEmail(profileMatch.email), updated: (profileMatch as any).updated_at } : null,
+      registration_match: registrationMatch ? { id: registrationMatch.id, email: maskEmail(registrationMatch.email) } : null,
+      chosen_source: match?.source,
+      chosen_profile_id: match?.profile_data_id ?? match?.registration_id,
+      chosen_email: maskEmail(match?.email),
+    });
 
     if (!match) {
       console.log("No matching member profile for key", key);
@@ -194,6 +211,41 @@ serve(async (req) => {
       console.log("Match found but no email", match.source, match.registration_id ?? match.profile_data_id);
       return json({ error: "No email is linked with this profile. Please contact admin." });
     }
+
+    // Real-time freshness check: re-fetch the email directly by primary key
+    // right before generating the OTP, so any in-flight admin edit is honored.
+    if (match.profile_data_id) {
+      const { data: fresh, error: freshErr } = await supabase
+        .from("profiles_data")
+        .select("id, email, verification_status")
+        .eq("id", match.profile_data_id)
+        .maybeSingle();
+      if (freshErr) console.error("fresh profiles_data lookup error", freshErr);
+      if (fresh?.email) {
+        if (fresh.email !== match.email) {
+          console.log("EMAIL REFRESHED from profiles_data", { old: maskEmail(match.email), new: maskEmail(fresh.email) });
+        }
+        match.email = fresh.email;
+      }
+    } else if (match.registration_id) {
+      const { data: fresh, error: freshErr } = await supabase
+        .from("registrations")
+        .select("id, email")
+        .eq("id", match.registration_id)
+        .maybeSingle();
+      if (freshErr) console.error("fresh registrations lookup error", freshErr);
+      if (fresh?.email) {
+        if (fresh.email !== match.email) {
+          console.log("EMAIL REFRESHED from registrations", { old: maskEmail(match.email), new: maskEmail(fresh.email) });
+        }
+        match.email = fresh.email;
+      }
+    }
+    console.log("OTP DELIVERY TARGET", {
+      profile_id: match.profile_data_id ?? match.registration_id,
+      source: match.source,
+      email_used: maskEmail(match.email),
+    });
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const code_hash = await hashCode(code);
