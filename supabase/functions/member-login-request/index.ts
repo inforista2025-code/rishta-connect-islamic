@@ -18,6 +18,22 @@ const GMAIL_APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD");
 const FROM_NAME = "Rista Matrimony";
 const supabase = (SUPABASE_URL && SERVICE_ROLE) ? createClient(SUPABASE_URL, SERVICE_ROLE) : null as any;
 
+function maskEmail(email?: string | null): string {
+  if (!email || !email.includes("@")) return "missing";
+  return email.replace(/(.{2}).+(@.+)/, "$1***$2");
+}
+
+function smtpErrorDetails(error: any) {
+  return {
+    name: error?.name,
+    message: error?.message,
+    code: error?.code,
+    command: error?.command,
+    response: error?.response,
+    responseCode: error?.responseCode,
+  };
+}
+
 // International phone normalization. Returns last 10 digits for matching
 // (covers most countries' subscriber numbers reliably).
 function normalizeWA(input: string): string {
@@ -59,15 +75,38 @@ async function sendOtpEmail(to: string, fullName: string, code: string) {
   if (!GMAIL_ADDRESS || !GMAIL_APP_PASSWORD) {
     throw new Error("SMTP configuration missing. Please set GMAIL_ADDRESS and GMAIL_APP_PASSWORD.");
   }
+  if (!Number.isFinite(GMAIL_SMTP_PORT)) {
+    throw new Error("SMTP configuration invalid. GMAIL_SMTP_PORT must be a number.");
+  }
+  const recipient = to.trim().toLowerCase();
+  const sender = GMAIL_ADDRESS.trim().toLowerCase();
+  const secure = GMAIL_SMTP_PORT === 465;
+  console.log("SMTP config", {
+    host: GMAIL_SMTP_HOST,
+    port: GMAIL_SMTP_PORT,
+    secure,
+    sender: maskEmail(sender),
+    recipient: maskEmail(recipient),
+    hasAppPassword: Boolean(GMAIL_APP_PASSWORD),
+    appPasswordLength: GMAIL_APP_PASSWORD.length,
+  });
   const transporter = nodemailer.createTransport({
     host: GMAIL_SMTP_HOST,
     port: GMAIL_SMTP_PORT,
-    secure: GMAIL_SMTP_PORT === 465,
-    auth: { user: GMAIL_ADDRESS, pass: GMAIL_APP_PASSWORD },
+    secure,
+    requireTLS: !secure,
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
+    auth: { user: sender, pass: GMAIL_APP_PASSWORD },
   });
-  await transporter.sendMail({
-    from: `${FROM_NAME} <${GMAIL_ADDRESS}>`,
-    to,
+  console.log("SMTP verify start", { sender: maskEmail(sender), recipient: maskEmail(recipient) });
+  await transporter.verify();
+  console.log("SMTP verify success", { sender: maskEmail(sender) });
+  console.log("SMTP send start", { from: maskEmail(sender), to: maskEmail(recipient) });
+  const info = await transporter.sendMail({
+    from: `${FROM_NAME} <${sender}>`,
+    to: recipient,
     subject: "Your Rista Matrimony login code",
     text: `Assalamu Alaikum ${fullName},\n\nYour verification code is: ${code}\n\nThis code expires in 10 minutes.\n\n— Rista Matrimony Team`,
     html: `
@@ -80,6 +119,17 @@ async function sendOtpEmail(to: string, fullName: string, code: string) {
         </div>
       `,
   });
+  console.log("SMTP send result", {
+    accepted: info.accepted,
+    rejected: info.rejected,
+    pending: info.pending,
+    response: info.response,
+    messageId: info.messageId,
+    envelope: info.envelope,
+  });
+  if (info.rejected?.length || info.pending?.length || !info.accepted?.length) {
+    throw new Error(`SMTP delivery was not accepted. Response: ${info.response || "No SMTP response"}`);
+  }
 }
 
 serve(async (req) => {
