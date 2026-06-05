@@ -89,6 +89,53 @@ export type Database = {
         }
         Relationships: []
       }
+      member_editable_profile: {
+        Row: {
+          about_me: string | null
+          additional_info: string | null
+          created_at: string
+          hobbies: string | null
+          partner_preferences: string | null
+          personal_introduction: string | null
+          preferred_age_range: string | null
+          preferred_location: string | null
+          profile_id: number
+          updated_at: string
+        }
+        Insert: {
+          about_me?: string | null
+          additional_info?: string | null
+          created_at?: string
+          hobbies?: string | null
+          partner_preferences?: string | null
+          personal_introduction?: string | null
+          preferred_age_range?: string | null
+          preferred_location?: string | null
+          profile_id: number
+          updated_at?: string
+        }
+        Update: {
+          about_me?: string | null
+          additional_info?: string | null
+          created_at?: string
+          hobbies?: string | null
+          partner_preferences?: string | null
+          personal_introduction?: string | null
+          preferred_age_range?: string | null
+          preferred_location?: string | null
+          profile_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_editable_profile_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_otps: {
         Row: {
           attempts: number
@@ -178,6 +225,101 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      profile_interests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_profile_id: number
+          sender_profile_id: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_profile_id: number
+          sender_profile_id: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_profile_id?: number
+          sender_profile_id?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_interests_receiver_profile_id_fkey"
+            columns: ["receiver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_interests_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_update_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          current_value: string | null
+          field_name: string
+          id: string
+          profile_id: number
+          reason: string | null
+          requested_value: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          current_value?: string | null
+          field_name: string
+          id?: string
+          profile_id: number
+          reason?: string | null
+          requested_value: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          current_value?: string | null
+          field_name?: string
+          id?: string
+          profile_id?: number
+          reason?: string | null
+          requested_value?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_update_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles_data: {
         Row: {
@@ -519,6 +661,42 @@ export type Database = {
           whatsapp_number?: string
         }
         Relationships: []
+      }
+      saved_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          owner_profile_id: number
+          saved_profile_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_profile_id: number
+          saved_profile_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_profile_id?: number
+          saved_profile_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_profiles_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_profiles_saved_profile_id_fkey"
+            columns: ["saved_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_data"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       terms_content: {
         Row: {
