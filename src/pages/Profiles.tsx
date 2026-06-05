@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X } from "lucide-react";
+import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -400,6 +401,7 @@ View full profile here:`;
               <span className="text-primary hidden sm:inline text-xs sm:text-sm md:text-base">Share</span>
             </Button>
           </div>
+          <MemberProfileActions profileId={profile.id} compact />
         </CardContent>
       </Card>
 
