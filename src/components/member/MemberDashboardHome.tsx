@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { useMemberApi } from "@/hooks/useMemberApi";
@@ -6,17 +6,44 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Lock, Crown, Sparkles, LogOut, Star, Heart, Send, Inbox, ClipboardList, UserCheck, ShieldCheck, Edit3 } from "lucide-react";
-import { MemberProfileActions } from "./MemberProfileActions";
+import {
+  Loader2, Lock, Crown, LogOut, Star, Heart, Send, Inbox, ClipboardList,
+  UserCheck, ShieldCheck, Edit3, LayoutDashboard, Search, Eye, MessageSquare,
+  Activity, Settings, Menu, BookmarkPlus, BadgeCheck, ChevronRight, Lightbulb,
+} from "lucide-react";
+import { PremiumUpgradeCard } from "./PremiumUpgradeCard";
+import { ProfilePhoto } from "./ProfilePhoto";
+import { ViewProfileDialog } from "./ViewProfileDialog";
+import { cn } from "@/lib/utils";
 
-const LOCKED_FIELDS: { key: string; label: string }[] = [
+type SectionKey =
+  | "dashboard" | "profile" | "search" | "recommended" | "saved"
+  | "recently" | "received" | "sent" | "messages" | "viewers"
+  | "activity" | "settings" | "requests";
+
+const NAV: { key: SectionKey; label: string; icon: any }[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "profile", label: "My Profile", icon: UserCheck },
+  { key: "search", label: "Search Profiles", icon: Search },
+  { key: "recommended", label: "Recommended", icon: Heart },
+  { key: "saved", label: "Saved Profiles", icon: Star },
+  { key: "recently", label: "Recently Viewed", icon: Eye },
+  { key: "received", label: "Received Interests", icon: Inbox },
+  { key: "sent", label: "Sent Interests", icon: Send },
+  { key: "messages", label: "Messages", icon: MessageSquare },
+  { key: "viewers", label: "Who Viewed Me", icon: BadgeCheck },
+  { key: "activity", label: "My Activity", icon: Activity },
+  { key: "settings", label: "Account Settings", icon: Settings },
+];
+
+const LOCKED_FIELDS = [
   { key: "full_name", label: "Full Name" },
   { key: "gender", label: "Gender" },
   { key: "date_of_birth", label: "Date of Birth" },
@@ -42,51 +69,35 @@ const EDITABLE_FIELDS: { key: string; label: string; long?: boolean }[] = [
 
 function lockedValue(profile: any, key: string) {
   switch (key) {
-    case "full_name": return profile.name;
-    case "occupation": return profile.profession;
-    case "family": return profile.family;
-    default: return profile[key];
+    case "full_name": return profile?.name;
+    case "occupation": return profile?.profession;
+    case "family": return profile?.family;
+    default: return profile?.[key];
   }
 }
 
-function PremiumBadge() {
-  return (
-    <Badge className="bg-purple-600 hover:bg-purple-700 text-white">
-      <Crown className="w-3 h-3 mr-1" /> Premium Verified
-    </Badge>
-  );
+function matchPercent(self: any, other: any): number {
+  let score = 70;
+  const sLoc = (self?.location || "").toLowerCase();
+  const oLoc = (other?.location || "").toLowerCase();
+  if (sLoc && oLoc && (sLoc.includes(oLoc.split(",")[0]) || oLoc.includes(sLoc.split(",")[0]))) score += 10;
+  if (self?.education && other?.education && self.education === other.education) score += 6;
+  if (self?.maslak && other?.maslak && self.maslak === other.maslak) score += 8;
+  if (self?.marital_status && other?.marital_status && self.marital_status === other.marital_status) score += 4;
+  const seed = (other?.id || 0) % 7;
+  score += seed;
+  return Math.min(99, score);
 }
 
-function ProfileMiniCard({ p, onChanged, savedSet, sentSet }: { p: any; onChanged?: () => void; savedSet?: Set<number>; sentSet?: Set<number> }) {
-  const isPrem = !!p.is_premium;
-  return (
-    <Card className={isPrem ? "border-purple-300 shadow-[0_0_20px_-8px_rgba(168,85,247,0.5)] bg-gradient-to-br from-purple-50/60 to-pink-50/40" : ""}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            {p.name}
-            {isPrem && <PremiumBadge />}
-          </CardTitle>
-          <Badge variant="secondary">{p.gender}</Badge>
-        </div>
-        <CardDescription className="text-xs">
-          {p.age && <>🎂 {p.age} yrs · </>}{p.location}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2 text-sm">
-        {p.education && <div><span className="text-muted-foreground">Education:</span> {p.education}</div>}
-        {p.profession && <div><span className="text-muted-foreground">Profession:</span> {p.profession}</div>}
-        {p.marital_status && <div><span className="text-muted-foreground">Marital:</span> {p.marital_status}</div>}
-        <MemberProfileActions
-          profileId={p.id}
-          compact
-          initialSaved={savedSet?.has(p.id)}
-          initialInterested={sentSet?.has(p.id)}
-          onChanged={onChanged}
-        />
-      </CardContent>
-    </Card>
-  );
+function relativeTime(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso).getTime();
+  const diff = Date.now() - d;
+  const h = Math.floor(diff / 36e5);
+  if (h < 1) return "just now";
+  if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+  const days = Math.floor(h / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
 }
 
 export function MemberDashboardHome() {
@@ -95,81 +106,100 @@ export function MemberDashboardHome() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState<any>(null);
-  const [editable, setEditable] = useState<any>({});
-  const [completion, setCompletion] = useState<{ percent: number; missing: { key: string; label: string; weight: number }[] }>({ percent: 0, missing: [] });
-  const [isPremium, setIsPremium] = useState(false);
+  const [section, setSection] = useState<SectionKey>("dashboard");
+  const [data, setData] = useState<any>(null);
   const [busy, setBusy] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [saved, setSaved] = useState<any[]>([]);
-  const [sent, setSent] = useState<any[]>([]);
-  const [received, setReceived] = useState<any[]>([]);
-  const [recommended, setRecommended] = useState<any[]>([]);
-  const [updateRequests, setUpdateRequests] = useState<any[]>([]);
+  const [viewTarget, setViewTarget] = useState<number | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
 
+  // section-specific lazy data
+  const [savedList, setSavedList] = useState<any[]>([]);
+  const [recentlyList, setRecentlyList] = useState<any[]>([]);
+  const [viewersList, setViewersList] = useState<any>({ viewers: [], locked: false, total: 0 });
+  const [sentList, setSentList] = useState<any[]>([]);
+  const [receivedList, setReceivedList] = useState<any[]>([]);
+  const [recList, setRecList] = useState<any[]>([]);
+  const [requestsList, setRequestsList] = useState<any[]>([]);
+
+  // request dialog
   const [reqOpen, setReqOpen] = useState(false);
   const [reqField, setReqField] = useState<{ key: string; label: string } | null>(null);
   const [reqValue, setReqValue] = useState("");
   const [reqReason, setReqReason] = useState("");
   const [savingEditable, setSavingEditable] = useState(false);
 
-  const loadAll = useCallback(async () => {
+  const loadSummary = useCallback(async () => {
     setBusy(true);
     try {
-      const [p, s, se, re, rec, ur] = await Promise.all([
-        call("get_profile"),
-        call("list_saved"),
-        call("list_interests", { direction: "sent" }),
-        call("list_interests", { direction: "received" }),
-        call("recommendations"),
-        call("list_my_update_requests"),
-      ]);
-      setProfile(p.profile);
-      setEditable(p.editable || {});
-      setCompletion(p.completion);
-      setIsPremium(p.is_premium);
-      setSaved(s.saved || []);
-      setSent(se.interests || []);
-      setReceived(re.interests || []);
-      setRecommended(rec.recommendations || []);
-      setUpdateRequests(ur.requests || []);
+      const res = await call("dashboard_summary");
+      setData(res);
     } catch (e: any) {
       toast({ title: "Failed to load dashboard", description: e.message, variant: "destructive" });
     } finally { setBusy(false); }
   }, [call, toast]);
 
-  useEffect(() => { if (member) loadAll(); }, [member, loadAll]);
+  useEffect(() => { if (member) loadSummary(); }, [member, loadSummary]);
 
-  if (loading || !member) return null;
+  // Load section data on demand
+  useEffect(() => {
+    if (!member) return;
+    (async () => {
+      try {
+        if (section === "saved") setSavedList((await call("list_saved")).saved || []);
+        else if (section === "recently") setRecentlyList((await call("list_recently_viewed")).profiles || []);
+        else if (section === "viewers") setViewersList(await call("list_who_viewed_me"));
+        else if (section === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
+        else if (section === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
+        else if (section === "recommended") setRecList((await call("recommendations")).recommendations || []);
+        else if (section === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
+      } catch (e: any) {
+        toast({ title: "Error", description: e.message, variant: "destructive" });
+      }
+    })();
+  }, [section, member, call, toast]);
 
-  const savedSet = new Set<number>(saved.map((p) => p.id));
-  const sentSet = new Set<number>(sent.map((r) => r.profile?.id).filter(Boolean));
+  const profile = data?.profile;
+  const isPremium = !!data?.is_premium;
+  const completion = data?.completion || { percent: 0, missing: [] };
+  const counts = data?.counts || {};
 
   const handleLogout = async () => { await logout(); navigate("/member/login"); };
 
+  const openView = async (id: number) => {
+    setViewTarget(id);
+    setViewOpen(true);
+    try { await call("record_view", { target_id: id }); } catch {}
+  };
+
+  const handleSave = async (id: number, currentlySaved: boolean) => {
+    try {
+      await call(currentlySaved ? "unsave_profile" : "save_profile", { target_id: id });
+      toast({ title: currentlySaved ? "Removed" : "Saved" });
+      loadSummary();
+      if (section === "saved") setSavedList((await call("list_saved")).saved || []);
+    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+  };
+
   const openRequest = (f: { key: string; label: string }) => {
-    setReqField(f);
-    setReqValue("");
-    setReqReason("");
-    setReqOpen(true);
+    setReqField(f); setReqValue(""); setReqReason(""); setReqOpen(true);
   };
 
   const submitRequest = async () => {
     if (!reqField || !reqValue.trim()) {
-      toast({ title: "Requested value is required", variant: "destructive" });
-      return;
+      toast({ title: "Requested value is required", variant: "destructive" }); return;
     }
     try {
       await call("request_update", {
         field_name: reqField.key,
-        current_value: profile ? String(lockedValue(profile, reqField.key) ?? "") : "",
+        current_value: String(lockedValue(profile, reqField.key) ?? ""),
         requested_value: reqValue.trim(),
         reason: reqReason.trim(),
       });
       toast({ title: "Update request submitted", description: "Admin will review shortly." });
       setReqOpen(false);
-      const ur = await call("list_my_update_requests");
-      setUpdateRequests(ur.requests || []);
+      setRequestsList((await call("list_my_update_requests")).requests || []);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
@@ -179,205 +209,184 @@ export function MemberDashboardHome() {
     setSavingEditable(true);
     try {
       await call("update_editable", { values });
-      setEditable((prev: any) => ({ ...prev, ...values }));
+      setData((d: any) => ({ ...d, editable: { ...d.editable, ...values } }));
       toast({ title: "Saved" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    } finally { setSavingEditable(false); }
+    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
+    finally { setSavingEditable(false); }
   };
 
-  const expiry = member.premium_expiry ? new Date(member.premium_expiry).toLocaleDateString() : null;
+  const savedIds = useMemo(() => new Set<number>(savedList.map((p) => p.id)), [savedList]);
+
+  if (loading || !member) return null;
+
+  const SidebarBody = (
+    <DashboardSidebar
+      member={member}
+      profile={profile}
+      completion={completion}
+      section={section}
+      onSelect={(s) => { setSection(s); setMobileOpen(false); }}
+      counts={counts}
+      onCompleteNow={() => { setSection("profile"); setMobileOpen(false); }}
+      onLogout={handleLogout}
+    />
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen bg-muted/30">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              Assalamu Alaikum, {member.full_name}
-              {isPremium && <PremiumBadge />}
-            </h1>
-            <p className="text-muted-foreground mt-1">Your member dashboard</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {isPremium ? (
-              <Badge className="bg-purple-600 hover:bg-purple-700">Premium{expiry ? ` · until ${expiry}` : ""}</Badge>
-            ) : (
-              <Badge variant="secondary">Free Member</Badge>
-            )}
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" /> Logout
-            </Button>
-          </div>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-[1400px]">
+        {/* Mobile bar */}
+        <div className="lg:hidden mb-3 flex items-center justify-between">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm"><Menu className="w-4 h-4 mr-2" />Menu</Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">{SidebarBody}</SheetContent>
+          </Sheet>
+          <Badge variant={isPremium ? "default" : "secondary"} className={isPremium ? "bg-purple-600" : ""}>
+            {isPremium ? "Premium" : "Free Member"}
+          </Badge>
         </div>
 
-        {busy && !profile ? (
-          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-        ) : (
-          <Tabs defaultValue="overview">
-            <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="overview"><UserCheck className="w-4 h-4 mr-1" />My Profile</TabsTrigger>
-              <TabsTrigger value="edit"><Edit3 className="w-4 h-4 mr-1" />Edit Profile</TabsTrigger>
-              <TabsTrigger value="saved"><Star className="w-4 h-4 mr-1" />Saved ({saved.length})</TabsTrigger>
-              <TabsTrigger value="sent"><Send className="w-4 h-4 mr-1" />Sent ({sent.length})</TabsTrigger>
-              <TabsTrigger value="received"><Inbox className="w-4 h-4 mr-1" />Received ({received.length})</TabsTrigger>
-              <TabsTrigger value="recommended"><Heart className="w-4 h-4 mr-1" />Recommended</TabsTrigger>
-              <TabsTrigger value="requests"><ClipboardList className="w-4 h-4 mr-1" />Update Requests</TabsTrigger>
-              {!isPremium && <TabsTrigger value="upgrade"><Crown className="w-4 h-4 mr-1" />Upgrade</TabsTrigger>}
-            </TabsList>
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_300px] gap-4">
+          {/* Left sidebar */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-20">{SidebarBody}</div>
+          </aside>
 
-            <TabsContent value="overview" className="mt-6 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Completion</CardTitle>
-                  <CardDescription>{completion.percent}% complete</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Progress value={completion.percent} className="h-3" />
-                  {completion.missing.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Suggestions to improve:</p>
-                      <ul className="text-sm space-y-1">
-                        {completion.missing.map((m) => (
-                          <li key={m.key} className="flex justify-between border-b py-1">
-                            <span>Add {m.label}</span>
-                            <span className="text-primary font-medium">+{m.weight}%</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-green-600" />Verified Profile</CardTitle>
-                  <CardDescription>This is the information visible on your verified profile.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
-                  {LOCKED_FIELDS.map((f) => (
-                    <div key={f.key} className="flex justify-between border-b pb-1">
-                      <span className="text-muted-foreground">{f.label}</span>
-                      <span className="font-medium text-right">{String(lockedValue(profile, f.key) ?? "—")}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="edit" className="mt-6 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Lock className="w-5 h-5" /> Verified Fields (Locked)</CardTitle>
-                  <CardDescription>These were verified by admin. Submit a request to change any value.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {LOCKED_FIELDS.map((f) => (
-                    <div key={f.key} className="flex items-center justify-between gap-3 border-b pb-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">{f.label}</p>
-                        <p className="text-sm font-medium flex items-center gap-2">
-                          <Lock className="w-3 h-3 text-muted-foreground" />
-                          <span className="truncate">{String(lockedValue(profile, f.key) ?? "—")}</span>
-                          <Badge variant="outline" className="text-[10px]">Verified</Badge>
-                        </p>
-                      </div>
-                      <Button size="sm" variant="outline" onClick={() => openRequest(f)}>Request Update</Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <EditableForm
-                initial={editable}
-                onSave={saveEditable}
-                saving={savingEditable}
-              />
-            </TabsContent>
-
-            <TabsContent value="saved" className="mt-6">
-              {saved.length === 0 ? <Empty msg="No saved profiles yet." /> : (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {saved.map((p) => <ProfileMiniCard key={p.id} p={p} savedSet={savedSet} sentSet={sentSet} onChanged={loadAll} />)}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="sent" className="mt-6">
-              {sent.length === 0 ? <Empty msg="You haven't sent any interests yet." /> : (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {sent.map((r) => r.profile && <ProfileMiniCard key={r.id} p={r.profile} savedSet={savedSet} sentSet={sentSet} onChanged={loadAll} />)}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="received" className="mt-6">
-              {received.length === 0 ? <Empty msg="No interests received yet." /> : (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {received.map((r) => r.profile && <ProfileMiniCard key={r.id} p={r.profile} savedSet={savedSet} sentSet={sentSet} onChanged={loadAll} />)}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="recommended" className="mt-6">
-              {recommended.length === 0 ? <Empty msg="No recommendations available right now." /> : (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {recommended.map((p) => <ProfileMiniCard key={p.id} p={p} savedSet={savedSet} sentSet={sentSet} onChanged={loadAll} />)}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="requests" className="mt-6">
-              {updateRequests.length === 0 ? <Empty msg="No update requests yet." /> : (
-                <div className="space-y-3">
-                  {updateRequests.map((r) => (
-                    <Card key={r.id}>
-                      <CardContent className="pt-4">
-                        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                          <span className="font-medium">{r.field_name}</span>
-                          <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "secondary"}>
-                            {r.status}
-                          </Badge>
-                        </div>
-                        <div className="text-sm space-y-1">
-                          <div><span className="text-muted-foreground">Current:</span> {r.current_value || "—"}</div>
-                          <div><span className="text-muted-foreground">Requested:</span> {r.requested_value}</div>
-                          {r.reason && <div><span className="text-muted-foreground">Reason:</span> {r.reason}</div>}
-                          {r.admin_notes && <div><span className="text-muted-foreground">Admin notes:</span> {r.admin_notes}</div>}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {!isPremium && (
-              <TabsContent value="upgrade" className="mt-6">
-                <Card className="border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Crown className="w-5 h-5 text-purple-600" />Upgrade to Premium</CardTitle>
-                    <CardDescription>Unlimited interests, contact details, biodata download & priority visibility.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="text-sm space-y-1 mb-4 text-muted-foreground">
-                      <li>✓ Unlimited interests (free plan: 5/month)</li>
-                      <li>✓ View contact numbers & WhatsApp</li>
-                      <li>✓ Full biodata access & PDF download</li>
-                      <li>✓ Priority profile visibility</li>
-                    </ul>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => navigate("/pricing")}>
-                      <Sparkles className="w-4 h-4 mr-2" />View Premium Plans
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+          {/* Center */}
+          <main className="space-y-4 min-w-0">
+            {busy && !data ? (
+              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : (
+              <>
+                {section === "dashboard" && (
+                  <DashboardContent
+                    data={data}
+                    member={member}
+                    isPremium={isPremium}
+                    onViewProfile={openView}
+                    onSave={handleSave}
+                    savedIds={savedIds}
+                  />
+                )}
+                {section === "profile" && (
+                  <ProfileSection
+                    profile={profile}
+                    editable={data?.editable || {}}
+                    onRequestUpdate={openRequest}
+                    onSaveEditable={saveEditable}
+                    savingEditable={savingEditable}
+                  />
+                )}
+                {section === "search" && (
+                  <PlaceholderSection
+                    title="Search Profiles"
+                    description="Browse all verified profiles."
+                    cta="Go to Profiles"
+                    onCta={() => navigate("/profiles")}
+                  />
+                )}
+                {section === "recommended" && (
+                  <CardListSection
+                    title="Recommended For You"
+                    profiles={recList}
+                    onView={openView}
+                    onSave={handleSave}
+                    savedIds={savedIds}
+                    self={profile}
+                  />
+                )}
+                {section === "saved" && (
+                  <CardListSection
+                    title="Saved Profiles"
+                    profiles={savedList}
+                    onView={openView}
+                    onSave={handleSave}
+                    savedIds={savedIds}
+                    self={profile}
+                    emptyMsg="No saved profiles yet."
+                  />
+                )}
+                {section === "recently" && (
+                  <CardListSection
+                    title="Recently Viewed"
+                    profiles={recentlyList}
+                    onView={openView}
+                    onSave={handleSave}
+                    savedIds={savedIds}
+                    self={profile}
+                    emptyMsg="You haven't viewed any profiles yet."
+                  />
+                )}
+                {section === "viewers" && (
+                  <ViewersSection
+                    data={viewersList}
+                    isPremium={isPremium}
+                    onView={openView}
+                    onSave={handleSave}
+                    savedIds={savedIds}
+                    self={profile}
+                  />
+                )}
+                {section === "sent" && (
+                  <InterestsSection title="Sent Interests" rows={sentList} emptyMsg="No interests sent yet." onView={openView} />
+                )}
+                {section === "received" && (
+                  <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView} />
+                )}
+                {section === "messages" && (
+                  <Card><CardContent className="py-16 text-center text-muted-foreground">
+                    <MessageSquare className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60" />
+                    <p className="font-medium mb-1">Messaging is coming soon</p>
+                    <p className="text-sm">For now, send interests and connect via WhatsApp once mutual interest is shown.</p>
+                  </CardContent></Card>
+                )}
+                {section === "activity" && (
+                  <ActivitySection counts={counts} recently={data?.recently_viewed || []} viewers={data?.who_viewed_me || []} />
+                )}
+                {section === "settings" && (
+                  <SettingsSection member={member} onLogout={handleLogout} />
+                )}
+                {section === "requests" && (
+                  <RequestsSection requests={requestsList} />
+                )}
+              </>
             )}
-          </Tabs>
-        )}
+          </main>
+
+          {/* Right rail */}
+          <aside className="space-y-4 min-w-0">
+            {!isPremium && <PremiumUpgradeCard />}
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Profile Tips</h4>
+                </div>
+                <p className="text-xs text-muted-foreground">Complete your profile and add more photos to get better matches.</p>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs"><span>{completion.percent}% Complete</span></div>
+                  <Progress value={completion.percent} className="h-1.5" />
+                </div>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => setSection("profile")}>
+                  Improve Profile
+                </Button>
+              </CardContent>
+            </Card>
+
+            <WhoViewedPreview
+              viewers={data?.who_viewed_me || []}
+              total={counts?.who_viewed_me || 0}
+              isPremium={isPremium}
+              onSeeAll={() => setSection("viewers")}
+            />
+          </aside>
+        </div>
       </div>
+
+      <ViewProfileDialog open={viewOpen} onOpenChange={setViewOpen} targetId={viewTarget} />
 
       <Dialog open={reqOpen} onOpenChange={setReqOpen}>
         <DialogContent>
@@ -409,8 +418,406 @@ export function MemberDashboardHome() {
   );
 }
 
-function Empty({ msg }: { msg: string }) {
-  return <div className="text-center py-16 text-muted-foreground">{msg}</div>;
+/* ===================== SIDEBAR ===================== */
+function DashboardSidebar({ member, profile, completion, section, onSelect, counts, onCompleteNow, onLogout }: any) {
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="flex items-center gap-3">
+            <ProfilePhoto src={profile?.photo_urls?.[0]} alt={member.full_name} size="md" rounded="full" />
+            <div className="min-w-0">
+              <div className="font-semibold truncate">{member.full_name}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                Verified Member <BadgeCheck className="w-3 h-3 text-green-600" />
+              </div>
+            </div>
+          </div>
+          <nav className="space-y-0.5">
+            {NAV.map((n) => {
+              const Icon = n.icon;
+              const active = section === n.key;
+              const badge =
+                n.key === "saved" ? counts.saved :
+                n.key === "recently" ? counts.recently_viewed :
+                n.key === "viewers" ? counts.who_viewed_me : null;
+              return (
+                <button
+                  key={n.key}
+                  type="button"
+                  onClick={() => onSelect(n.key)}
+                  className={cn(
+                    "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-md text-sm transition",
+                    active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-muted",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <Icon className={cn("w-4 h-4", active ? "text-primary" : "text-muted-foreground")} />
+                    {n.label}
+                  </span>
+                  {n.key === "viewers" && counts.who_viewed_me === 0 && (
+                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5">New</Badge>
+                  )}
+                  {badge ? <Badge variant="secondary" className="text-[10px] py-0 px-1.5">{badge}</Badge> : null}
+                </button>
+              );
+            })}
+          </nav>
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-sm">Profile Completion</span>
+            <span className="text-sm font-bold text-primary">{completion.percent}%</span>
+          </div>
+          <Progress value={completion.percent} className="h-2" />
+          <p className="text-xs text-muted-foreground">Complete your profile to get better matches</p>
+          <Button variant="outline" size="sm" className="w-full border-primary/40 text-primary hover:bg-primary/10" onClick={onCompleteNow}>
+            Complete Now
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Button variant="ghost" size="sm" className="w-full text-muted-foreground hover:text-foreground" onClick={onLogout}>
+        <LogOut className="w-4 h-4 mr-2" /> Logout
+      </Button>
+    </div>
+  );
+}
+
+/* ===================== DASHBOARD CONTENT ===================== */
+function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds }: any) {
+  const counts = data?.counts || {};
+  const recommendations = data?.recommendations || [];
+  const newWeek = data?.new_this_week || [];
+  const recently = data?.recently_viewed || [];
+  const self = data?.profile;
+  return (
+    <div className="space-y-4">
+      {/* Greeting */}
+      <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-100">
+        <CardContent className="p-5">
+          <h2 className="text-xl sm:text-2xl font-bold">Assalamualaikum, {member.full_name}! 👋</h2>
+          <p className="text-sm text-muted-foreground mt-1">Welcome back! Your profile is {data?.completion?.percent || 0}% complete.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            <StatTile icon={<ShieldCheck className="w-5 h-5 text-green-600" />} bg="bg-green-100" label="Profile Status" value={<span className="text-green-700">Verified</span>} />
+            <StatTile icon={<Star className="w-5 h-5 text-pink-600" />} bg="bg-pink-100" label="Saved Profiles" value={counts.saved ?? 0} />
+            <StatTile icon={<Eye className="w-5 h-5 text-amber-600" />} bg="bg-amber-100" label="Recently Viewed" value={counts.recently_viewed ?? 0} />
+            <StatTile
+              icon={<BookmarkPlus className="w-5 h-5 text-rose-600" />} bg="bg-rose-100"
+              label="Free Requests Left"
+              value={isPremium ? "∞" : `${counts.free_requests_left ?? 0} / ${counts.free_requests_limit ?? 5}`}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recommended */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-lg">Recommended For You</CardTitle>
+          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={() => onViewProfile && null}>View All</Button>
+        </CardHeader>
+        <CardContent>
+          {recommendations.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No recommendations yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+              {recommendations.slice(0, 4).map((p: any) => (
+                <RecommendedCard
+                  key={p.id} p={p}
+                  match={matchPercent(self, p)}
+                  onView={() => onViewProfile(p.id)}
+                  onSave={() => onSave(p.id, savedIds.has(p.id))}
+                  saved={savedIds.has(p.id)}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Two columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base">New Profiles This Week</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {newWeek.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No new profiles yet.</p>}
+            {newWeek.slice(0, 5).map((p: any) => (
+              <MiniRow key={p.id} p={p} badge={<Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px]">New</Badge>} onClick={() => onViewProfile(p.id)} />
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base">Recently Viewed Profiles</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recently.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">Nothing viewed yet.</p>}
+            {recently.slice(0, 5).map((p: any) => (
+              <MiniRow key={p.id} p={p} time={relativeTime(p.viewed_at)} onClick={() => onViewProfile(p.id)} />
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function StatTile({ icon, bg, label, value }: any) {
+  return (
+    <div className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm">
+      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", bg)}>{icon}</div>
+      <div className="min-w-0">
+        <div className="text-[11px] text-muted-foreground leading-tight">{label}</div>
+        <div className="font-semibold text-sm truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function RecommendedCard({ p, match, onView, onSave, saved }: any) {
+  return (
+    <div className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition">
+      <div className="relative">
+        <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
+        <button
+          type="button"
+          onClick={onSave}
+          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center shadow"
+          aria-label="Save"
+        >
+          <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "text-muted-foreground")} />
+        </button>
+        <div className="absolute bottom-2 left-2">
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px]">{match}% Match</Badge>
+        </div>
+      </div>
+      <div className="p-2.5 space-y-1">
+        <div className="font-semibold text-sm truncate">{p.name}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{p.age || "—"} · {p.location || "—"}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{p.marital_status || "—"}</div>
+        <div className="flex gap-1.5 pt-1">
+          <Button size="sm" className="h-7 text-xs flex-1" onClick={onView}>View Profile</Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={onSave}>{saved ? "Saved" : "Save"}</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniRow({ p, badge, time, onClick }: any) {
+  return (
+    <button type="button" onClick={onClick} className="w-full flex items-center gap-3 p-2 hover:bg-muted/50 rounded-md text-left">
+      <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="md" rounded="full" />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{p.name}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{p.age || "—"} · {p.location || "—"}</div>
+      </div>
+      {badge || (time && <span className="text-[11px] text-muted-foreground shrink-0">{time}</span>)}
+    </button>
+  );
+}
+
+/* ===================== OTHER SECTIONS ===================== */
+function CardListSection({ title, profiles, onView, onSave, savedIds, self, emptyMsg }: any) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+      <CardContent>
+        {profiles.length === 0 ? (
+          <p className="text-center text-muted-foreground py-10">{emptyMsg || "Nothing here yet."}</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+            {profiles.map((p: any) => (
+              <RecommendedCard
+                key={p.id} p={p}
+                match={matchPercent(self, p)}
+                onView={() => onView(p.id)}
+                onSave={() => onSave(p.id, savedIds.has(p.id))}
+                saved={savedIds.has(p.id)}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ViewersSection({ data, isPremium, onView, onSave, savedIds, self }: any) {
+  const viewers = data?.viewers || [];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Who Viewed Me</CardTitle>
+        <CardDescription>
+          {isPremium ? "All members who viewed your profile." : `Showing latest 4 viewers. Upgrade to see all ${data?.total || 0}.`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {viewers.length === 0 ? (
+          <p className="text-center text-muted-foreground py-10">No one has viewed your profile yet.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+            {viewers.map((p: any) => (
+              <RecommendedCard
+                key={p.id} p={p}
+                match={matchPercent(self, p)}
+                onView={() => onView(p.id)}
+                onSave={() => onSave(p.id, savedIds.has(p.id))}
+                saved={savedIds.has(p.id)}
+              />
+            ))}
+          </div>
+        )}
+        {!isPremium && data?.locked && (
+          <div className="mt-4 p-3 rounded-md bg-amber-50 border border-amber-200 text-sm text-amber-900">
+            <Crown className="w-4 h-4 inline mr-1" />Upgrade to Premium to see everyone who viewed your profile.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InterestsSection({ title, rows, emptyMsg, onView }: any) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+      <CardContent className="space-y-2">
+        {rows.length === 0 ? (
+          <p className="text-center text-muted-foreground py-10">{emptyMsg}</p>
+        ) : rows.map((r: any) => r.profile && (
+          <button key={r.id} type="button" onClick={() => onView(r.profile.id)} className="w-full flex items-center gap-3 p-3 border rounded-md hover:bg-muted/50 text-left">
+            <ProfilePhoto src={r.profile.photo_urls?.[0]} alt={r.profile.name} blurred={r.profile.photo_blurred} size="md" rounded="full" />
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm truncate">{r.profile.name}</div>
+              <div className="text-xs text-muted-foreground truncate">{r.profile.age} · {r.profile.location}</div>
+            </div>
+            <Badge variant="secondary" className="text-[10px]">{r.status}</Badge>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActivitySection({ counts, recently, viewers }: any) {
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle>My Activity</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatTile icon={<Star className="w-5 h-5 text-pink-600" />} bg="bg-pink-100" label="Saved" value={counts.saved ?? 0} />
+          <StatTile icon={<Eye className="w-5 h-5 text-amber-600" />} bg="bg-amber-100" label="Profiles Viewed" value={counts.recently_viewed ?? 0} />
+          <StatTile icon={<BadgeCheck className="w-5 h-5 text-green-600" />} bg="bg-green-100" label="Viewers" value={counts.who_viewed_me ?? 0} />
+          <StatTile icon={<Heart className="w-5 h-5 text-rose-600" />} bg="bg-rose-100" label="Free Left" value={counts.free_requests_left ?? "∞"} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Latest Profile Views</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {recently.slice(0, 8).map((p: any) => <MiniRow key={p.id} p={p} time={relativeTime(p.viewed_at)} onClick={() => {}} />)}
+          {recently.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No activity yet.</p>}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SettingsSection({ member, onLogout }: any) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Account Settings</CardTitle></CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <div className="flex justify-between border-b pb-2"><span className="text-muted-foreground">Name</span><span className="font-medium">{member.full_name}</span></div>
+        <div className="flex justify-between border-b pb-2"><span className="text-muted-foreground">Email</span><span className="font-medium">{member.email}</span></div>
+        <div className="flex justify-between border-b pb-2"><span className="text-muted-foreground">WhatsApp</span><span className="font-medium">{member.whatsapp_number || "—"}</span></div>
+        <div className="flex justify-between border-b pb-2"><span className="text-muted-foreground">Plan</span><span className="font-medium">{member.plan_type === "premium" ? "Premium" : "Free"}</span></div>
+        <p className="text-xs text-muted-foreground pt-2">To update verified information, request changes from the My Profile tab.</p>
+        <Button variant="outline" onClick={onLogout}><LogOut className="w-4 h-4 mr-2" />Logout</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RequestsSection({ requests }: any) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><ClipboardList className="w-5 h-5" /> Update Requests</CardTitle>
+        <CardDescription>Your pending and processed requests to change verified information.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {requests.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No update requests yet.</p>
+        ) : requests.map((r: any) => (
+          <div key={r.id} className="border rounded-md p-3">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <span className="font-medium">{r.field_name}</span>
+              <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "secondary"}>{r.status}</Badge>
+            </div>
+            <div className="text-sm space-y-1">
+              <div><span className="text-muted-foreground">Current:</span> {r.current_value || "—"}</div>
+              <div><span className="text-muted-foreground">Requested:</span> {r.requested_value}</div>
+              {r.reason && <div><span className="text-muted-foreground">Reason:</span> {r.reason}</div>}
+              {r.admin_notes && <div><span className="text-muted-foreground">Admin notes:</span> {r.admin_notes}</div>}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlaceholderSection({ title, description, cta, onCta }: any) {
+  return (
+    <Card>
+      <CardContent className="py-16 text-center">
+        <h3 className="font-semibold text-lg mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-4">{description}</p>
+        <Button onClick={onCta}>{cta}</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ===================== PROFILE / EDIT ===================== */
+function ProfileSection({ profile, editable, onRequestUpdate, onSaveEditable, savingEditable }: any) {
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-green-600" />Verified Information</CardTitle>
+          <CardDescription>These fields are verified by admin. Submit a request to change any value.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {LOCKED_FIELDS.map((f) => (
+            <div key={f.key} className="flex items-center justify-between gap-3 border-b pb-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground">{f.label}</p>
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="truncate">{String(lockedValue(profile, f.key) ?? "—")}</span>
+                </p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => onRequestUpdate(f)}>Request Update</Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <EditableForm initial={editable} onSave={onSaveEditable} saving={savingEditable} />
+    </div>
+  );
 }
 
 function EditableForm({ initial, onSave, saving }: { initial: any; onSave: (v: Record<string, string>) => void; saving: boolean }) {
@@ -424,33 +831,50 @@ function EditableForm({ initial, onSave, saving }: { initial: any; onSave: (v: R
     EDITABLE_FIELDS.forEach((f) => (o[f.key] = initial?.[f.key] ?? ""));
     setValues(o);
   }, [initial]);
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Edit3 className="w-5 h-5" /> Editable Fields</CardTitle>
-        <CardDescription>Update these freely — changes save instantly without admin approval.</CardDescription>
+        <CardTitle className="flex items-center gap-2"><Edit3 className="w-5 h-5" /> About You</CardTitle>
+        <CardDescription>Update these freely — changes save instantly.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {EDITABLE_FIELDS.map((f) => (
           <div key={f.key}>
             <Label>{f.label}</Label>
-            {f.long ? (
-              <Textarea
-                rows={3}
-                value={values[f.key]}
-                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-              />
-            ) : (
-              <Input
-                value={values[f.key]}
-                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-              />
-            )}
+            {f.long
+              ? <Textarea rows={3} value={values[f.key]} onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))} />
+              : <Input value={values[f.key]} onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))} />}
           </div>
         ))}
         <Button onClick={() => onSave(values)} disabled={saving}>
           {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Save Changes
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ===================== WHO VIEWED ME PREVIEW ===================== */
+function WhoViewedPreview({ viewers, total, isPremium, onSeeAll }: any) {
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="font-semibold text-sm">Who Viewed Me</h4>
+          <Button variant="ghost" size="sm" className="h-7 text-xs text-primary" onClick={onSeeAll}>View All</Button>
+        </div>
+        {viewers.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-2">No viewers yet.</p>
+        ) : (
+          <div className="flex -space-x-2">
+            {viewers.slice(0, 4).map((v: any) => (
+              <ProfilePhoto key={v.id} src={v.photo_urls?.[0]} alt={v.name} blurred={v.photo_blurred} size="md" rounded="full" className="border-2 border-background" />
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">{total} {total === 1 ? "person" : "people"} viewed your profile</p>
+        <Button variant="outline" size="sm" className="w-full text-primary border-primary/40" onClick={onSeeAll}>
+          {isPremium ? "See All Viewers" : "See Who Viewed"}
         </Button>
       </CardContent>
     </Card>

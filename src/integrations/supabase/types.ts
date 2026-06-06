@@ -321,6 +321,27 @@ export type Database = {
           },
         ]
       }
+      profile_views: {
+        Row: {
+          id: string
+          viewed_at: string
+          viewed_profile_id: number
+          viewer_profile_id: number
+        }
+        Insert: {
+          id?: string
+          viewed_at?: string
+          viewed_profile_id: number
+          viewer_profile_id: number
+        }
+        Update: {
+          id?: string
+          viewed_at?: string
+          viewed_profile_id?: number
+          viewer_profile_id?: number
+        }
+        Relationships: []
+      }
       profiles_data: {
         Row: {
           active_device_info: Json | null
