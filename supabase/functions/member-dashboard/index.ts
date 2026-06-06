@@ -93,6 +93,7 @@ function computeCompletion(p: any, editable: any) {
 }
 
 function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean) {
+  const allPhotos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
   const base = {
     id: p.id,
     name: p.name,
@@ -113,7 +114,9 @@ function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean) {
     preferred_age: p.preferred_age,
     plan_type: p.plan_type,
     is_premium: isPremium(p),
-    photo_urls: Array.isArray(p.photo_urls) && p.photo_urls.length ? [p.photo_urls[0]] : [],
+    photo_urls: allPhotos.length ? [allPhotos[0]] : [],
+    photo_count: allPhotos.length,
+    photo_blurred: !(viewerIsPremium || isSelf),
   };
   if (viewerIsPremium || isSelf) {
     return {
@@ -121,7 +124,8 @@ function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean) {
       email: p.email,
       whatsapp_number: p.whatsapp_number,
       biodata_url: p.biodata_url,
-      photo_urls: p.photo_urls || [],
+      photo_urls: allPhotos,
+      photo_blurred: false,
       other_info: p.other_info,
     };
   }
@@ -155,6 +159,197 @@ serve(async (req) => {
           is_premium: premium,
           completion,
         });
+      }
+
+      case "dashboard_summary": {
+        const completion = computeCompletion(profile, editableExisting);
+        // counts
+        const [savedCount, viewedCount, viewersCount, sentMonth] = await Promise.all([
+          supabase.from("saved_profiles").select("id", { count: "exact", head: true }).eq("owner_profile_id", profileId),
+          supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("viewer_profile_id", profileId),
+          supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("viewed_profile_id", profileId),
+          (async () => {
+            const monthAgo = new Date(); monthAgo.setDate(monthAgo.getDate() - 30);
+            return supabase.from("profile_interests").select("id", { count: "exact", head: true })
+              .eq("sender_profile_id", profileId).gte("created_at", monthAgo.toISOString());
+          })(),
+        ]);
+        const freeLimit = 5;
+        const sentThisMonth = sentMonth.count ?? 0;
+        const freeLeft = premium ? null : Math.max(0, freeLimit - sentThisMonth);
+
+        const wantGender = profile.gender === "Male" ? "Female" : profile.gender === "Female" ? "Male" : null;
+        const recQ = supabase.from("profiles_data").select("*").eq("verification_status", "Verified").eq("is_live", true).neq("id", profileId).limit(12);
+        if (wantGender) recQ.eq("gender", wantGender);
+        const { data: recRaw } = await recQ;
+        const recommendations = (recRaw ?? [])
+          .sort((a: any, b: any) => Number(isPremium(b)) - Number(isPremium(a)))
+          .map((p) => sanitizeProfile(p, premium, false));
+
+        // recently viewed by me
+        const { data: rvRows } = await supabase
+          .from("profile_views")
+          .select("viewed_profile_id, viewed_at")
+          .eq("viewer_profile_id", profileId)
+          .order("viewed_at", { ascending: false })
+          .limit(20);
+        const rvIds: number[] = [];
+        const rvSeen = new Set<number>();
+        const rvTime: Record<number, string> = {};
+        for (const r of (rvRows ?? [])) {
+          if (!rvSeen.has(r.viewed_profile_id)) {
+            rvSeen.add(r.viewed_profile_id);
+            rvIds.push(r.viewed_profile_id);
+            rvTime[r.viewed_profile_id] = r.viewed_at;
+          }
+        }
+        const { data: rvProfiles } = rvIds.length
+          ? await supabase.from("profiles_data").select("*").in("id", rvIds)
+          : { data: [] as any[] };
+        const recentlyViewed = rvIds
+          .map((id) => rvProfiles?.find((p: any) => p.id === id))
+          .filter(Boolean)
+          .map((p: any) => ({ ...sanitizeProfile(p, premium, false), viewed_at: rvTime[p.id] }));
+
+        // who viewed me
+        const { data: wvRows } = await supabase
+          .from("profile_views")
+          .select("viewer_profile_id, viewed_at")
+          .eq("viewed_profile_id", profileId)
+          .order("viewed_at", { ascending: false })
+          .limit(20);
+        const wvIds: number[] = [];
+        const wvSeen = new Set<number>();
+        const wvTime: Record<number, string> = {};
+        for (const r of (wvRows ?? [])) {
+          if (!wvSeen.has(r.viewer_profile_id)) {
+            wvSeen.add(r.viewer_profile_id);
+            wvIds.push(r.viewer_profile_id);
+            wvTime[r.viewer_profile_id] = r.viewed_at;
+          }
+        }
+        const limitedWvIds = premium ? wvIds : wvIds.slice(0, 4);
+        const { data: wvProfiles } = limitedWvIds.length
+          ? await supabase.from("profiles_data").select("*").in("id", limitedWvIds)
+          : { data: [] as any[] };
+        const whoViewedMe = limitedWvIds
+          .map((id) => wvProfiles?.find((p: any) => p.id === id))
+          .filter(Boolean)
+          .map((p: any) => ({ ...sanitizeProfile(p, premium, false), viewed_at: wvTime[p.id] }));
+
+        // new profiles this week
+        const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+        let newQ = supabase.from("profiles_data").select("*")
+          .eq("verification_status", "Verified").eq("is_live", true)
+          .neq("id", profileId)
+          .gte("created_at", weekAgo.toISOString())
+          .order("created_at", { ascending: false }).limit(8);
+        if (wantGender) newQ = newQ.eq("gender", wantGender);
+        const { data: newRaw } = await newQ;
+        const newThisWeek = (newRaw ?? []).map((p: any) => sanitizeProfile(p, premium, false));
+
+        return json({
+          profile: sanitizeProfile(profile, true, true),
+          editable: editableExisting ?? {},
+          is_premium: premium,
+          completion,
+          counts: {
+            saved: savedCount.count ?? 0,
+            recently_viewed: viewedCount.count ?? 0,
+            who_viewed_me: viewersCount.count ?? 0,
+            free_requests_left: freeLeft,
+            free_requests_limit: freeLimit,
+          },
+          recommendations,
+          recently_viewed: recentlyViewed,
+          who_viewed_me: whoViewedMe,
+          new_this_week: newThisWeek,
+        });
+      }
+
+      case "record_view": {
+        const target = Number(body.target_id);
+        if (!target || target === profileId) return json({ success: true });
+        await supabase.from("profile_views").insert({
+          viewer_profile_id: profileId,
+          viewed_profile_id: target,
+        });
+        return json({ success: true });
+      }
+
+      case "view_profile": {
+        const target = Number(body.target_id);
+        if (!target) return json({ error: "Invalid target" }, 400);
+        const { data: targetProfile } = await supabase
+          .from("profiles_data").select("*").eq("id", target).maybeSingle();
+        if (!targetProfile) return json({ error: "Profile not found" }, 404);
+        if (target !== profileId) {
+          await supabase.from("profile_views").insert({
+            viewer_profile_id: profileId,
+            viewed_profile_id: target,
+          });
+        }
+        const isSelf = target === profileId;
+        return json({
+          profile: sanitizeProfile(targetProfile, premium, isSelf),
+          viewer_is_premium: premium,
+          is_self: isSelf,
+        });
+      }
+
+      case "list_who_viewed_me": {
+        const { data: wvRows } = await supabase
+          .from("profile_views")
+          .select("viewer_profile_id, viewed_at")
+          .eq("viewed_profile_id", profileId)
+          .order("viewed_at", { ascending: false })
+          .limit(50);
+        const ids: number[] = [];
+        const seen = new Set<number>();
+        const times: Record<number, string> = {};
+        for (const r of (wvRows ?? [])) {
+          if (!seen.has(r.viewer_profile_id)) {
+            seen.add(r.viewer_profile_id);
+            ids.push(r.viewer_profile_id);
+            times[r.viewer_profile_id] = r.viewed_at;
+          }
+        }
+        const limited = premium ? ids : ids.slice(0, 4);
+        const { data: profs } = limited.length
+          ? await supabase.from("profiles_data").select("*").in("id", limited)
+          : { data: [] as any[] };
+        const result = limited.map((id) => {
+          const p = profs?.find((x: any) => x.id === id);
+          return p ? { ...sanitizeProfile(p, premium, false), viewed_at: times[id] } : null;
+        }).filter(Boolean);
+        return json({ viewers: result, total: ids.length, locked: !premium && ids.length > 4 });
+      }
+
+      case "list_recently_viewed": {
+        const { data: rows } = await supabase
+          .from("profile_views")
+          .select("viewed_profile_id, viewed_at")
+          .eq("viewer_profile_id", profileId)
+          .order("viewed_at", { ascending: false })
+          .limit(50);
+        const ids: number[] = [];
+        const seen = new Set<number>();
+        const times: Record<number, string> = {};
+        for (const r of (rows ?? [])) {
+          if (!seen.has(r.viewed_profile_id)) {
+            seen.add(r.viewed_profile_id);
+            ids.push(r.viewed_profile_id);
+            times[r.viewed_profile_id] = r.viewed_at;
+          }
+        }
+        const { data: profs } = ids.length
+          ? await supabase.from("profiles_data").select("*").in("id", ids)
+          : { data: [] as any[] };
+        const result = ids.map((id) => {
+          const p = profs?.find((x: any) => x.id === id);
+          return p ? { ...sanitizeProfile(p, premium, false), viewed_at: times[id] } : null;
+        }).filter(Boolean);
+        return json({ profiles: result });
       }
 
       case "update_editable": {
