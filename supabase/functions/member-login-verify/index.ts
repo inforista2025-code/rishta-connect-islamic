@@ -79,7 +79,20 @@ serve(async (req) => {
       const rk = matchKey(r.whatsapp_number || "");
       return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
     });
-    const reg = registrationMatch ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch } : (profileMatch ? toProfileMember(profileMatch) : null);
+    // IMPORTANT: must mirror member-login-request priority (profiles_data first),
+    // otherwise the OTP stored against profile_data_id can't be found here and
+    // users get "No active code. Please request a new one."
+    const reg = profileMatch
+      ? toProfileMember(profileMatch)
+      : (registrationMatch
+          ? { source: "registrations", registration_id: registrationMatch.id, profile_data_id: null, ...registrationMatch }
+          : null);
+    console.log("verify match", {
+      key,
+      chosen_source: reg?.source,
+      profile_data_id: reg?.profile_data_id,
+      registration_id: reg?.registration_id,
+    });
 
     if (!reg || String(reg.verification_status).toLowerCase() !== "verified") {
       return json({ error: "Account not found or not verified." });
