@@ -179,7 +179,13 @@ serve(async (req) => {
         const freeLeft = premium ? null : Math.max(0, freeLimit - sentThisMonth);
 
         const wantGender = profile.gender === "Male" ? "Female" : profile.gender === "Female" ? "Male" : null;
-        const recQ = supabase.from("profiles_data").select("*").eq("verification_status", "Verified").eq("is_live", true).neq("id", profileId).limit(12);
+        const recQ = supabase
+          .from("profiles_data")
+          .select("*")
+          .ilike("verification_status", "verified")
+          .eq("is_live", true)
+          .neq("id", profileId)
+          .limit(12);
         if (wantGender) recQ.eq("gender", wantGender);
         const { data: recRaw } = await recQ;
         const recommendations = (recRaw ?? [])
@@ -240,7 +246,7 @@ serve(async (req) => {
         // new profiles this week
         const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
         let newQ = supabase.from("profiles_data").select("*")
-          .eq("verification_status", "Verified").eq("is_live", true)
+          .ilike("verification_status", "verified").eq("is_live", true)
           .neq("id", profileId)
           .gte("created_at", weekAgo.toISOString())
           .order("created_at", { ascending: false }).limit(8);
@@ -407,7 +413,7 @@ serve(async (req) => {
           .from("profiles_data")
           .select("*")
           .in("id", ids)
-          .eq("verification_status", "Verified");
+          .ilike("verification_status", "verified");
         const sorted = ids
           .map((id) => profiles?.find((p) => p.id === id))
           .filter(Boolean)
