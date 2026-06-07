@@ -12,6 +12,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !targetId) return;
@@ -41,7 +42,15 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               {(p.photo_urls || []).slice(0, isPremium ? 6 : 1).map((u: string, i: number) => (
-                <ProfilePhoto key={i} src={u} alt={p.name} blurred={p.photo_blurred} size="full" className="aspect-square" showLockHint />
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => { if (isPremium && !p.photo_blurred) setLightbox(u); }}
+                  className={isPremium && !p.photo_blurred ? "cursor-zoom-in focus:outline-none" : "cursor-default"}
+                  aria-label="View photo"
+                >
+                  <ProfilePhoto src={u} alt={p.name} blurred={p.photo_blurred} size="full" className="aspect-square" showLockHint />
+                </button>
               ))}
               {!isPremium && (p.photo_count ?? 0) > 1 && (
                 <div className="aspect-square rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center text-center p-2 bg-primary/5">
@@ -103,6 +112,16 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
           </>
         )}
       </DialogContent>
+      <Dialog open={!!lightbox} onOpenChange={(v) => !v && setLightbox(null)}>
+        <DialogContent className="max-w-4xl p-2 bg-black/95 border-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Photo</DialogTitle>
+          </DialogHeader>
+          {lightbox && (
+            <img src={lightbox} alt="Full size" className="w-full h-auto max-h-[85vh] object-contain rounded" />
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
