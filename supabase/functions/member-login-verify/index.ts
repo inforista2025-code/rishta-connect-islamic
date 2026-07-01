@@ -120,11 +120,8 @@ serve(async (req) => {
 
     await supabase.from("member_otps").update({ consumed_at: new Date().toISOString() }).eq("id", otp.id);
 
-    // Single-device: revoke all existing sessions for this registration
-    const revokeQuery = supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).is("revoked_at", null);
-    if (reg.registration_id) await revokeQuery.eq("registration_id", reg.registration_id);
-    else await revokeQuery.eq("profile_data_id", reg.profile_data_id);
-
+    // Insert the new session FIRST so that a concurrent request/race never
+    // revokes the freshly-issued token before it can be returned to the client.
     const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: session, error: sErr } = await supabase.from("member_sessions").insert({
       registration_id: reg.registration_id,
@@ -133,6 +130,15 @@ serve(async (req) => {
       expires_at,
     }).select("id").single();
     if (sErr) throw sErr;
+
+    // Single-device: revoke every OTHER active session for this member.
+    const revokeQuery = supabase
+      .from("member_sessions")
+      .update({ revoked_at: new Date().toISOString() })
+      .is("revoked_at", null)
+      .neq("id", session.id);
+    if (reg.registration_id) await revokeQuery.eq("registration_id", reg.registration_id);
+    else await revokeQuery.eq("profile_data_id", reg.profile_data_id);
 
     if (reg.registration_id) {
       await supabase.from("registrations").update({
