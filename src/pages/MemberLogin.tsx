@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { setMemberToken } from "@/hooks/useMemberAuth";
+import { setMemberToken, useMemberAuth } from "@/hooks/useMemberAuth";
 import { Navbar } from "@/components/Navbar";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -15,11 +15,21 @@ type Stage = "phone" | "otp";
 export default function MemberLogin() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { member, loading: authLoading } = useMemberAuth();
   const [stage, setStage] = useState<Stage>("phone");
   const [whatsapp, setWhatsapp] = useState("");
   const [code, setCode] = useState("");
   const [emailHint, setEmailHint] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If already signed in, jump straight to the correct dashboard so the user
+  // doesn't accidentally re-issue an OTP and revoke their own live session.
+  useEffect(() => {
+    if (!authLoading && member) {
+      if (member.plan_type === "premium") navigate("/member/premium", { replace: true });
+      else navigate("/member/dashboard", { replace: true });
+    }
+  }, [authLoading, member, navigate]);
 
   const requestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
