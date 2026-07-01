@@ -26,15 +26,16 @@ serve(async (req) => {
     if (!session_token) return json({ valid: false, error: "No session" }, 401);
 
     const { data: session } = await supabase.from("member_sessions").select("*").eq("id", session_token).maybeSingle();
-    if (!session) return json({ valid: false, error: "Invalid session" }, 401);
-    if (session.revoked_at) return json({ valid: false, error: "Logged out from another device" }, 401);
-    if (new Date(session.expires_at) < new Date()) return json({ valid: false, error: "Session expired" }, 401);
+    if (!session) return json({ valid: false, error: "Invalid session. Please log in again." }, 401);
+    if (session.revoked_at) return json({ valid: false, error: "Session ended (logged in on another device). Please log in again." }, 401);
+    if (new Date(session.expires_at) < new Date()) return json({ valid: false, error: "Session expired. Please log in again." }, 401);
 
-    // Idle timeout — 14 days since last_active
+    // Idle timeout — 90 days since last_active. Members log in infrequently;
+    // the previous 14-day window was silently kicking returning users.
     const idleMs = Date.now() - new Date(session.last_active_at).getTime();
-    if (idleMs > 14 * 24 * 60 * 60 * 1000) {
+    if (idleMs > 90 * 24 * 60 * 60 * 1000) {
       await supabase.from("member_sessions").update({ revoked_at: new Date().toISOString() }).eq("id", session.id);
-      return json({ valid: false, error: "Session expired due to inactivity" }, 401);
+      return json({ valid: false, error: "Session expired. Please log in again." }, 401);
     }
 
     if (action === "logout") {
