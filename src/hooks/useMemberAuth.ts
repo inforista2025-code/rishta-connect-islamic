@@ -45,9 +45,11 @@ export function useMemberAuth() {
         body: { session_token: token },
       });
       if (fnErr || !data?.valid) {
+        const msg = data?.error || fnErr?.message || null;
+        console.warn("[useMemberAuth] session invalid:", msg, { fnErr, data });
         clearMemberToken();
         setMember(null);
-        setError(data?.error || fnErr?.message || null);
+        setError(msg);
       } else {
         setMember(data.member);
         setError(null);
