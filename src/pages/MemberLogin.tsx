@@ -11,6 +11,7 @@ import { Navbar } from "@/components/Navbar";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 type Stage = "phone" | "otp";
+const RESEND_COOLDOWN = 45; // seconds
 
 export default function MemberLogin() {
   const navigate = useNavigate();
@@ -21,6 +22,13 @@ export default function MemberLogin() {
   const [code, setCode] = useState("");
   const [emailHint, setEmailHint] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setInterval(() => setResendIn((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [resendIn]);
 
   // If already signed in, jump straight to the correct dashboard so the user
   // doesn't accidentally re-issue an OTP and revoke their own live session.
@@ -48,7 +56,28 @@ export default function MemberLogin() {
       }
       setEmailHint(data.email_hint || "");
       setStage("otp");
+      setResendIn(RESEND_COOLDOWN);
       toast({ title: "Code sent", description: `Verification code sent to ${data.email_hint || "your registered email"}.` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    if (resendIn > 0 || loading) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("member-login-request", {
+        body: { whatsapp_number: whatsapp },
+      });
+      if (error || data?.error) {
+        toast({ title: "Resend failed", description: data?.error || error?.message || "Something went wrong", variant: "destructive" });
+        return;
+      }
+      setEmailHint(data.email_hint || emailHint);
+      setCode("");
+      setResendIn(RESEND_COOLDOWN);
+      toast({ title: "Code resent", description: `A new verification code was sent to ${data.email_hint || "your registered email"}.` });
     } finally {
       setLoading(false);
     }
@@ -152,6 +181,22 @@ export default function MemberLogin() {
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
                 </form>
+                <div className="mt-4 text-center text-sm">
+                  {resendIn > 0 ? (
+                    <span className="text-muted-foreground">
+                      Resend code in <span className="font-medium text-foreground">{resendIn}s</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={resendOtp}
+                      disabled={loading}
+                      className="text-primary font-medium hover:underline disabled:opacity-50"
+                    >
+                      Resend Code
+                    </button>
+                  )}
+                </div>
                 <p className="mt-6 text-xs text-muted-foreground text-center leading-relaxed">
                   Didn't receive the email? Please check your <span className="font-medium text-foreground">Spam</span> or <span className="font-medium text-foreground">Junk</span> folder. Emails may occasionally be filtered there.
                 </p>
