@@ -148,7 +148,6 @@ export function MemberDashboardHome() {
     (async () => {
       try {
         if (section === "saved") setSavedList((await call("list_saved")).saved || []);
-        else if (section === "recently") setRecentlyList((await call("list_recently_viewed")).profiles || []);
         else if (section === "viewers") setViewersList(await call("list_who_viewed_me"));
         else if (section === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
         else if (section === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
@@ -280,14 +279,6 @@ export function MemberDashboardHome() {
                     savingEditable={savingEditable}
                   />
                 )}
-                {section === "search" && (
-                  <PlaceholderSection
-                    title="Search Profiles"
-                    description="Browse all verified profiles."
-                    cta="Go to Profiles"
-                    onCta={() => navigate("/profiles")}
-                  />
-                )}
                 {section === "recommended" && (
                   <CardListSection
                     title="Recommended For You"
@@ -309,17 +300,6 @@ export function MemberDashboardHome() {
                     emptyMsg="No saved profiles yet."
                   />
                 )}
-                {section === "recently" && (
-                  <CardListSection
-                    title="Recently Viewed"
-                    profiles={recentlyList}
-                    onView={openView}
-                    onSave={handleSave}
-                    savedIds={savedIds}
-                    self={profile}
-                    emptyMsg="You haven't viewed any profiles yet."
-                  />
-                )}
                 {section === "viewers" && (
                   <ViewersSection
                     data={viewersList}
@@ -335,16 +315,6 @@ export function MemberDashboardHome() {
                 )}
                 {section === "received" && (
                   <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView} />
-                )}
-                {section === "messages" && (
-                  <Card><CardContent className="py-16 text-center text-muted-foreground">
-                    <MessageSquare className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60" />
-                    <p className="font-medium mb-1">Messaging is coming soon</p>
-                    <p className="text-sm">For now, send interests and connect via WhatsApp once mutual interest is shown.</p>
-                  </CardContent></Card>
-                )}
-                {section === "activity" && (
-                  <ActivitySection counts={counts} recently={data?.recently_viewed || []} viewers={data?.who_viewed_me || []} />
                 )}
                 {section === "settings" && (
                   <SettingsSection member={member} onLogout={handleLogout} />
@@ -439,7 +409,6 @@ function DashboardSidebar({ member, profile, completion, section, onSelect, coun
               const active = section === n.key;
               const badge =
                 n.key === "saved" ? counts.saved :
-                n.key === "recently" ? counts.recently_viewed :
                 n.key === "viewers" ? counts.who_viewed_me : null;
               return (
                 <button
