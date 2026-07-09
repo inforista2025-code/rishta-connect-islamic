@@ -8,22 +8,22 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import logo from "@/assets/logo.png";
 
-const navLinks = [{
-  name: "Home",
-  path: "/"
-}, {
-  name: "Profiles",
-  path: "/profiles"
-}, {
-  name: "Pricing",
-  path: "/pricing"
-}, {
-  name: "Register",
-  path: "/register"
-}, {
-  name: "Contact",
-  path: "/contact"
-}];
+const publicNavLinks = [
+  { name: "Home", path: "/" },
+  { name: "Profiles", path: "/profiles" },
+  { name: "Pricing", path: "/pricing" },
+  { name: "Register", path: "/register" },
+  { name: "Contact", path: "/contact" },
+];
+
+// When a member is signed in, hide "Register" (they already have an account)
+// and lead with matrimony-relevant links plus "Upgrade" as a conversion nudge.
+const memberNavLinks = [
+  { name: "Home", path: "/" },
+  { name: "Profiles", path: "/profiles" },
+  { name: "Upgrade", path: "/pricing" },
+  { name: "Contact", path: "/contact" },
+];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,6 +33,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const isActive = (path: string) => location.pathname === path;
+  const navLinks = member ? memberNavLinks : publicNavLinks;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
