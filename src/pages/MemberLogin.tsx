@@ -152,6 +152,9 @@ export default function MemberLogin() {
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
                 </form>
+                <p className="mt-6 text-xs text-muted-foreground text-center leading-relaxed">
+                  Didn't receive the email? Please check your <span className="font-medium text-foreground">Spam</span> or <span className="font-medium text-foreground">Junk</span> folder. Emails may occasionally be filtered there.
+                </p>
               </CardContent>
             </>
           )}
