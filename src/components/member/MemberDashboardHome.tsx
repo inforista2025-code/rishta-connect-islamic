@@ -24,22 +24,22 @@ import { ViewProfileDialog } from "./ViewProfileDialog";
 import { cn } from "@/lib/utils";
 
 type SectionKey =
-  | "dashboard" | "profile" | "search" | "recommended" | "saved"
-  | "recently" | "received" | "sent" | "messages" | "viewers"
-  | "activity" | "settings" | "requests";
+  | "dashboard" | "profile" | "recommended" | "saved"
+  | "received" | "sent" | "viewers"
+  | "settings" | "requests";
 
+// Trimmed to matrimony-essential sections only.
+// Removed: Search Profiles (duplicates public /profiles), Messages (not built),
+// Recently Viewed (still surfaced as a dashboard widget), My Activity (redundant with Dashboard).
 const NAV: { key: SectionKey; label: string; icon: any }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "profile", label: "My Profile", icon: UserCheck },
-  { key: "search", label: "Search Profiles", icon: Search },
-  { key: "recommended", label: "Recommended", icon: Heart },
-  { key: "saved", label: "Saved Profiles", icon: Star },
-  { key: "recently", label: "Recently Viewed", icon: Eye },
+  { key: "recommended", label: "Matches For You", icon: Heart },
   { key: "received", label: "Received Interests", icon: Inbox },
   { key: "sent", label: "Sent Interests", icon: Send },
-  { key: "messages", label: "Messages", icon: MessageSquare },
   { key: "viewers", label: "Who Viewed Me", icon: BadgeCheck },
-  { key: "activity", label: "My Activity", icon: Activity },
+  { key: "saved", label: "Shortlisted", icon: Star },
+  { key: "requests", label: "Update Requests", icon: ClipboardList },
   { key: "settings", label: "Account Settings", icon: Settings },
 ];
 
