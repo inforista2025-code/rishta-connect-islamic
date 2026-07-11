@@ -268,6 +268,7 @@ export function MemberDashboardHome() {
                     onViewProfile={openView}
                     onSave={handleSave}
                     savedIds={savedIds}
+                    onSeeAllRecommended={() => setSection("recommended")}
                   />
                 )}
                 {section === "profile" && (
