@@ -122,6 +122,8 @@ export function MemberDashboardHome() {
   const [receivedList, setReceivedList] = useState<any[]>([]);
   const [recList, setRecList] = useState<any[]>([]);
   const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [sectionLoading, setSectionLoading] = useState<Record<string, boolean>>({});
+  const [sectionError, setSectionError] = useState<Record<string, string | null>>({});
 
   // request dialog
   const [reqOpen, setReqOpen] = useState(false);
@@ -143,21 +145,29 @@ export function MemberDashboardHome() {
   useEffect(() => { if (member) loadSummary(); }, [member, loadSummary]);
 
   // Load section data on demand
+  const loadSection = useCallback(async (s: SectionKey) => {
+    setSectionLoading((m) => ({ ...m, [s]: true }));
+    setSectionError((m) => ({ ...m, [s]: null }));
+    try {
+      if (s === "saved") setSavedList((await call("list_saved")).saved || []);
+      else if (s === "viewers") setViewersList(await call("list_who_viewed_me"));
+      else if (s === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
+      else if (s === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
+      else if (s === "recommended") setRecList((await call("recommendations")).recommendations || []);
+      else if (s === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
+    } catch (e: any) {
+      setSectionError((m) => ({ ...m, [s]: e.message || "Failed to load" }));
+    } finally {
+      setSectionLoading((m) => ({ ...m, [s]: false }));
+    }
+  }, [call]);
+
   useEffect(() => {
     if (!member) return;
-    (async () => {
-      try {
-        if (section === "saved") setSavedList((await call("list_saved")).saved || []);
-        else if (section === "viewers") setViewersList(await call("list_who_viewed_me"));
-        else if (section === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
-        else if (section === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
-        else if (section === "recommended") setRecList((await call("recommendations")).recommendations || []);
-        else if (section === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
-      } catch (e: any) {
-        toast({ title: "Error", description: e.message, variant: "destructive" });
-      }
-    })();
-  }, [section, member, call, toast]);
+    if (["saved", "viewers", "sent", "received", "recommended", "requests"].includes(section)) {
+      loadSection(section);
+    }
+  }, [section, member, loadSection]);
 
   const profile = data?.profile;
   const isPremium = !!data?.is_premium;
@@ -288,6 +298,10 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     savedIds={savedIds}
                     self={profile}
+                    loading={!!sectionLoading.recommended}
+                    error={sectionError.recommended}
+                    onRetry={() => loadSection("recommended")}
+                    emptyMsg="No matches yet. Complete your profile to see more."
                   />
                 )}
                 {section === "saved" && (
@@ -299,6 +313,9 @@ export function MemberDashboardHome() {
                     savedIds={savedIds}
                     self={profile}
                     emptyMsg="No saved profiles yet."
+                    loading={!!sectionLoading.saved}
+                    error={sectionError.saved}
+                    onRetry={() => loadSection("saved")}
                   />
                 )}
                 {section === "viewers" && (
@@ -309,13 +326,18 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     savedIds={savedIds}
                     self={profile}
+                    loading={!!sectionLoading.viewers}
+                    error={sectionError.viewers}
+                    onRetry={() => loadSection("viewers")}
                   />
                 )}
                 {section === "sent" && (
-                  <InterestsSection title="Sent Interests" rows={sentList} emptyMsg="No interests sent yet." onView={openView} />
+                  <InterestsSection title="Sent Interests" rows={sentList} emptyMsg="No interests sent yet." onView={openView}
+                    loading={!!sectionLoading.sent} error={sectionError.sent} onRetry={() => loadSection("sent")} />
                 )}
                 {section === "received" && (
-                  <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView} />
+                  <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView}
+                    loading={!!sectionLoading.received} error={sectionError.received} onRetry={() => loadSection("received")} />
                 )}
                 {section === "settings" && (
                   <SettingsSection member={member} onLogout={handleLogout} />
@@ -553,36 +575,37 @@ function StatTile({ icon, bg, label, value }: any) {
 
 function RecommendedCard({ p, match, onView, onSave, saved }: any) {
   return (
-    <div className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition">
-      <div className="relative">
+    <div className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition flex flex-col">
+      <button
+        type="button"
+        onClick={onView}
+        className="relative block w-full text-left focus:outline-none focus:ring-2 focus:ring-primary"
+        aria-label={`View ${p.name}'s profile`}
+      >
         <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
-        <button
-          type="button"
-          onClick={onSave}
-          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center shadow"
-          aria-label="Save"
-        >
-          <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "text-muted-foreground")} />
-        </button>
-        <div className="absolute bottom-2 left-2">
+        <span className="absolute bottom-2 left-2">
           <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px]">{match}% Match</Badge>
-        </div>
-      </div>
-      <div className="p-2.5 space-y-1">
+        </span>
+      </button>
+      <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none">
         <div className="font-semibold text-sm truncate">{p.name}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.age || "—"} · {p.location || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{p.marital_status || "—"}</div>
-        <div className="flex gap-1.5 pt-1">
-          <Button size="sm" className="h-7 text-[11px] px-2 flex-1" onClick={onView}>View</Button>
-          <Button size="sm" variant="outline" className="h-7 text-[11px] px-2 flex-1" onClick={onView} title="Open profile to send interest">
-            <Heart className="w-3 h-3 mr-1" /> Interest
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={onSave} aria-label={saved ? "Unsave" : "Save"}>
-            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "")} />
-          </Button>
-        </div>
+      </button>
+      <div className="flex gap-1.5 p-2.5 pt-0">
+        <Button size="sm" className="h-9 text-xs px-2 flex-1" onClick={onView}>
+          <Heart className="w-3.5 h-3.5 mr-1" /> Interest
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-9 w-9 p-0 shrink-0"
+          onClick={(e) => { e.stopPropagation(); onSave(); }}
+          aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
+        >
+          <Star className={cn("w-4 h-4", saved ? "fill-primary text-primary" : "")} />
+        </Button>
       </div>
     </div>
   );
@@ -602,13 +625,27 @@ function MiniRow({ p, badge, time, onClick }: any) {
 }
 
 /* ===================== OTHER SECTIONS ===================== */
-function CardListSection({ title, profiles, onView, onSave, savedIds, self, emptyMsg }: any) {
+function CardListSection({ title, profiles, onView, onSave, savedIds, self, emptyMsg, loading, error, onRetry }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
       <CardContent>
-        {profiles.length === 0 ? (
-          <p className="text-center text-muted-foreground py-10">{emptyMsg || "Nothing here yet."}</p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-14 gap-2">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-xs text-muted-foreground">Loading profiles…</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10 space-y-3">
+            <p className="text-sm text-destructive">{error}</p>
+            {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>Try again</Button>}
+          </div>
+        ) : profiles.length === 0 ? (
+          <div className="text-center py-12 space-y-3">
+            <Heart className="w-10 h-10 text-muted-foreground/40 mx-auto" />
+            <p className="text-sm text-muted-foreground">{emptyMsg || "Nothing here yet."}</p>
+            {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>Refresh</Button>}
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
             {profiles.map((p: any) => (
@@ -627,7 +664,7 @@ function CardListSection({ title, profiles, onView, onSave, savedIds, self, empt
   );
 }
 
-function ViewersSection({ data, isPremium, onView, onSave, savedIds, self }: any) {
+function ViewersSection({ data, isPremium, onView, onSave, savedIds, self, loading, error, onRetry }: any) {
   const viewers = data?.viewers || [];
   return (
     <Card>
@@ -638,7 +675,14 @@ function ViewersSection({ data, isPremium, onView, onSave, savedIds, self }: any
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {viewers.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-14"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        ) : error ? (
+          <div className="text-center py-10 space-y-3">
+            <p className="text-sm text-destructive">{error}</p>
+            {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>Try again</Button>}
+          </div>
+        ) : viewers.length === 0 ? (
           <p className="text-center text-muted-foreground py-10">No one has viewed your profile yet.</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -663,15 +707,22 @@ function ViewersSection({ data, isPremium, onView, onSave, savedIds, self }: any
   );
 }
 
-function InterestsSection({ title, rows, emptyMsg, onView }: any) {
+function InterestsSection({ title, rows, emptyMsg, onView, loading, error, onRetry }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
-        {rows.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-14"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        ) : error ? (
+          <div className="text-center py-10 space-y-3">
+            <p className="text-sm text-destructive">{error}</p>
+            {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>Try again</Button>}
+          </div>
+        ) : rows.length === 0 ? (
           <p className="text-center text-muted-foreground py-10">{emptyMsg}</p>
         ) : rows.map((r: any) => r.profile && (
-          <button key={r.id} type="button" onClick={() => onView(r.profile.id)} className="w-full flex items-center gap-3 p-3 border rounded-md hover:bg-muted/50 text-left">
+          <button key={r.id} type="button" onClick={() => onView(r.profile.id)} className="w-full flex items-center gap-3 p-3 border rounded-md hover:bg-muted/50 text-left min-h-[64px]">
             <ProfilePhoto src={r.profile.photo_urls?.[0]} alt={r.profile.name} blurred={r.profile.photo_blurred} size="md" rounded="full" />
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm truncate">{r.profile.name}</div>
