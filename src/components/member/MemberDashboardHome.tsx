@@ -122,6 +122,8 @@ export function MemberDashboardHome() {
   const [receivedList, setReceivedList] = useState<any[]>([]);
   const [recList, setRecList] = useState<any[]>([]);
   const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [sectionLoading, setSectionLoading] = useState<Record<string, boolean>>({});
+  const [sectionError, setSectionError] = useState<Record<string, string | null>>({});
 
   // request dialog
   const [reqOpen, setReqOpen] = useState(false);
@@ -143,21 +145,29 @@ export function MemberDashboardHome() {
   useEffect(() => { if (member) loadSummary(); }, [member, loadSummary]);
 
   // Load section data on demand
+  const loadSection = useCallback(async (s: SectionKey) => {
+    setSectionLoading((m) => ({ ...m, [s]: true }));
+    setSectionError((m) => ({ ...m, [s]: null }));
+    try {
+      if (s === "saved") setSavedList((await call("list_saved")).saved || []);
+      else if (s === "viewers") setViewersList(await call("list_who_viewed_me"));
+      else if (s === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
+      else if (s === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
+      else if (s === "recommended") setRecList((await call("recommendations")).recommendations || []);
+      else if (s === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
+    } catch (e: any) {
+      setSectionError((m) => ({ ...m, [s]: e.message || "Failed to load" }));
+    } finally {
+      setSectionLoading((m) => ({ ...m, [s]: false }));
+    }
+  }, [call]);
+
   useEffect(() => {
     if (!member) return;
-    (async () => {
-      try {
-        if (section === "saved") setSavedList((await call("list_saved")).saved || []);
-        else if (section === "viewers") setViewersList(await call("list_who_viewed_me"));
-        else if (section === "sent") setSentList((await call("list_interests", { direction: "sent" })).interests || []);
-        else if (section === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
-        else if (section === "recommended") setRecList((await call("recommendations")).recommendations || []);
-        else if (section === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
-      } catch (e: any) {
-        toast({ title: "Error", description: e.message, variant: "destructive" });
-      }
-    })();
-  }, [section, member, call, toast]);
+    if (["saved", "viewers", "sent", "received", "recommended", "requests"].includes(section)) {
+      loadSection(section);
+    }
+  }, [section, member, loadSection]);
 
   const profile = data?.profile;
   const isPremium = !!data?.is_premium;
@@ -288,6 +298,10 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     savedIds={savedIds}
                     self={profile}
+                    loading={!!sectionLoading.recommended}
+                    error={sectionError.recommended}
+                    onRetry={() => loadSection("recommended")}
+                    emptyMsg="No matches yet. Complete your profile to see more."
                   />
                 )}
                 {section === "saved" && (
@@ -299,6 +313,9 @@ export function MemberDashboardHome() {
                     savedIds={savedIds}
                     self={profile}
                     emptyMsg="No saved profiles yet."
+                    loading={!!sectionLoading.saved}
+                    error={sectionError.saved}
+                    onRetry={() => loadSection("saved")}
                   />
                 )}
                 {section === "viewers" && (
@@ -309,13 +326,18 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     savedIds={savedIds}
                     self={profile}
+                    loading={!!sectionLoading.viewers}
+                    error={sectionError.viewers}
+                    onRetry={() => loadSection("viewers")}
                   />
                 )}
                 {section === "sent" && (
-                  <InterestsSection title="Sent Interests" rows={sentList} emptyMsg="No interests sent yet." onView={openView} />
+                  <InterestsSection title="Sent Interests" rows={sentList} emptyMsg="No interests sent yet." onView={openView}
+                    loading={!!sectionLoading.sent} error={sectionError.sent} onRetry={() => loadSection("sent")} />
                 )}
                 {section === "received" && (
-                  <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView} />
+                  <InterestsSection title="Received Interests" rows={receivedList} emptyMsg="No interests received yet." onView={openView}
+                    loading={!!sectionLoading.received} error={sectionError.received} onRetry={() => loadSection("received")} />
                 )}
                 {section === "settings" && (
                   <SettingsSection member={member} onLogout={handleLogout} />
