@@ -2,21 +2,28 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Crown, Lock, FileText, Mail, Phone } from "lucide-react";
+import { Loader2, Crown, Lock, FileText, Mail, Phone, Heart, Star } from "lucide-react";
 import { useMemberApi } from "@/hooks/useMemberApi";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "./ProfilePhoto";
+import { useToast } from "@/hooks/use-toast";
 
 export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: boolean; onOpenChange: (v: boolean) => void; targetId: number | null }) {
   const { call } = useMemberApi();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [sending, setSending] = useState<"save" | "interest" | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [interested, setInterested] = useState(false);
 
   useEffect(() => {
     if (!open || !targetId) return;
     setLoading(true);
+    setSaved(false);
+    setInterested(false);
     call("view_profile", { target_id: targetId })
       .then((res) => setData(res))
       .finally(() => setLoading(false));
@@ -24,10 +31,40 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
 
   const isPremium = data?.viewer_is_premium;
   const p = data?.profile;
+  const isSelf = data?.is_self;
+
+  const doSave = async () => {
+    if (!targetId) return;
+    setSending("save");
+    try {
+      await call(saved ? "unsave_profile" : "save_profile", { target_id: targetId });
+      setSaved((s) => !s);
+      toast({ title: saved ? "Removed" : "Saved" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setSending(null); }
+  };
+
+  const doInterest = async () => {
+    if (!targetId) return;
+    setSending("interest");
+    try {
+      const res = await call("send_interest", { target_id: targetId });
+      if (res?.error === "limit_reached") {
+        toast({ title: "Free limit reached", description: res.message, variant: "destructive" });
+        navigate("/pricing");
+      } else {
+        setInterested(true);
+        toast({ title: "Interest sent" });
+      }
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setSending(null); }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] max-h-[92vh] overflow-y-auto p-4 sm:p-6">
         {loading || !p ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : (
@@ -40,7 +77,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
               <DialogDescription>{p.age} yrs · {p.location}</DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
               {(p.photo_urls || []).slice(0, isPremium ? 6 : 1).map((u: string, i: number) => (
                 <button
                   key={i}
@@ -60,6 +97,19 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                 </div>
               )}
             </div>
+
+            {!isSelf && (
+              <div className="flex gap-2 mb-4 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
+                <Button className="flex-1" onClick={doInterest} disabled={sending !== null || interested}>
+                  {sending === "interest" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className={`w-4 h-4 mr-1 ${interested ? "fill-current" : ""}`} />}
+                  {interested ? "Interest Sent" : "Send Interest"}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={doSave} disabled={sending !== null}>
+                  {sending === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className={`w-4 h-4 mr-1 ${saved ? "fill-primary text-primary" : ""}`} />}
+                  {saved ? "Saved" : "Save"}
+                </Button>
+              </div>
+            )}
 
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
               <Info label="Gender" value={p.gender} />
