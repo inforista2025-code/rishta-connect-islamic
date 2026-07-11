@@ -458,7 +458,7 @@ function DashboardSidebar({ member, profile, completion, section, onSelect, coun
 }
 
 /* ===================== DASHBOARD CONTENT ===================== */
-function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds }: any) {
+function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds, onSeeAllRecommended }: any) {
   const counts = data?.counts || {};
   const recommendations = data?.recommendations || [];
   const newWeek = data?.new_this_week || [];
@@ -488,7 +488,7 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, save
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-lg">Recommended For You</CardTitle>
-          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={() => onViewProfile && null}>View All</Button>
+          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={onSeeAllRecommended}>View All</Button>
         </CardHeader>
         <CardContent>
           {recommendations.length === 0 ? (
