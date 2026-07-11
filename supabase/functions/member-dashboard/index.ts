@@ -497,7 +497,7 @@ serve(async (req) => {
         let q = supabase
           .from("profiles_data")
           .select("*")
-          .eq("verification_status", "Verified")
+          .ilike("verification_status", "verified")
           .eq("is_live", true)
           .neq("id", profileId)
           .limit(24);

@@ -268,6 +268,7 @@ export function MemberDashboardHome() {
                     onViewProfile={openView}
                     onSave={handleSave}
                     savedIds={savedIds}
+                    onSeeAllRecommended={() => setSection("recommended")}
                   />
                 )}
                 {section === "profile" && (
@@ -457,7 +458,7 @@ function DashboardSidebar({ member, profile, completion, section, onSelect, coun
 }
 
 /* ===================== DASHBOARD CONTENT ===================== */
-function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds }: any) {
+function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds, onSeeAllRecommended }: any) {
   const counts = data?.counts || {};
   const recommendations = data?.recommendations || [];
   const newWeek = data?.new_this_week || [];
@@ -487,7 +488,7 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, save
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-lg">Recommended For You</CardTitle>
-          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={() => onViewProfile && null}>View All</Button>
+          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={onSeeAllRecommended}>View All</Button>
         </CardHeader>
         <CardContent>
           {recommendations.length === 0 ? (
@@ -574,8 +575,13 @@ function RecommendedCard({ p, match, onView, onSave, saved }: any) {
         <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.marital_status || "—"}</div>
         <div className="flex gap-1.5 pt-1">
-          <Button size="sm" className="h-7 text-xs flex-1" onClick={onView}>View Profile</Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={onSave}>{saved ? "Saved" : "Save"}</Button>
+          <Button size="sm" className="h-7 text-[11px] px-2 flex-1" onClick={onView}>View</Button>
+          <Button size="sm" variant="outline" className="h-7 text-[11px] px-2 flex-1" onClick={onView} title="Open profile to send interest">
+            <Heart className="w-3 h-3 mr-1" /> Interest
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={onSave} aria-label={saved ? "Unsave" : "Save"}>
+            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "")} />
+          </Button>
         </div>
       </div>
     </div>
