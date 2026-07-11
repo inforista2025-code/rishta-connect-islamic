@@ -39,7 +39,10 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
     try {
       await call(saved ? "unsave_profile" : "save_profile", { target_id: targetId });
       setSaved((s) => !s);
-      toast({ title: saved ? "Removed" : "Saved" });
+      toast({
+        title: saved ? "Removed from shortlist" : "Added to shortlist",
+        description: p?.name || undefined,
+      });
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally { setSending(null); }
@@ -55,10 +58,17 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
         navigate("/pricing");
       } else {
         setInterested(true);
-        toast({ title: "Interest sent" });
+        toast({
+          title: "Interest sent 💌",
+          description: p?.name ? `Your interest has been sent to ${p.name}.` : "Your interest has been delivered.",
+        });
       }
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({
+        title: "Could not send interest",
+        description: e.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
     } finally { setSending(null); }
   };
 
