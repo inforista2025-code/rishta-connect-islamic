@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
+import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 import logo from "@/assets/logo.png";
 
 const publicNavLinks = [
@@ -21,7 +22,6 @@ const publicNavLinks = [
 const memberNavLinks = [
   { name: "Home", path: "/" },
   { name: "Profiles", path: "/profiles" },
-  { name: "Upgrade", path: "/pricing" },
   { name: "Contact", path: "/contact" },
 ];
 
