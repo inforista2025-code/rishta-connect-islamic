@@ -55,7 +55,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
       const res = await call("send_interest", { target_id: targetId });
       if (res?.error === "limit_reached") {
         toast({ title: "Free limit reached", description: res.message, variant: "destructive" });
-        navigate("/pricing");
+        openUpgradeWhatsApp();
       } else {
         setInterested(true);
         toast({
@@ -162,8 +162,8 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                   <div className="flex-1">
                     <h4 className="font-semibold">Unlock Full Profile</h4>
                     <p className="text-sm text-muted-foreground mt-1">View original photos, family details, biodata PDF, contact information and more.</p>
-                    <Button className="mt-3 bg-purple-600 hover:bg-purple-700" onClick={() => navigate("/pricing")}>
-                      Upgrade to Premium · ₹491/2 Months
+                    <Button className="mt-3 bg-purple-600 hover:bg-purple-700" onClick={openUpgradeWhatsApp}>
+                      Upgrade via WhatsApp · ₹491/2 Months
                     </Button>
                   </div>
                 </div>
