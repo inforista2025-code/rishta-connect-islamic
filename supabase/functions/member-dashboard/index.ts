@@ -511,6 +511,24 @@ serve(async (req) => {
         return json({ recommendations: sorted });
       }
 
+      case "browse_all": {
+        const wantGender = profile.gender === "Male" ? "Female" : profile.gender === "Female" ? "Male" : null;
+        let q = supabase
+          .from("profiles_data")
+          .select("*")
+          .ilike("verification_status", "verified")
+          .eq("is_live", true)
+          .neq("id", profileId)
+          .order("created_at", { ascending: false })
+          .limit(500);
+        if (wantGender) q = q.eq("gender", wantGender);
+        const { data } = await q;
+        const sorted = (data ?? [])
+          .sort((a: any, b: any) => Number(isPremium(b)) - Number(isPremium(a)))
+          .map((p) => sanitizeProfile(p, premium, false));
+        return json({ profiles: sorted, viewer_is_premium: premium });
+      }
+
       default:
         return json({ error: "Unknown action" }, 400);
     }
