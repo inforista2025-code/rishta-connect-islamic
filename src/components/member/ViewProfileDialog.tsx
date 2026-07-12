@@ -7,6 +7,7 @@ import { useMemberApi } from "@/hooks/useMemberApi";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "./ProfilePhoto";
 import { useToast } from "@/hooks/use-toast";
+import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 
 export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: boolean; onOpenChange: (v: boolean) => void; targetId: number | null }) {
   const { call } = useMemberApi();
