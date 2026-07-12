@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 type SectionKey =
   | "dashboard" | "profile" | "recommended" | "saved"
   | "received" | "sent" | "viewers"
-  | "settings" | "requests";
+  | "settings" | "requests" | "browse";
 
 // Trimmed to matrimony-essential sections only.
 // Removed: Search Profiles (duplicates public /profiles), Messages (not built),
@@ -34,6 +34,7 @@ type SectionKey =
 const NAV: { key: SectionKey; label: string; icon: any }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "profile", label: "My Profile", icon: UserCheck },
+  { key: "browse", label: "Browse All Profiles", icon: Search },
   { key: "recommended", label: "Matches For You", icon: Heart },
   { key: "received", label: "Received Interests", icon: Inbox },
   { key: "sent", label: "Sent Interests", icon: Send },
