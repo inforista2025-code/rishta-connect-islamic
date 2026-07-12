@@ -5,6 +5,7 @@ import { useMemberApi } from "@/hooks/useMemberApi";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 
 interface Props {
   profileId: number;
@@ -55,7 +56,7 @@ export function MemberProfileActions({ profileId, initialSaved, initialIntereste
       const res = await call("send_interest", { target_id: profileId });
       if (res?.error === "limit_reached") {
         toast({ title: "Free limit reached", description: res.message, variant: "destructive" });
-        navigate("/pricing");
+        openUpgradeWhatsApp();
       } else {
         setInterested(true);
         toast({ title: "Interest sent" });

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, Check, ShieldCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 
 const benefits = [
   "View full contact details",
@@ -13,7 +13,6 @@ const benefits = [
 ];
 
 export function PremiumUpgradeCard() {
-  const navigate = useNavigate();
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50/60 to-pink-50/40 shadow-sm">
       <CardContent className="p-5 space-y-4">
@@ -36,8 +35,8 @@ export function PremiumUpgradeCard() {
           <span className="text-lg font-bold text-foreground">₹491</span>
           <span className="text-sm text-muted-foreground"> / 2 Months</span>
         </div>
-        <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/pricing")}>
-          Upgrade Now
+        <Button className="w-full bg-primary hover:bg-primary/90" onClick={openUpgradeWhatsApp}>
+          Upgrade via WhatsApp
         </Button>
         <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
           <ShieldCheck className="w-3 h-3" /> 100% Secure Payment
