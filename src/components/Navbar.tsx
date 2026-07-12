@@ -139,6 +139,16 @@ export function Navbar() {
             )}
             {member && (
               <>
+                {member.plan_type !== "premium" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openUpgradeWhatsApp}
+                    className="ml-2 border-primary text-primary hover:bg-primary/10"
+                  >
+                    Upgrade
+                  </Button>
+                )}
                 <Button
                   variant="default"
                   size="sm"
@@ -226,6 +236,15 @@ export function Navbar() {
               )}
               {member && (
                 <>
+                  {member.plan_type !== "premium" && (
+                    <Button
+                      variant="outline"
+                      onClick={() => { openUpgradeWhatsApp(); setIsOpen(false); }}
+                      className="justify-start px-4 py-3 h-auto text-sm font-medium border-primary text-primary"
+                    >
+                      Upgrade to Premium
+                    </Button>
+                  )}
                   <Button
                     variant="default"
                     onClick={() => { navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard"); setIsOpen(false); }}
