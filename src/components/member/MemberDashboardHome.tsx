@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 type SectionKey =
   | "dashboard" | "profile" | "recommended" | "saved"
   | "received" | "sent" | "viewers"
-  | "settings" | "requests";
+  | "settings" | "requests" | "browse";
 
 // Trimmed to matrimony-essential sections only.
 // Removed: Search Profiles (duplicates public /profiles), Messages (not built),
@@ -34,6 +34,7 @@ type SectionKey =
 const NAV: { key: SectionKey; label: string; icon: any }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "profile", label: "My Profile", icon: UserCheck },
+  { key: "browse", label: "Browse All Profiles", icon: Search },
   { key: "recommended", label: "Matches For You", icon: Heart },
   { key: "received", label: "Received Interests", icon: Inbox },
   { key: "sent", label: "Sent Interests", icon: Send },
@@ -122,6 +123,7 @@ export function MemberDashboardHome() {
   const [receivedList, setReceivedList] = useState<any[]>([]);
   const [recList, setRecList] = useState<any[]>([]);
   const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [browseList, setBrowseList] = useState<any[]>([]);
   const [sectionLoading, setSectionLoading] = useState<Record<string, boolean>>({});
   const [sectionError, setSectionError] = useState<Record<string, string | null>>({});
 
@@ -155,6 +157,7 @@ export function MemberDashboardHome() {
       else if (s === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
       else if (s === "recommended") setRecList((await call("recommendations")).recommendations || []);
       else if (s === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
+      else if (s === "browse") setBrowseList((await call("browse_all")).profiles || []);
     } catch (e: any) {
       setSectionError((m) => ({ ...m, [s]: e.message || "Failed to load" }));
     } finally {
@@ -164,7 +167,7 @@ export function MemberDashboardHome() {
 
   useEffect(() => {
     if (!member) return;
-    if (["saved", "viewers", "sent", "received", "recommended", "requests"].includes(section)) {
+    if (["saved", "viewers", "sent", "received", "recommended", "requests", "browse"].includes(section)) {
       loadSection(section);
     }
   }, [section, member, loadSection]);
@@ -303,6 +306,33 @@ export function MemberDashboardHome() {
                     onRetry={() => loadSection("recommended")}
                     emptyMsg="No matches yet. Complete your profile to see more."
                   />
+                )}
+                {section === "browse" && (
+                  <>
+                    {!isPremium && (
+                      <Card className="border-amber-200 bg-amber-50">
+                        <CardContent className="p-3 text-xs sm:text-sm text-amber-900 flex items-start gap-2">
+                          <Crown className="w-4 h-4 mt-0.5 shrink-0" />
+                          <span>
+                            You are browsing as a Free member. Photos are blurred and contact details are hidden.
+                            Upgrade to Premium to unlock full profiles and unlimited access.
+                          </span>
+                        </CardContent>
+                      </Card>
+                    )}
+                    <CardListSection
+                      title={`Browse All Profiles${profile?.gender ? ` (${profile.gender === "Male" ? "Sisters" : "Brothers"})` : ""}`}
+                      profiles={browseList}
+                      onView={openView}
+                      onSave={handleSave}
+                      savedIds={savedIds}
+                      self={profile}
+                      loading={!!sectionLoading.browse}
+                      error={sectionError.browse}
+                      onRetry={() => loadSection("browse")}
+                      emptyMsg="No verified profiles available right now."
+                    />
+                  </>
                 )}
                 {section === "saved" && (
                   <CardListSection
