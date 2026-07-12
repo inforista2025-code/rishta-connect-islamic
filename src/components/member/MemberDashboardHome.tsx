@@ -307,6 +307,33 @@ export function MemberDashboardHome() {
                     emptyMsg="No matches yet. Complete your profile to see more."
                   />
                 )}
+                {section === "browse" && (
+                  <>
+                    {!isPremium && (
+                      <Card className="border-amber-200 bg-amber-50">
+                        <CardContent className="p-3 text-xs sm:text-sm text-amber-900 flex items-start gap-2">
+                          <Crown className="w-4 h-4 mt-0.5 shrink-0" />
+                          <span>
+                            You are browsing as a Free member. Photos are blurred and contact details are hidden.
+                            Upgrade to Premium to unlock full profiles and unlimited access.
+                          </span>
+                        </CardContent>
+                      </Card>
+                    )}
+                    <CardListSection
+                      title={`Browse All Profiles${profile?.gender ? ` (${profile.gender === "Male" ? "Sisters" : "Brothers"})` : ""}`}
+                      profiles={browseList}
+                      onView={openView}
+                      onSave={handleSave}
+                      savedIds={savedIds}
+                      self={profile}
+                      loading={!!sectionLoading.browse}
+                      error={sectionError.browse}
+                      onRetry={() => loadSection("browse")}
+                      emptyMsg="No verified profiles available right now."
+                    />
+                  </>
+                )}
                 {section === "saved" && (
                   <CardListSection
                     title="Saved Profiles"
