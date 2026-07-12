@@ -123,6 +123,7 @@ export function MemberDashboardHome() {
   const [receivedList, setReceivedList] = useState<any[]>([]);
   const [recList, setRecList] = useState<any[]>([]);
   const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [browseList, setBrowseList] = useState<any[]>([]);
   const [sectionLoading, setSectionLoading] = useState<Record<string, boolean>>({});
   const [sectionError, setSectionError] = useState<Record<string, string | null>>({});
 
@@ -156,6 +157,7 @@ export function MemberDashboardHome() {
       else if (s === "received") setReceivedList((await call("list_interests", { direction: "received" })).interests || []);
       else if (s === "recommended") setRecList((await call("recommendations")).recommendations || []);
       else if (s === "requests") setRequestsList((await call("list_my_update_requests")).requests || []);
+      else if (s === "browse") setBrowseList((await call("browse_all")).profiles || []);
     } catch (e: any) {
       setSectionError((m) => ({ ...m, [s]: e.message || "Failed to load" }));
     } finally {
@@ -165,7 +167,7 @@ export function MemberDashboardHome() {
 
   useEffect(() => {
     if (!member) return;
-    if (["saved", "viewers", "sent", "received", "recommended", "requests"].includes(section)) {
+    if (["saved", "viewers", "sent", "received", "recommended", "requests", "browse"].includes(section)) {
       loadSection(section);
     }
   }, [section, member, loadSection]);
