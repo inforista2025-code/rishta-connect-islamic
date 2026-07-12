@@ -5,6 +5,7 @@ import { useMemberApi } from "@/hooks/useMemberApi";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 
 interface Props {
   profileId: number;
