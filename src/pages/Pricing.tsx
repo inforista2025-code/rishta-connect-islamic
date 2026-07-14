@@ -25,20 +25,32 @@ export default function Pricing() {
       description: "Start your journey without any cost — simple and accessible for everyone."
     },
     {
+      title: "Personal Member Dashboard",
+      description: "Secure login with WhatsApp + Email OTP — access your profile, matches, and activity anytime."
+    },
+    {
+      title: "Browse Verified Profiles",
+      description: "Explore all verified opposite-gender profiles across the community (photos blurred, contact hidden — upgrade to unlock)."
+    },
+    {
+      title: "5 Send Interest Requests / Month",
+      description: "Express interest in profiles you like — connect with up to 5 members every month."
+    },
+    {
+      title: "Shortlist & Save Profiles",
+      description: "Bookmark profiles you like and revisit them anytime from your dashboard."
+    },
+    {
       title: "Profile Sharing Across Communities",
-      description: "Your profile will be posted on WhatsApp Community, WhatsApp Channel, Telegram Channel, and Facebook Page."
+      description: "Your profile is posted on WhatsApp Community, WhatsApp Channel, Telegram Channel, and Facebook Page."
     },
     {
-      title: "Basic Chat Support",
-      description: "Receive help for any questions through chat anytime."
+      title: "Basic Match Recommendations",
+      description: "Get suggested profiles based on your basic preferences — refreshed regularly."
     },
     {
-      title: "Weekly Profile Reposting",
-      description: "Profile reposting depends on availability and queue."
-    },
-    {
-      title: "Community Access",
-      description: "Receive matchmaking updates and Islamic reminders regularly."
+      title: "Community Access & Chat Support",
+      description: "Receive matchmaking updates, Islamic reminders, and help from our support team over chat."
     }
   ];
 
