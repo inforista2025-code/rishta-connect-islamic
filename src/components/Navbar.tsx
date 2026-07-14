@@ -25,6 +25,13 @@ const memberNavLinks = [
   { name: "Contact", path: "/contact" },
 ];
 
+const freeMemberNavLinks = [
+  { name: "Home", path: "/" },
+  { name: "Profiles", path: "/profiles" },
+  { name: "Pricing", path: "/pricing" },
+  { name: "Contact", path: "/contact" },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -33,7 +40,11 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const isActive = (path: string) => location.pathname === path;
-  const navLinks = member ? memberNavLinks : publicNavLinks;
+  const navLinks = member
+    ? member.plan_type === "premium"
+      ? memberNavLinks
+      : freeMemberNavLinks
+    : publicNavLinks;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
