@@ -44,36 +44,44 @@ export default function Pricing() {
 
   const premiumPlanFeatures = [
     {
-      title: "Unlimited Access",
-      description: "Instantly get unlimited access to any posted profile—for free. Request detailed information for any member, anytime, without limits."
+      title: "Unlimited Profile Access",
+      description: "Browse every verified profile without daily limits — full biodata, family details, and preferences unlocked."
     },
     {
-      title: "Priority Contact Sharing",
-      description: "Get contact details of suitable profiles on priority."
+      title: "Clear Original Photos",
+      description: "View all profile photos in full clarity — no blur, no restrictions — so you can decide with confidence."
+    },
+    {
+      title: "Direct Contact Access",
+      description: "Get WhatsApp number and email of matched profiles instantly, without waiting for admin approval."
+    },
+    {
+      title: "Unlimited Interests",
+      description: "Send unlimited Send Interest requests every month — free members are capped at just 5."
     },
     {
       title: "Premium Profile Badge",
-      description: "Verified badge that highlights your profile and builds trust."
+      description: "A verified Premium badge on your profile builds trust and gets you noticed first by serious families."
     },
     {
-      title: "Personal Matchmaking Support",
-      description: "Receive profiles after mutual interest confirmation."
+      title: "Priority Ranking in Matches",
+      description: "Your profile appears at the top of Recommended and Browse lists, so more families see you first."
     },
     {
-      title: "Communication Assistance",
-      description: "We help continue conversations if there's delay or no response."
+      title: "See Who Viewed You",
+      description: "Full visibility into every member who viewed your profile — turn interest into real conversations."
     },
     {
-      title: "Location-Specific Matches",
-      description: "Get personalized matches based on your preferred cities."
+      title: "Personalized Match Recommendations",
+      description: "Curated opposite-gender verified profiles matched to your city, sect, and preferences."
     },
     {
       title: "Priority Profile Reposting",
-      description: "Profile reshared weekly across all groups for visibility."
+      description: "Your profile is reshared weekly across WhatsApp, Telegram, and Facebook groups for maximum reach."
     },
     {
-      title: "Dedicated Point of Contact",
-      description: "Direct access to our support team for faster response."
+      title: "Dedicated Matchmaking Support",
+      description: "Direct WhatsApp line to our matchmaking team for faster replies, guidance, and follow-ups."
     }
   ];
 
