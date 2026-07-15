@@ -154,32 +154,32 @@ serve(async (req) => {
     }
     console.log("login-request digits=", digits, "key=", key);
 
-    // Match by last 10 digits to ignore country-code formatting differences.
-    // Admin Dashboard's canonical profile list is profiles_data, while newer
-    // form submissions can also exist in registrations. Check both without
-    // creating duplicate user/member rows.
-    const { data: registrationRows, error: regError } = await supabase
-      .from("registrations")
-      .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
-      .limit(2000);
-    if (regError) { console.error("registrations DB error", regError); throw regError; }
-
+    // Match by last 10 digits (ignores country-code / formatting differences).
+    // Filter server-side with ILIKE on the last-10-digit key so we never miss
+    // a row due to client-side row limits.
+    const likeKey = `%${key}%`;
     const { data: profileRows, error: profileError } = await supabase
       .from("profiles_data")
       .select("id, registration_id, name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
       .not("email", "is", null)
-      .limit(5000);
+      .ilike("whatsapp_number", likeKey)
+      .limit(50);
     if (profileError) { console.error("profiles_data DB error", profileError); throw profileError; }
-    console.log("Scanned registrations:", registrationRows?.length ?? 0, "profiles_data:", profileRows?.length ?? 0);
 
-    const registrationMatch = (registrationRows || []).find((r: any) => {
+    const { data: registrationRows, error: regError } = await supabase
+      .from("registrations")
+      .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
+      .ilike("whatsapp_number", likeKey)
+      .limit(50);
+    if (regError) { console.error("registrations DB error", regError); throw regError; }
+    console.log("Matched registrations:", registrationRows?.length ?? 0, "profiles_data:", profileRows?.length ?? 0);
+
+    const matches = (rows: any[]) => (rows || []).find((r: any) => {
       const rk = matchKey(r.whatsapp_number || "");
       return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
     });
-    const profileMatch = (profileRows || []).find((r: any) => {
-      const rk = matchKey(r.whatsapp_number || "");
-      return rk && (rk === key || rk.endsWith(key) || key.endsWith(rk));
-    });
+    const profileMatch = matches(profileRows || []);
+    const registrationMatch = matches(registrationRows || []);
     // profiles_data is the source of truth (admin dashboard edits live there).
     // Always prefer profiles_data so the latest admin-updated email is used.
     // If only registrations has the record (legacy), fall back to it.
