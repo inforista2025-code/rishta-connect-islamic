@@ -59,16 +59,20 @@ serve(async (req) => {
     }
     const key = matchKey(whatsapp_number);
 
+    const likeKey = `%${key}%`;
     const { data: registrationRows, error: regError } = await supabase
       .from("registrations")
-      .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry");
+      .select("id, full_name, email, whatsapp_number, verification_status, plan_type, premium_expiry")
+      .ilike("whatsapp_number", likeKey)
+      .limit(50);
     if (regError) throw regError;
 
     const { data: profileRows, error: profileError } = await supabase
       .from("profiles_data")
       .select("id, registration_id, name, email, whatsapp_number, verification_status, plan_type, premium_expiry, location, gender, date_of_birth")
       .not("email", "is", null)
-      .limit(5000);
+      .ilike("whatsapp_number", likeKey)
+      .limit(50);
     if (profileError) throw profileError;
 
     const registrationMatch = (registrationRows || []).find((r: any) => {
