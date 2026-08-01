@@ -534,6 +534,10 @@ const ProfileSkeleton = () => (
 );
 
 const Profiles = () => {
+  const { member } = useMemberAuth();
+  const viewerIsPremium =
+    member?.plan_type === "premium" &&
+    (!member?.premium_expiry || new Date(member.premium_expiry) > new Date());
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
