@@ -23,45 +23,46 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium }: Prop
   if (!src || failed) return null;
 
   return (
-    <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden rounded-t-lg bg-muted">
-      <img
-        src={src}
-        alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
-        loading="lazy"
-        decoding="async"
-        onError={() => setFailed(true)}
-        draggable={false}
-        className={
-          viewerIsPremium
-            ? "w-full h-full object-cover object-top"
-            : "w-full h-full object-cover object-top scale-125 select-none pointer-events-none [filter:blur(18px)]"
-        }
-        style={viewerIsPremium ? undefined : { WebkitFilter: "blur(18px)" }}
-      />
+    <div className="flex flex-col items-center gap-2 pt-4 pb-1">
+      {/* Compact face-only thumbnail */}
+      <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20 shadow-sm">
+        <img
+          src={src}
+          alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+          draggable={false}
+          /* zoomed & top-anchored so only the face area fills the circle */
+          className={
+            viewerIsPremium
+              ? "w-full h-full object-cover object-[center_20%] scale-[1.35]"
+              : "w-full h-full object-cover object-[center_20%] scale-[1.35] select-none pointer-events-none [filter:blur(10px)]"
+          }
+          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(10px)" }}
+        />
+        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/35" />}
+      </div>
 
       {!viewerIsPremium && (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/40 to-foreground/60" />
-
-          <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-sm backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
             <Lock className="w-3 h-3" />
             Premium Unlock
           </span>
-
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <Button
-              type="button"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/register");
-              }}
-              className="rounded-full px-4 shadow-lg"
-            >
-              View Original Photo
-            </Button>
-          </div>
-        </>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/register");
+            }}
+            className="h-7 rounded-full px-3 text-xs"
+          >
+            View Original Photo
+          </Button>
+        </div>
       )}
     </div>
   );
