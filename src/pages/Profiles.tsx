@@ -1469,6 +1469,7 @@ const Profiles = () => {
                     key={profile.id}
                     profile={profile}
                     isAdmin={isAdmin}
+                    viewerIsPremium={!!viewerIsPremium}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                   />
