@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X } from "lucide-react";
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
+import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
+import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -77,11 +79,12 @@ interface Profile {
 interface SortableProfileCardProps {
   profile: Profile;
   isAdmin: boolean;
+  viewerIsPremium: boolean;
   onEdit: (profile: Profile) => void;
   onDelete: (profile: Profile) => void;
 }
 
-const SortableProfileCard = memo(({ profile, isAdmin, onEdit, onDelete }: SortableProfileCardProps) => {
+const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, onDelete }: SortableProfileCardProps) => {
   const isPremium = profile.planType === 'premium' && (!profile.premiumExpiry || new Date(profile.premiumExpiry) > new Date());
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
@@ -210,6 +213,11 @@ View full profile here:`;
           backgroundColor: '#F7F5FF'
         } : undefined}
       >
+        <ProfileCardPhoto
+          photoUrls={profile.photoUrls}
+          name={profile.name}
+          viewerIsPremium={viewerIsPremium}
+        />
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -526,6 +534,10 @@ const ProfileSkeleton = () => (
 );
 
 const Profiles = () => {
+  const { member } = useMemberAuth();
+  const viewerIsPremium =
+    member?.plan_type === "premium" &&
+    (!member?.premium_expiry || new Date(member.premium_expiry) > new Date());
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -1457,6 +1469,7 @@ const Profiles = () => {
                     key={profile.id}
                     profile={profile}
                     isAdmin={isAdmin}
+                    viewerIsPremium={!!viewerIsPremium}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                   />
