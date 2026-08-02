@@ -34,11 +34,11 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium }: Prop
           className={
             viewerIsPremium
               ? "w-full h-full object-cover object-[center_20%] scale-[1.35]"
-              : "w-full h-full object-cover object-[center_20%] scale-[1.35] select-none pointer-events-none [filter:blur(4px)]"
+              : "w-full h-full object-cover object-[center_18%] scale-[1.45] select-none pointer-events-none [filter:blur(2.5px)]"
           }
-          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(4px)" }}
+          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(2.5px)" }}
         />
-        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/10" />}
+        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/5" />}
       </div>
 
       {!viewerIsPremium && (
