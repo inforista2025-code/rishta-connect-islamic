@@ -296,14 +296,6 @@ serve(async (req) => {
         if (error) return json({ error: error.message }, 400);
         return json({ success: true, photo_urls: reordered });
       }
-        const target = Number(body.target_id);
-        if (!target || target === profileId) return json({ success: true });
-        await supabase.from("profile_views").insert({
-          viewer_profile_id: profileId,
-          viewed_profile_id: target,
-        });
-        return json({ success: true });
-      }
 
       case "view_profile": {
         const target = Number(body.target_id);
