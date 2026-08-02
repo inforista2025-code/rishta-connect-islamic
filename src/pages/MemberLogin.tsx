@@ -12,15 +12,48 @@ import { Loader2, ArrowLeft } from "lucide-react";
 
 type Stage = "phone" | "otp";
 
+const OTP_STATE_KEY = "member_login_otp_state";
+const OTP_STATE_TTL_MS = 10 * 60 * 1000; // matches OTP expiry
+
+type PersistedOtpState = { whatsapp: string; emailHint: string; ts: number };
+
+function readOtpState(): PersistedOtpState | null {
+  try {
+    const raw = sessionStorage.getItem(OTP_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedOtpState;
+    if (!parsed?.whatsapp || Date.now() - parsed.ts > OTP_STATE_TTL_MS) {
+      sessionStorage.removeItem(OTP_STATE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export default function MemberLogin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { member, loading: authLoading } = useMemberAuth();
-  const [stage, setStage] = useState<Stage>("phone");
-  const [whatsapp, setWhatsapp] = useState("");
+  const persisted = useState(() => readOtpState())[0];
+  const [stage, setStage] = useState<Stage>(persisted ? "otp" : "phone");
+  const [whatsapp, setWhatsapp] = useState(persisted?.whatsapp ?? "");
   const [code, setCode] = useState("");
-  const [emailHint, setEmailHint] = useState("");
+  const [emailHint, setEmailHint] = useState(persisted?.emailHint ?? "");
   const [loading, setLoading] = useState(false);
+
+  // Keep the OTP step alive across tab switches / mobile browser reloads.
+  useEffect(() => {
+    if (stage === "otp" && whatsapp) {
+      sessionStorage.setItem(
+        OTP_STATE_KEY,
+        JSON.stringify({ whatsapp, emailHint, ts: readOtpState()?.ts ?? Date.now() } as PersistedOtpState)
+      );
+    } else if (stage === "phone") {
+      sessionStorage.removeItem(OTP_STATE_KEY);
+    }
+  }, [stage, whatsapp, emailHint]);
 
   // If already signed in, jump straight to the correct dashboard so the user
   // doesn't accidentally re-issue an OTP and revoke their own live session.
@@ -47,6 +80,10 @@ export default function MemberLogin() {
         return;
       }
       setEmailHint(data.email_hint || "");
+      sessionStorage.setItem(
+        OTP_STATE_KEY,
+        JSON.stringify({ whatsapp, emailHint: data.email_hint || "", ts: Date.now() } as PersistedOtpState)
+      );
       setStage("otp");
       toast({ title: "Code sent", description: `Verification code sent to ${data.email_hint || "your registered email"}.` });
     } finally {
@@ -75,6 +112,7 @@ export default function MemberLogin() {
         return;
       }
       setMemberToken(data.session_token);
+      sessionStorage.removeItem(OTP_STATE_KEY);
       toast({ title: "✅ Welcome back", description: `Hello ${data.member.full_name}!` });
       if (data.member.plan_type === "premium") navigate("/member/premium");
       else navigate("/member/dashboard");
