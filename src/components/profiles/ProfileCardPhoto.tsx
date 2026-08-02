@@ -22,7 +22,7 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium }: Prop
   return (
     <div className="flex flex-col items-center gap-2 pt-4 pb-1">
       {/* Compact face-only thumbnail */}
-      <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20 shadow-sm">
+      <div className="relative w-44 h-44 sm:w-56 sm:h-56 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20 shadow-sm">
         <img
           src={src}
           alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
@@ -34,11 +34,11 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium }: Prop
           className={
             viewerIsPremium
               ? "w-full h-full object-cover object-[center_20%] scale-[1.35]"
-              : "w-full h-full object-cover object-[center_20%] scale-[1.35] select-none pointer-events-none [filter:blur(6px)]"
+              : "w-full h-full object-cover object-[center_20%] scale-[1.35] select-none pointer-events-none [filter:blur(4px)]"
           }
-          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(6px)" }}
+          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(4px)" }}
         />
-        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/20" />}
+        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/10" />}
       </div>
 
       {!viewerIsPremium && (
