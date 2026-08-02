@@ -274,6 +274,8 @@ serve(async (req) => {
       }
 
       case "record_view": {
+        // fallthrough handled below
+      }
         const target = Number(body.target_id);
         if (!target || target === profileId) return json({ success: true });
         await supabase.from("profile_views").insert({
