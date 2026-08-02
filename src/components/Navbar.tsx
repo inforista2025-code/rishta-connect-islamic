@@ -157,7 +157,7 @@ export function Navbar() {
                   className="ml-2"
                 >
                   <LayoutDashboard className="w-4 h-4 mr-1" />
-                  My Dashboard
+                  My Profile
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleMemberLogout} className="ml-2">
                   <LogOut className="w-4 h-4 mr-1" /> Logout
@@ -242,7 +242,7 @@ export function Navbar() {
                     onClick={() => { navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard"); setIsOpen(false); }}
                     className="justify-start px-4 py-3 h-auto text-sm font-medium"
                   >
-                    <LayoutDashboard className="w-4 h-4 mr-2" /> My Dashboard
+                    <LayoutDashboard className="w-4 h-4 mr-2" /> My Profile
                   </Button>
                   <Button
                     variant="ghost"
