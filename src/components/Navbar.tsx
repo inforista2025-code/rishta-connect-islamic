@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,7 +156,7 @@ export function Navbar() {
                   onClick={() => navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard")}
                   className="ml-2"
                 >
-                  <LayoutDashboard className="w-4 h-4 mr-1" />
+                  <User className="w-4 h-4 mr-1" />
                   My Profile
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleMemberLogout} className="ml-2">
@@ -242,7 +242,7 @@ export function Navbar() {
                     onClick={() => { navigate(member.plan_type === "premium" ? "/member/premium" : "/member/dashboard"); setIsOpen(false); }}
                     className="justify-start px-4 py-3 h-auto text-sm font-medium"
                   >
-                    <LayoutDashboard className="w-4 h-4 mr-2" /> My Profile
+                    <User className="w-4 h-4 mr-2" /> My Profile
                   </Button>
                   <Button
                     variant="ghost"
