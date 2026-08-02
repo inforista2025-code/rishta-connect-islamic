@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { PremiumUpgradeCard } from "./PremiumUpgradeCard";
 import { ProfilePhoto } from "./ProfilePhoto";
+import { ProfilePictureDialog } from "./ProfilePictureDialog";
 import { ViewProfileDialog } from "./ViewProfileDialog";
 import { cn } from "@/lib/utils";
 
@@ -114,6 +115,7 @@ export function MemberDashboardHome() {
 
   const [viewTarget, setViewTarget] = useState<number | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
+  const [dpOpen, setDpOpen] = useState(false);
 
   // section-specific lazy data
   const [savedList, setSavedList] = useState<any[]>([]);
@@ -241,6 +243,7 @@ export function MemberDashboardHome() {
       counts={counts}
       onCompleteNow={() => { setSection("profile"); setMobileOpen(false); }}
       onLogout={handleLogout}
+      onPhotoClick={() => { setDpOpen(true); setMobileOpen(false); }}
     />
   );
 
@@ -411,6 +414,16 @@ export function MemberDashboardHome() {
 
       <ViewProfileDialog open={viewOpen} onOpenChange={setViewOpen} targetId={viewTarget} />
 
+      <ProfilePictureDialog
+        open={dpOpen}
+        onOpenChange={setDpOpen}
+        photos={profile?.photo_urls || []}
+        onUpdated={(urls) => {
+          setData((d: any) => (d ? { ...d, profile: { ...d.profile, photo_urls: urls } } : d));
+          loadSummary();
+        }}
+      />
+
       <Dialog open={reqOpen} onOpenChange={setReqOpen}>
         <DialogContent>
           <DialogHeader>
@@ -442,13 +455,21 @@ export function MemberDashboardHome() {
 }
 
 /* ===================== SIDEBAR ===================== */
-function DashboardSidebar({ member, profile, completion, section, onSelect, counts, onCompleteNow, onLogout }: any) {
+function DashboardSidebar({ member, profile, completion, section, onSelect, counts, onCompleteNow, onLogout, onPhotoClick }: any) {
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="p-4 space-y-4">
           <div className="flex items-center gap-3">
-            <ProfilePhoto src={profile?.photo_urls?.[0]} alt={member.full_name} size="md" rounded="full" />
+            <button
+              type="button"
+              onClick={onPhotoClick}
+              className="rounded-full ring-2 ring-transparent hover:ring-primary/40 transition shrink-0"
+              aria-label="Change profile picture"
+              title="Change profile picture"
+            >
+              <ProfilePhoto src={profile?.photo_urls?.[0]} alt={member.full_name} size="md" rounded="full" />
+            </button>
             <div className="min-w-0">
               <div className="font-semibold truncate">{member.full_name}</div>
               <div className="text-xs text-muted-foreground flex items-center gap-1">

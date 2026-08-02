@@ -283,6 +283,20 @@ serve(async (req) => {
         return json({ success: true });
       }
 
+      case "set_primary_photo": {
+        const url = String(body.photo_url || "");
+        const photos: string[] = Array.isArray(profile.photo_urls) ? profile.photo_urls : [];
+        if (!url || !photos.includes(url))
+          return json({ error: "Photo not found in your uploaded photos" }, 400);
+        const reordered = [url, ...photos.filter((p) => p !== url)];
+        const { error } = await supabase
+          .from("profiles_data")
+          .update({ photo_urls: reordered })
+          .eq("id", profileId);
+        if (error) return json({ error: error.message }, 400);
+        return json({ success: true, photo_urls: reordered });
+      }
+
       case "view_profile": {
         const target = Number(body.target_id);
         if (!target) return json({ error: "Invalid target" }, 400);
