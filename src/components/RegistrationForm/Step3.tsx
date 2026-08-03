@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Upload, X, FileText } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 interface Step3Props {
   form: UseFormReturn<RegistrationData>;
@@ -27,19 +28,35 @@ export function Step3({ form }: Step3Props) {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const currentPhotos = form.getValues('photos') || [];
-      const newPhotos = [...currentPhotos, ...files].slice(0, 3);
+      const combined = [...currentPhotos, ...files];
+      if (combined.length > 3) {
+        toast({
+          title: "Maximum 3 photos allowed",
+          description: `You selected ${combined.length} photos. Only the first 3 will be kept.`,
+          variant: "destructive",
+        });
+      }
+      const newPhotos = combined.slice(0, 3);
       form.setValue('photos', newPhotos, { shouldValidate: true });
-      
-      // Generate previews
-      const newPreviews = files.map(file => URL.createObjectURL(file));
+
+      const keptNew = newPhotos.slice(currentPhotos.length);
+      const newPreviews = keptNew.map(file => URL.createObjectURL(file));
       setPhotoPreviews(prev => [...prev, ...newPreviews].slice(0, 3));
     }
+    e.target.value = '';
   };
 
   const removePhoto = (index: number) => {
     const currentPhotos = form.getValues('photos') || [];
     const newPhotos = currentPhotos.filter((_, i) => i !== index);
     form.setValue('photos', newPhotos, { shouldValidate: true });
+    if (newPhotos.length < 2) {
+      toast({
+        title: "Minimum 2 photos required",
+        description: `You have ${newPhotos.length} photo${newPhotos.length === 1 ? '' : 's'}. Please upload at least 2 to continue.`,
+        variant: "destructive",
+      });
+    }
     
     URL.revokeObjectURL(photoPreviews[index]);
     setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
@@ -181,7 +198,18 @@ export function Step3({ form }: Step3Props) {
                     </p>
                   </label>
                 </div>
-                
+
+                {photoPreviews.length > 0 && photoPreviews.length < 2 && (
+                  <p className="text-sm font-medium text-destructive">
+                    Minimum 2 photos required — please upload {2 - photoPreviews.length} more.
+                  </p>
+                )}
+                {photoPreviews.length >= 3 && (
+                  <p className="text-sm text-muted-foreground">
+                    Maximum limit reached (3 photos). Remove one to change your selection.
+                  </p>
+                )}
+
                 {photoPreviews.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {photoPreviews.map((preview, index) => (
