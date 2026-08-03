@@ -297,7 +297,7 @@ export function Step3({ form }: Step3Props) {
               <FormLabel className="font-normal cursor-pointer">
                 <span className="font-semibold">I Agree to the Declaration *</span>
               </FormLabel>
-              <FormDescription className="text-xs mt-2" asChild>
+              <div className="text-xs mt-2 text-muted-foreground">
                 <ul className="list-disc pl-4 space-y-1.5">
                   <li>I confirm that all details and information submitted by me are true, accurate, and correct.</li>
                   <li>I understand and agree that the platform may request official ID proof for verification purposes.</li>
@@ -305,7 +305,7 @@ export function Step3({ form }: Step3Props) {
                   <li>The platform is not responsible or liable for any false or incorrect details submitted by me.</li>
                   <li>I agree to adhere to the Islamic etiquettes and community guidelines of the platform.</li>
                 </ul>
-              </FormDescription>
+              </div>
               <FormMessage />
             </div>
           </FormItem>
