@@ -37,8 +37,8 @@ export const step3Schema = z.object({
     .refine((files) => files && files.length >= 2, {
       message: "Please upload at least 2 photos"
     })
-    .refine((files) => files && files.length <= 5, {
-      message: "Maximum 5 photos allowed"
+    .refine((files) => files && files.length <= 3, {
+      message: "Maximum 3 photos allowed"
     })
     .refine(
       (files) => files && files.every((file) => file.size <= 10 * 1024 * 1024),

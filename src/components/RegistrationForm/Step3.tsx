@@ -27,12 +27,12 @@ export function Step3({ form }: Step3Props) {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const currentPhotos = form.getValues('photos') || [];
-      const newPhotos = [...currentPhotos, ...files].slice(0, 5);
+      const newPhotos = [...currentPhotos, ...files].slice(0, 3);
       form.setValue('photos', newPhotos, { shouldValidate: true });
       
       // Generate previews
       const newPreviews = files.map(file => URL.createObjectURL(file));
-      setPhotoPreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+      setPhotoPreviews(prev => [...prev, ...newPreviews].slice(0, 3));
     }
   };
 
@@ -160,7 +160,7 @@ export function Step3({ form }: Step3Props) {
         name="photos"
         render={() => (
           <FormItem>
-            <FormLabel>Photo Upload (Minimum 2 required, max 5) *</FormLabel>
+            <FormLabel>Photo Upload (Minimum 2 required, max 3) *</FormLabel>
             <FormControl>
               <div className="space-y-4">
                 <div className="border-2 border-dashed border-primary/30 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
@@ -171,13 +171,13 @@ export function Step3({ form }: Step3Props) {
                     onChange={handlePhotoChange}
                     className="hidden"
                     id="photo-upload"
-                    disabled={photoPreviews.length >= 5}
+                    disabled={photoPreviews.length >= 3}
                   />
                   <label htmlFor="photo-upload" className="cursor-pointer">
                     <Upload className="w-8 h-8 mx-auto mb-2 text-primary" />
                     <p className="text-sm font-medium">Click to upload photos</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {photoPreviews.length}/5 photos uploaded
+                      {photoPreviews.length}/3 photos uploaded
                     </p>
                   </label>
                 </div>
@@ -205,7 +205,7 @@ export function Step3({ form }: Step3Props) {
               </div>
             </FormControl>
             <FormDescription>
-              Upload recent original photos only. Screenshot, blurry, group or cropped photos are not accepted. Upload at least 2 photos.
+              Upload recent original photos only. Screenshot, blurry, group or cropped photos are not accepted. Upload at least 2 photos (maximum 3).
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -297,12 +297,15 @@ export function Step3({ form }: Step3Props) {
               <FormLabel className="font-normal cursor-pointer">
                 <span className="font-semibold">I Agree to the Declaration *</span>
               </FormLabel>
-              <FormDescription className="text-xs mt-2">
-                I confirm that all details I am submitting are true and accurate.
-                I understand that the platform may request ID proof for verification.
-                I take full responsibility for incorrect or false information provided by me.
-                The platform is not responsible for incorrect or false details submitted by users.
-              </FormDescription>
+              <div className="text-xs mt-2 text-muted-foreground">
+                <ul className="list-disc pl-4 space-y-1.5">
+                  <li>I confirm that all details and information submitted by me are true, accurate, and correct.</li>
+                  <li>I understand and agree that the platform may request official ID proof for verification purposes.</li>
+                  <li>I take full responsibility for any incorrect, false, or misleading information provided by me.</li>
+                  <li>The platform is not responsible or liable for any false or incorrect details submitted by me.</li>
+                  <li>I agree to adhere to the Islamic etiquettes and community guidelines of the platform.</li>
+                </ul>
+              </div>
               <FormMessage />
             </div>
           </FormItem>
