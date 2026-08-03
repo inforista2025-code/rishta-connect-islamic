@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Upload, X, FileText } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 interface Step3Props {
   form: UseFormReturn<RegistrationData>;
@@ -22,18 +23,35 @@ interface Step3Props {
 export function Step3({ form }: Step3Props) {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [biodataFile, setBiodataFile] = useState<File | null>(null);
+  const photoCount = (form.watch('photos') || []).length;
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const currentPhotos = form.getValues('photos') || [];
+      if (currentPhotos.length + files.length > 3) {
+        toast({
+          title: "Maximum 3 photos allowed",
+          description: "Aap zyada se zyada 3 photos upload kar sakte hain.",
+          variant: "destructive",
+        });
+      }
       const newPhotos = [...currentPhotos, ...files].slice(0, 3);
       form.setValue('photos', newPhotos, { shouldValidate: true });
       
       // Generate previews
       const newPreviews = files.map(file => URL.createObjectURL(file));
       setPhotoPreviews(prev => [...prev, ...newPreviews].slice(0, 3));
+
+      if (newPhotos.length < 2) {
+        toast({
+          title: "At least 2 photos required",
+          description: "Kam se kam 2 photos upload karna zaroori hai.",
+          variant: "destructive",
+        });
+      }
     }
+    e.target.value = '';
   };
 
   const removePhoto = (index: number) => {
@@ -43,6 +61,14 @@ export function Step3({ form }: Step3Props) {
     
     URL.revokeObjectURL(photoPreviews[index]);
     setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
+
+    if (newPhotos.length < 2) {
+      toast({
+        title: "At least 2 photos required",
+        description: "Kam se kam 2 photos upload karna zaroori hai.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBiodataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,6 +230,11 @@ export function Step3({ form }: Step3Props) {
                 )}
               </div>
             </FormControl>
+            {photoCount > 0 && photoCount < 2 && (
+              <p className="text-sm font-medium text-destructive">
+                Please upload at least 2 photos ({photoCount}/2 selected).
+              </p>
+            )}
             <FormDescription>
               Upload recent original photos only. Screenshot, blurry, group or cropped photos are not accepted. Upload at least 2 photos (maximum 3).
             </FormDescription>
