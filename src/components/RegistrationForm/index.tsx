@@ -158,13 +158,9 @@ export function RegistrationForm() {
     setIsSubmitting(true);
     
     try {
-      // Validate photo count (min 2, max 3)
-      const photoCount = data.photos?.length ?? 0;
-      if (photoCount < 2) {
-        throw new Error(`Please upload at least 2 photos. You have uploaded ${photoCount}.`);
-      }
-      if (photoCount > 3) {
-        throw new Error(`Maximum 3 photos allowed. Please remove ${photoCount - 3} photo(s).`);
+      // Validate photos exist
+      if (!data.photos || data.photos.length === 0) {
+        throw new Error('Please upload at least one photo');
       }
 
       // Upload photos and get full URLs with progress tracking
