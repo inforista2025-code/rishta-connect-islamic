@@ -159,8 +159,8 @@ export function RegistrationForm() {
     
     try {
       // Validate photos exist
-      if (!data.photos || data.photos.length === 0) {
-        throw new Error('Please upload at least one photo');
+      if (!data.photos || data.photos.length < 2) {
+        throw new Error('Please upload at least 2 photos before submitting');
       }
 
       // Upload photos and get full URLs with progress tracking
@@ -302,7 +302,18 @@ export function RegistrationForm() {
           <StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                toast({
+                  title: errors.photos ? "Photos required" : "Please complete the form",
+                  description: errors.photos
+                    ? String(errors.photos.message || "Please upload at least 2 photos")
+                    : "Kuch fields adhoore hain, unhe theek karke dobara submit karein.",
+                  variant: "destructive",
+                });
+              })}
+              className="space-y-6"
+            >
               {currentStep === 1 && <Step1 form={form} />}
               {currentStep === 2 && <Step2 form={form} />}
               {currentStep === 3 && <Step3 form={form} />}
