@@ -365,6 +365,7 @@ export type Database = {
           islamic_knowledge: string | null
           last_login_at: string | null
           location: string
+          login_count: number
           marital_status: string
           maslak: string | null
           name: string
@@ -403,6 +404,7 @@ export type Database = {
           islamic_knowledge?: string | null
           last_login_at?: string | null
           location: string
+          login_count?: number
           marital_status: string
           maslak?: string | null
           name: string
@@ -441,6 +443,7 @@ export type Database = {
           islamic_knowledge?: string | null
           last_login_at?: string | null
           location?: string
+          login_count?: number
           marital_status?: string
           maslak?: string | null
           name?: string
@@ -595,6 +598,7 @@ export type Database = {
           is_live: boolean
           islamic_education: string | null
           last_login_at: string | null
+          login_count: number
           marital_status: string
           maslak: string
           occupation_details: string
@@ -630,6 +634,7 @@ export type Database = {
           is_live?: boolean
           islamic_education?: string | null
           last_login_at?: string | null
+          login_count?: number
           marital_status: string
           maslak: string
           occupation_details: string
@@ -665,6 +670,7 @@ export type Database = {
           is_live?: boolean
           islamic_education?: string | null
           last_login_at?: string | null
+          login_count?: number
           marital_status?: string
           maslak?: string
           occupation_details?: string
