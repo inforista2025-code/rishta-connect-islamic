@@ -58,6 +58,26 @@ serve(async (req) => {
           .in("id", sessionIds)
       : { data: [] as any[] };
 
+    // Recent OTP / login attempts (last 30 days) so admins can see failures too.
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: otps } = await admin
+      .from("member_otps")
+      .select("id, profile_data_id, registration_id, email, created_at, consumed_at, attempts, expires_at")
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    const otpStatus = (o: any) => {
+      if (o.consumed_at) return { status: "success", label: "Login successful" };
+      if ((o.attempts ?? 0) >= 5) return { status: "blocked", label: "Too many wrong codes — blocked" };
+      if ((o.attempts ?? 0) > 0 && new Date(o.expires_at).getTime() < Date.now())
+        return { status: "failed", label: `Wrong code entered (${o.attempts} tries), then expired` };
+      if ((o.attempts ?? 0) > 0) return { status: "failed", label: `Wrong code entered (${o.attempts} tries)` };
+      if (new Date(o.expires_at).getTime() < Date.now())
+        return { status: "expired", label: "Code sent but never entered (expired)" };
+      return { status: "pending", label: "Code sent — waiting for member to enter it" };
+    };
+
     const now = Date.now();
     const members = (profiles ?? []).map((p) => {
       const s = sessions?.find((x: any) => x.id === p.active_session_id) ?? null;
@@ -65,6 +85,9 @@ serve(async (req) => {
       const lastActive = s?.last_active_at ?? p.last_login_at ?? null;
       const online =
         active && !!lastActive && now - new Date(lastActive).getTime() < ONLINE_WINDOW_MS;
+      const myOtps = (otps ?? []).filter((o: any) => o.profile_data_id === p.id);
+      const lastOtp = myOtps[0] ?? null;
+      const st = lastOtp ? otpStatus(lastOtp) : null;
       return {
         id: p.id,
         name: p.name,
@@ -79,11 +102,35 @@ serve(async (req) => {
         session_active: active,
         online,
         device_info: s?.device_info ?? p.active_device_info ?? null,
+        otp_requests_30d: myOtps.length,
+        failed_logins_30d: myOtps.filter((o: any) => !o.consumed_at).length,
+        last_otp_at: lastOtp?.created_at ?? null,
+        last_otp_email: lastOtp?.email ?? null,
+        last_login_issue: st && st.status !== "success" ? st.label : null,
+        last_otp_status: st?.status ?? null,
+      };
+    });
+
+    const profileById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    const attempts = (otps ?? []).slice(0, 100).map((o: any) => {
+      const st = otpStatus(o);
+      const p: any = o.profile_data_id ? profileById.get(o.profile_data_id) : null;
+      return {
+        id: o.id,
+        name: p?.name ?? "Unknown member",
+        email: o.email,
+        whatsapp_number: p?.whatsapp_number ?? null,
+        created_at: o.created_at,
+        attempts: o.attempts ?? 0,
+        status: st.status,
+        label: st.label,
       };
     });
 
     return json({
       members,
+      attempts,
+      failed_attempts_count: attempts.filter((a) => a.status !== "success").length,
       online_count: members.filter((m) => m.online).length,
       total_logins: members.reduce((a, m) => a + (m.login_count || 0), 0),
       generated_at: new Date().toISOString(),
