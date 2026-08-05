@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText, Shield, GitPullRequest } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText, Shield, GitPullRequest, Activity } from 'lucide-react';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { AboutUsManager } from '@/components/admin/AboutUsManager';
 import { RegistrationsManager } from '@/components/admin/RegistrationsManager';
 import { TermsManager } from '@/components/admin/TermsManager';
 import { PrivacyPolicyManager } from '@/components/admin/PrivacyPolicyManager';
 import { UpdateRequestsManager } from '@/components/admin/UpdateRequestsManager';
+import { MemberActivityManager } from '@/components/admin/MemberActivityManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
@@ -68,6 +69,10 @@ export default function AdminDashboard() {
               <GitPullRequest className="w-4 h-4" />
               Update Requests
             </TabsTrigger>
+            <TabsTrigger value="member-activity" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Member Activity
+            </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Blog Manager
@@ -100,6 +105,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="update-requests">
             <UpdateRequestsManager />
+          </TabsContent>
+
+          <TabsContent value="member-activity">
+            <MemberActivityManager />
           </TabsContent>
 
           <TabsContent value="blog">
