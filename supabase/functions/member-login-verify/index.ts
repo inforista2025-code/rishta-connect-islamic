@@ -158,6 +158,25 @@ serve(async (req) => {
       }).eq("id", reg.profile_data_id);
     }
 
+    // Increment lifetime login counter (admin analytics).
+    try {
+      if (reg.registration_id) {
+        const { data: cur } = await supabase
+          .from("registrations").select("login_count").eq("id", reg.registration_id).maybeSingle();
+        await supabase.from("registrations")
+          .update({ login_count: (cur?.login_count ?? 0) + 1 })
+          .eq("id", reg.registration_id);
+      } else {
+        const { data: cur } = await supabase
+          .from("profiles_data").select("login_count").eq("id", reg.profile_data_id).maybeSingle();
+        await supabase.from("profiles_data")
+          .update({ login_count: (cur?.login_count ?? 0) + 1 })
+          .eq("id", reg.profile_data_id);
+      }
+    } catch (e) {
+      console.error("login_count increment failed", e);
+    }
+
     return json({
       success: true,
       session_token: session.id,
