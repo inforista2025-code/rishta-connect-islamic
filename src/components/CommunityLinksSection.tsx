@@ -26,28 +26,6 @@ export function CommunityLinksSection() {
       iconColor: "text-green-600 dark:text-green-400",
       btnVariant: "whatsapp" as const,
     },
-    {
-      name: "Facebook Group",
-      description: "Connect with other members",
-      icon: Facebook,
-      url: "#",
-      available: false,
-      buttonText: "Coming Soon",
-      iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      btnVariant: "outline" as const,
-    },
-    {
-      name: "Instagram",
-      description: "Tips, stories & inspiration",
-      icon: Instagram,
-      url: "#",
-      available: false,
-      buttonText: "Coming Soon",
-      iconBg: "bg-pink-100 dark:bg-pink-900/30",
-      iconColor: "text-pink-600 dark:text-pink-400",
-      btnVariant: "outline" as const,
-    },
   ];
 
   return (
