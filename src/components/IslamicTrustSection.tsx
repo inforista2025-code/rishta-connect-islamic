@@ -54,7 +54,7 @@ export function IslamicTrustSection() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Star className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Premium members can browse unlimited verified profiles without any admin intervention and connect directly with any match — clear photos, full biodata, contact details & priority support for just ₹491 / 2 months.
+                  Premium members get unlimited profile access & direct contact — no admin needed. Clear photos, full biodata & priority support for just ₹491 / 2 months.
                 </li>
               </ul>
             </div>
