@@ -21,7 +21,7 @@ export function WhyChooseUsSection() {
     {
       icon: Crown,
       title: "Premium Benefits",
-      description: "Clear photos, contact access & unlimited interests for Premium members",
+      description: "Browse unlimited profiles without admin intervention, view clear photos & contact any match directly",
     },
   ];
 
