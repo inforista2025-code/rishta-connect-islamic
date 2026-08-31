@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Users, Facebook, Instagram, UserPlus, Star } from "lucide-react";
+import { MessageCircle, Users, UserPlus } from "lucide-react";
 
 export function CommunityLinksSection() {
   const communityLinks = [
@@ -26,28 +26,6 @@ export function CommunityLinksSection() {
       iconColor: "text-green-600 dark:text-green-400",
       btnVariant: "whatsapp" as const,
     },
-    {
-      name: "Facebook Group",
-      description: "Connect with other members",
-      icon: Facebook,
-      url: "#",
-      available: false,
-      buttonText: "Coming Soon",
-      iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      btnVariant: "outline" as const,
-    },
-    {
-      name: "Instagram",
-      description: "Tips, stories & inspiration",
-      icon: Instagram,
-      url: "#",
-      available: false,
-      buttonText: "Coming Soon",
-      iconBg: "bg-pink-100 dark:bg-pink-900/30",
-      iconColor: "text-pink-600 dark:text-pink-400",
-      btnVariant: "outline" as const,
-    },
   ];
 
   return (
@@ -59,7 +37,7 @@ export function CommunityLinksSection() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
           {communityLinks.map((link, index) => (
             <Card
               key={index}
