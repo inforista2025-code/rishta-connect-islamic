@@ -89,11 +89,11 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
               <h3 className="font-semibold text-foreground mb-2">Verified Profiles</h3>
               <p className="text-sm text-muted-foreground">All profiles are reviewed and verified by our admin team</p>
             </div>
-            
+
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 shadow-card">
-              <div className="text-3xl mb-2">🤝</div>
-              <h3 className="font-semibold text-foreground mb-2">Islamic Values</h3>
-              <p className="text-sm text-muted-foreground">Connect with Muslims who share your faith and values</p>
+              <div className="text-3xl mb-2">📱</div>
+              <h3 className="font-semibold text-foreground mb-2">Secure Member Login</h3>
+              <p className="text-sm text-muted-foreground">Login with WhatsApp OTP and manage your own dashboard</p>
             </div>
             
             <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 shadow-card">
