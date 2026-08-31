@@ -7,6 +7,7 @@ import { PremiumSection } from "./PremiumSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { FAQSection } from "./FAQSection";
+import { IslamicTrustSection } from "./IslamicTrustSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
 
@@ -28,6 +29,9 @@ export function RishtaMatrimonyLanding() {
 
       {/* Success Stories */}
       <SuccessAndTrustSection />
+
+      {/* Islamic Trust & Marketing */}
+      <IslamicTrustSection />
 
       {/* How It Works - 3 Steps */}
       <div ref={howToJoinRef}>
