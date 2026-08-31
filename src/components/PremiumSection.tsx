@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, Unlock, Phone, Eye, Award, Zap } from "lucide-react";
+import { Star, Unlock, Phone, Eye, Heart, Image } from "lucide-react";
 
 export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: Unlock, text: "Unlimited Access -", description: "Instantly view all posted profiles with photos—100% free." },
-    { icon: Phone, text: "Access Contact Numbers" },
-    { icon: Eye, text: "Priority Profile Visibility" },
-    { icon: Award, text: "Profile Highlight Badge" },
-    { icon: Zap, text: "Faster Matchmaking Support" },
+    { icon: Unlock, text: "Unlimited Access", description: "Browse all verified profiles without limits." },
+    { icon: Image, text: "Original Clear Photos" },
+    { icon: Phone, text: "Access Contact Details" },
+    { icon: Heart, text: "Unlimited Interests & Saved Profiles" },
+    { icon: Eye, text: "See Who Viewed Your Profile" },
   ];
 
   return (
@@ -31,7 +31,7 @@ export function PremiumSection() {
                 Unlock Full Profiles & Get Serious Matches Faster!
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Go Premium to view contact details, chat directly, and get priority support.
+                Go Premium to view original photos, contact details, and send unlimited interests.
               </p>
 
               {/* Feature bullets */}
@@ -43,7 +43,7 @@ export function PremiumSection() {
                     </div>
                     <span className="text-sm font-bold text-foreground">
                       {feature.text}
-                      {feature.description && <span> {feature.description}</span>}
+                      {feature.description && <span className="font-normal text-muted-foreground"> {feature.description}</span>}
                     </span>
                   </div>
                 ))}

@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldCheck, BookOpen, Zap, HeadphonesIcon } from "lucide-react";
+import { ShieldCheck, Lock, UserCheck, Crown } from "lucide-react";
 
 export function WhyChooseUsSection() {
   const features = [
@@ -9,19 +9,19 @@ export function WhyChooseUsSection() {
       description: "Manual verification ensures genuine profiles",
     },
     {
-      icon: BookOpen,
-      title: "Islamic Values Focused",
-      description: "Matching based on faith and compatibility",
+      icon: Lock,
+      title: "Photo Privacy Protected",
+      description: "Photos stay blurred for visitors — only Premium members see originals",
     },
     {
-      icon: Zap,
-      title: "Easy & Fast Process",
-      description: "Simple registration and quick matching",
+      icon: UserCheck,
+      title: "Secure Member Login",
+      description: "Login with your WhatsApp number via OTP — no password needed",
     },
     {
-      icon: HeadphonesIcon,
-      title: "Dedicated Support",
-      description: "\n",
+      icon: Crown,
+      title: "Premium Benefits",
+      description: "Clear photos, contact access & unlimited interests for Premium members",
     },
   ];
 
