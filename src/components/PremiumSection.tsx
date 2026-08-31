@@ -6,9 +6,9 @@ export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: Unlock, text: "Unlimited Access", description: "Browse all verified profiles without limits." },
+    { icon: Unlock, text: "Unlimited Access", description: "Browse all verified profiles without limits or admin intervention." },
     { icon: Image, text: "Original Clear Photos" },
-    { icon: Phone, text: "Access Contact Details" },
+    { icon: Phone, text: "Direct Contact Access", description: "Call or message any profile directly without waiting for admin approval." },
     { icon: Heart, text: "Unlimited Interests & Saved Profiles" },
     { icon: Eye, text: "See Who Viewed Your Profile" },
   ];
