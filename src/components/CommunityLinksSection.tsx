@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Users, Facebook, Instagram, UserPlus, Star } from "lucide-react";
+import { MessageCircle, Users, UserPlus } from "lucide-react";
 
 export function CommunityLinksSection() {
   const communityLinks = [
