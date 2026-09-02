@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, Lock, UserCheck, Crown } from "lucide-react";
 
 export function WhyChooseUsSection() {
@@ -21,39 +20,41 @@ export function WhyChooseUsSection() {
     {
       icon: Crown,
       title: "Premium Benefits",
-      description: "Browse unlimited profiles without admin intervention, view clear photos & contact any match directly",
+      description: "Unlimited profiles without admin, clear photos & direct contact",
     },
   ];
 
   return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Why Choose <span className="text-primary">Rishta Matrimony?</span>
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Your trusted partner in finding a halal life partner!
-          </p>
-        </div>
+    <section className="py-14 md:py-20 bg-cream">
+      <div className="container mx-auto px-5 sm:px-6">
+        <div className="max-w-[1280px] mx-auto">
+          <div className="text-center mb-10 md:mb-12">
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground">
+              Why Choose <span className="text-primary">Rishta Matrimony?</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground mt-2">
+              Your trusted partner in finding a halal life partner.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="text-center border shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              <CardContent className="p-6">
-                <div className="w-14 h-14 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                  <feature.icon className="w-7 h-7 text-primary" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="bg-card border border-border rounded-xl p-5 md:p-6 text-center shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 md:mb-4 rounded-full bg-primary/10 ring-1 ring-primary/15 flex items-center justify-center">
+                  <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground text-sm md:text-base mb-1">
+                <h3 className="font-semibold text-foreground text-sm md:text-base mb-1 leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-xs text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+                <p className="text-xs md:text-sm text-muted-foreground leading-snug">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

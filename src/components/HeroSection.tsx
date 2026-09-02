@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, CheckCircle, User } from "lucide-react";
+import { MessageCircle, Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-matrimony.jpg";
 
@@ -9,97 +9,80 @@ interface HeroSectionProps {
 
 export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
   const navigate = useNavigate();
-  
+
   const handleWhatsAppClick = () => {
     window.open('https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t', '_blank');
   };
 
-  const handleBrowseProfilesClick = () => {
-    navigate('/profiles');
-  };
-
   return (
-    <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-end justify-center overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img 
-          src={heroImage} 
-          alt="Rishta Matrimony - Islamic Marriage Community" 
-          className="w-full h-full object-cover"
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
-      </div>
-      
-      <div className="relative z-10 container mx-auto px-4 pb-12 pt-8 text-center">
-        <div className="max-w-4xl mx-auto">
-          {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight drop-shadow-lg">
-            Assalamualaikum! 🌸
-            <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Welcome to Rishta Matrimony
-            </span>
-          </h1>
+    <section className="relative overflow-hidden bg-cream">
+      <div className="absolute inset-0 islamic-pattern opacity-60" aria-hidden="true" />
+      <div className="container mx-auto px-5 sm:px-6 relative">
+        <div className="max-w-[1280px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center py-12 md:py-16 lg:py-20">
+          {/* Copy */}
+          <div className="fade-up text-center lg:text-left">
+            <p className="text-sm md:text-base font-medium text-primary mb-3">
+              Assalamualaikum! 🌸
+            </p>
+            <h1 className="text-[2rem] leading-[1.15] sm:text-4xl lg:text-5xl xl:text-[3.4rem] font-bold text-foreground tracking-tight">
+              Find Your Life Partner
+              <br />
+              <span className="text-primary">with Confidence</span>
+            </h1>
+            <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
+              Verified Muslim profiles • Privacy protected • Marriage focused
+            </p>
 
-          {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Join our Muslim Matrimony community to connect with verified profiles
-          </p>
+            <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+              <Button
+                variant="whatsapp"
+                size="lg"
+                onClick={handleWhatsAppClick}
+                className="w-full sm:w-auto h-12 rounded-full"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Join WhatsApp Community
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate('/profiles')}
+                className="w-full sm:w-auto h-12 rounded-full"
+              >
+                <Users className="w-5 h-5" />
+                Browse Verified Profiles
+              </Button>
+            </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button 
-              variant="whatsapp" 
-              size="lg" 
-              onClick={handleWhatsAppClick}
-              className="w-full sm:w-auto"
-            >
-              <MessageCircle className="w-6 h-6" />
-              Join WhatsApp Community
-            </Button>
-            
-            <Button 
-              variant="elegant" 
-              size="lg" 
+            <div className="mt-4 flex flex-wrap items-center justify-center lg:justify-start gap-1 text-sm text-muted-foreground">
+              <span>Already a member?</span>
+              <button
+                onClick={() => navigate('/member/login')}
+                className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+              >
+                Login <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <button
               onClick={onScrollToHowToJoin}
-              className="w-full sm:w-auto"
+              className="mt-5 text-xs md:text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
             >
-              <CheckCircle className="w-6 h-6" />
               How to Join / Verify
-            </Button>
-            
-            <Button 
-              variant="elegant" 
-              size="lg" 
-              onClick={handleBrowseProfilesClick}
-              className="w-full sm:w-auto"
-            >
-              <User className="w-6 h-6" />
-              Browse Profiles
-            </Button>
+            </button>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 shadow-card">
-              <div className="text-3xl mb-2">🔒</div>
-              <h3 className="font-semibold text-foreground mb-2">Verified Profiles</h3>
-              <p className="text-sm text-muted-foreground">All profiles are reviewed and verified by our admin team</p>
-            </div>
-
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 shadow-card">
-              <div className="text-3xl mb-2">📱</div>
-              <h3 className="font-semibold text-foreground mb-2">Secure Member Login</h3>
-              <p className="text-sm text-muted-foreground">Login with WhatsApp OTP and manage your own dashboard</p>
-            </div>
-            
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 shadow-card">
-              <div className="text-3xl mb-2">👨‍👩‍👧‍👦</div>
-              <h3 className="font-semibold text-foreground mb-2">Family Focused</h3>
-              <p className="text-sm text-muted-foreground">Building meaningful relationships for marriage and family</p>
+          {/* Visual */}
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-card border border-border/70">
+              <img
+                src={heroImage}
+                alt="Muslim wedding couple — Rishta Matrimony Islamic marriage community"
+                className="w-full h-[240px] sm:h-[340px] lg:h-[440px] object-cover"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand/35 via-transparent to-transparent" aria-hidden="true" />
             </div>
           </div>
         </div>
