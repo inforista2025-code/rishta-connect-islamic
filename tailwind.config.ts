@@ -15,6 +15,16 @@ export default {
     extend: {
       colors: {
         border: "hsl(var(--border))",
+        brand: "hsl(var(--brand-brown))",
+        cream: "hsl(var(--cream))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          soft: "hsl(var(--gold-soft))",
+        },
+        sage: {
+          DEFAULT: "hsl(var(--sage))",
+          soft: "hsl(var(--sage-soft))",
+        },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
