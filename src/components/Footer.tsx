@@ -1,4 +1,4 @@
-import { MessageCircle, Users, Facebook, Instagram, Mail, Phone } from "lucide-react";
+import { MessageCircle, Users, Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer() {
@@ -17,18 +17,6 @@ export function Footer() {
       url: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t",
       available: true
     },
-    {
-      name: "Facebook",
-      icon: Facebook,
-      url: "#facebook",
-      available: false
-    },
-    {
-      name: "Instagram",
-      icon: Instagram,
-      url: "#instagram",
-      available: false
-    }
   ];
 
   const handleSocialClick = (url: string, available: boolean) => {
