@@ -13,7 +13,7 @@ export function IslamicTrustSection() {
           <div className="w-16 h-px bg-primary/40 mx-auto mb-6" aria-hidden="true" />
           <blockquote className="text-lg md:text-2xl leading-relaxed text-foreground italic font-medium">
             "And among His signs is that He created for you spouses from among yourselves,
-            that you may find tranquillity in them; and He placed between you affection and mercy."
+            that you may find tranquillity in them..."
           </blockquote>
           <cite className="not-italic block text-sm md:text-base text-primary font-semibold mt-5">
             — Surah Ar-Rum (30:21)
