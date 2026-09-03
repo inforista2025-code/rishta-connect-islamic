@@ -39,6 +39,12 @@ export function RishtaMatrimonyLanding() {
       {/* Islamic Trust & Marketing */}
       <IslamicTrustSection />
 
+      {/* Trust Statistics — Secondary */}
+      <TrustStatsSection />
+
+      {/* Your Nikah Journey Starts With One Step */}
+      <NikahJourneySection />
+
       {/* How It Works - 3 Steps */}
       <div ref={howToJoinRef}>
         <HowToJoinSection />
