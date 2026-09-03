@@ -16,11 +16,24 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
 
   return (
     <section className="relative overflow-hidden bg-cream">
-      <div className="absolute inset-0 islamic-pattern opacity-60" aria-hidden="true" />
+      {/* Background image */}
+      <div className="absolute inset-0" aria-hidden="true">
+        <img
+          src={heroImage}
+          alt=""
+          className="w-full h-full object-cover object-center"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-cream/95 via-cream/85 to-cream/40" />
+        <div className="absolute inset-0 islamic-pattern opacity-60" />
+      </div>
+
       <div className="container mx-auto px-5 sm:px-6 relative">
-        <div className="max-w-[1280px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center py-12 md:py-16 lg:py-20">
+        <div className="max-w-[1280px] mx-auto py-14 md:py-20 lg:py-28">
           {/* Copy */}
-          <div className="fade-up text-center lg:text-left">
+          <div className="fade-up text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             <p className="text-sm md:text-base font-medium text-primary mb-3">
               Assalamualaikum! 🌸
             </p>
@@ -69,21 +82,6 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
             >
               How to Join / Verify
             </button>
-          </div>
-
-          {/* Visual */}
-          <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-card border border-border/70">
-              <img
-                src={heroImage}
-                alt="Muslim wedding couple — Rishta Matrimony Islamic marriage community"
-                className="w-full h-[240px] sm:h-[340px] lg:h-[440px] object-cover"
-                loading="eager"
-                decoding="async"
-                fetchPriority="high"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand/35 via-transparent to-transparent" aria-hidden="true" />
-            </div>
           </div>
         </div>
       </div>
