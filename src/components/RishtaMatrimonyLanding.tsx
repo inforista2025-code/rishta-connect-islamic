@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
+import { TrustStripSection } from "./TrustStripSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { PremiumSection } from "./PremiumSection";
@@ -26,6 +27,9 @@ export function RishtaMatrimonyLanding() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection onScrollToHowToJoin={scrollToHowToJoin} />
+
+      {/* Trust / Statistics Strip */}
+      <TrustStripSection />
 
       {/* Success Stories */}
       <SuccessAndTrustSection />
