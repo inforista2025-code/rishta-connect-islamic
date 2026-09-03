@@ -3,12 +3,14 @@ import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { TrustStripSection } from "./TrustStripSection";
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
+import { TrustStatsSection } from "./TrustStatsSection";
+import { IslamicTrustSection } from "./IslamicTrustSection";
+import { NikahJourneySection } from "./NikahJourneySection";
 import { HowToJoinSection } from "./HowToJoinSection";
 import { PremiumSection } from "./PremiumSection";
 import { WhyChooseUsSection } from "./WhyChooseUsSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { FAQSection } from "./FAQSection";
-import { IslamicTrustSection } from "./IslamicTrustSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
 
