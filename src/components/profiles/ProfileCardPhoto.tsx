@@ -1,50 +1,52 @@
 import { memo, useState } from "react";
-import { Lock } from "lucide-react";
+import { Lock, BadgeCheck } from "lucide-react";
 
 interface Props {
   photoUrls?: string[];
   name: string;
   /** true when the logged-in viewer has an active premium plan */
   viewerIsPremium: boolean;
+  /** Whether the profile is verified; defaults to true for listings on /profiles. */
+  verified?: boolean;
 }
 
 /**
- * Profile photo shown at the top of every profile card.
- * Visitors & free members get a heavily blurred, dimmed photo with an unlock CTA.
+ * Square profile photo shown at the top of every profile card (matches homepage featured cards).
+ * Visitors & free members get a blurred photo with an unlock CTA.
  * Premium members get the original image.
  */
-export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium }: Props) => {
+export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium, verified = true }: Props) => {
   const [failed, setFailed] = useState(false);
 
   const src = photoUrls?.[0];
   if (!src || failed) return null;
 
   return (
-    <div className="flex flex-col items-center gap-2 pt-4 pb-1">
-      {/* Compact face-only thumbnail */}
-      <div className="relative w-44 h-44 sm:w-56 sm:h-56 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20 shadow-sm">
-        <img
-          src={src}
-          alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
-          loading="lazy"
-          decoding="async"
-          onError={() => setFailed(true)}
-          draggable={false}
-          /* zoomed & top-anchored so only the face area fills the circle */
-          className={
-            viewerIsPremium
-              ? "w-full h-full object-cover object-[center_20%] scale-[1.35]"
-              : "w-full h-full object-cover object-[center_20%] scale-[1.35] select-none pointer-events-none [filter:blur(4px)]"
-          }
-          style={viewerIsPremium ? undefined : { WebkitFilter: "blur(4px)" }}
-        />
-        {!viewerIsPremium && <div className="absolute inset-0 rounded-full bg-foreground/10" />}
-      </div>
-
+    <div className="relative w-full aspect-square bg-muted overflow-hidden">
+      <img
+        src={src}
+        alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+        draggable={false}
+        className={
+          viewerIsPremium
+            ? "w-full h-full object-cover object-[center_25%]"
+            : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(6px)]"
+        }
+      />
       {!viewerIsPremium && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-          <Lock className="w-3 h-3" />
-          Premium Unlock
+        <>
+          <div className="absolute inset-0 bg-foreground/10" />
+          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary">
+            <Lock className="w-3 h-3" /> Premium Unlock
+          </span>
+        </>
+      )}
+      {verified && (
+        <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-sage px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+          <BadgeCheck className="w-3 h-3" /> Verified
         </span>
       )}
     </div>
