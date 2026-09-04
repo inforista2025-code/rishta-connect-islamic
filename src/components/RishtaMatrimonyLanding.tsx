@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { TrustStripSection } from "./TrustStripSection";
+import { FeaturedProfilesSection } from "./FeaturedProfilesSection";
+
 import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { TrustStatsSection } from "./TrustStatsSection";
 import { IslamicTrustSection } from "./IslamicTrustSection";
@@ -33,8 +35,12 @@ export function RishtaMatrimonyLanding() {
       {/* Trust / Statistics Strip */}
       <TrustStripSection />
 
+      {/* Featured Profiles */}
+      <FeaturedProfilesSection />
+
       {/* Success Stories */}
       <SuccessAndTrustSection />
+
 
       {/* Islamic Trust & Marketing */}
       <IslamicTrustSection />
