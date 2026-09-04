@@ -228,8 +228,11 @@ View full profile here:`;
               )}
               <User className="w-5 h-5 text-primary" />
               <span>{profile.name}</span>
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white bg-emerald-600">
+                <ShieldCheck className="w-3 h-3" /> Verified
+              </span>
               {isPremium && (
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
                   ⭐ Premium Verified
                 </span>
               )}
