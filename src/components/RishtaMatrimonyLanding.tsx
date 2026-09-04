@@ -35,8 +35,12 @@ export function RishtaMatrimonyLanding() {
       {/* Trust / Statistics Strip */}
       <TrustStripSection />
 
+      {/* Featured Profiles */}
+      <FeaturedProfilesSection />
+
       {/* Success Stories */}
       <SuccessAndTrustSection />
+
 
       {/* Islamic Trust & Marketing */}
       <IslamicTrustSection />
