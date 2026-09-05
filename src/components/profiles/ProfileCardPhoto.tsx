@@ -22,7 +22,7 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium, verifi
   if (!src || failed) return null;
 
   return (
-    <div className="relative w-[85%] mx-auto aspect-square bg-muted overflow-hidden">
+    <div className="relative w-full aspect-square bg-muted overflow-hidden">
       <img
         src={src}
         alt={viewerIsPremium ? `Profile photo of ${name}` : `Blurred profile photo of ${name}`}
@@ -33,7 +33,7 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium, verifi
         className={
           viewerIsPremium
             ? "w-full h-full object-cover object-[center_25%]"
-            : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(7px)]"
+            : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(7px)] md:[filter:blur(9px)]"
         }
       />
       {!viewerIsPremium && (
