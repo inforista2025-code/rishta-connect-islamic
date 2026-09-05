@@ -199,7 +199,7 @@ export default function MemberLogin() {
           )}
         </Card>
       </div>
-      <Footer />
+      <Footer minimal />
     </div>
   );
 }
