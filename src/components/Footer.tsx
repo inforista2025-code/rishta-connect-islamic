@@ -26,7 +26,7 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
   };
 
   return (
-    <footer className="bg-foreground text-background py-12">
+    <footer className="bg-foreground text-background py-8 md:py-12">
       <div className="container mx-auto px-4">
         {minimal ? (
           <div className="flex flex-col items-center text-center gap-6">
