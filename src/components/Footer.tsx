@@ -1,7 +1,7 @@
 import { MessageCircle, Users, Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export function Footer() {
+export function Footer({ minimal = false }: { minimal?: boolean }) {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
