@@ -116,7 +116,7 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                 <div className="space-y-2 mb-4 text-background/80">
                   <div className="flex items-center justify-center md:justify-end gap-2">
                     <Phone className="w-4 h-4" />
-                    <span className="text-sm">+91 7672933587</span>
+                    <span className="text-sm">+91 9128719875</span>
                   </div>
                   <div className="flex items-center justify-center md:justify-end gap-2">
                     <Mail className="w-4 h-4" />
