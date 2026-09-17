@@ -4,7 +4,7 @@ import { Phone, Mail, MessageCircle, Send, Clock } from "lucide-react";
 export function ContactSection() {
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent("Assalamualaikum! I need help with Rishta Matrimony.");
-    window.open(`https://wa.me/917672933587?text=${message}`, "_blank");
+    window.open(`https://wa.me/919128719875?text=${message}`, "_blank");
   };
 
   const handleEmailContact = () => {
@@ -38,7 +38,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground text-sm">Phone / WhatsApp</h3>
-                  <p className="text-sm text-muted-foreground">+91 7672933587</p>
+                  <p className="text-sm text-muted-foreground">+91 9128719875</p>
                 </div>
               </div>
               <Button variant="whatsapp" size="sm" className="w-full" onClick={handleWhatsAppContact}>

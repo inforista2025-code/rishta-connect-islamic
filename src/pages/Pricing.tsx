@@ -99,7 +99,7 @@ export default function Pricing() {
 
   const handleWhatsAppUpgrade = () => {
     window.open(
-      "https://wa.me/917672933587?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20for%20Rs.%20491%20for%202%20months.%20Kindly%20guide%20me%20with%20the%20next%20steps%2C%20JazakAllah%20khair.",
+      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20for%20Rs.%20491%20for%202%20months.%20Kindly%20guide%20me%20with%20the%20next%20steps%2C%20JazakAllah%20khair.",
       "_blank"
     );
   };

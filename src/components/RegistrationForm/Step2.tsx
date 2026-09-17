@@ -108,7 +108,7 @@ export function Step2({ form }: Step2Props) {
             <FormLabel>WhatsApp Number *</FormLabel>
             <FormControl>
               <Input 
-                placeholder="+91-7672933587" 
+                placeholder="+91-9128719875" 
                 type="tel"
                 {...field} 
               />

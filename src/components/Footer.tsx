@@ -26,7 +26,7 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
   };
 
   return (
-    <footer className="bg-foreground text-background py-8 md:py-12">
+    <footer className={`bg-foreground text-background ${minimal ? 'py-12' : 'py-8 md:py-12'}`}>
       <div className="container mx-auto px-4">
         {minimal ? (
           <div className="flex flex-col items-center text-center gap-6">
@@ -57,13 +57,13 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {/* Brand Section */}
               <div className="text-center md:text-left">
-                <h3 className="text-2xl font-bold mb-4">
+                <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
                   Rishta Matrimony 🌸
                 </h3>
-                <p className="text-background/80 mb-4">
+                <p className="text-background/80 mb-3 md:mb-4">
                   Connecting Muslim hearts with Islamic values
                 </p>
                 <p className="text-sm text-background/70">
@@ -73,7 +73,7 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
 
               {/* Quick Links */}
               <div className="text-center">
-                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <h4 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Quick Links</h4>
                 <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
                   <Link to="/about-us" className="text-sm text-white hover:text-white/80 transition-colors">
                     About Us
@@ -110,13 +110,13 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
 
               {/* Contact & Social */}
               <div className="text-center md:text-right">
-                <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
+                <h4 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Connect With Us</h4>
                 
                 {/* Contact Info */}
-                <div className="space-y-2 mb-4 text-background/80">
+                <div className="space-y-1 md:space-y-2 mb-3 md:mb-4 text-background/80">
                   <div className="flex items-center justify-center md:justify-end gap-2">
                     <Phone className="w-4 h-4" />
-                    <span className="text-sm">+91 7672933587</span>
+                    <span className="text-sm">+91 9128719875</span>
                   </div>
                   <div className="flex items-center justify-center md:justify-end gap-2">
                     <Mail className="w-4 h-4" />
@@ -146,8 +146,8 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
             </div>
 
             {/* Bottom Section */}
-            <div className="border-t border-background/20 mt-8 pt-8 text-center">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div className="border-t border-background/20 mt-6 pt-6 md:mt-8 md:pt-8 text-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 items-center">
                 {/* Trust Notes */}
                 <div className="text-sm text-background/70 space-y-1">
                   <p>🔒 Profiles are verified before approvals</p>
