@@ -77,7 +77,6 @@ export function ContactSection() {
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>Mon - Fri: 9:00 AM - 8:00 PM</p>
                 <p>Sat: 10:00 AM - 6:00 PM</p>
-                <p>Sun: 12:00 PM - 4:00 PM</p>
               </div>
             </div>
           </div>
