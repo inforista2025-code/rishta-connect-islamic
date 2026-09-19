@@ -544,8 +544,11 @@ const Profiles = () => {
   const [user, setUser] = useState<any>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeGender, setActiveGender] = useState<"Male" | "Female">("Male");
+  const [activeGender, setActiveGender] = useState<"Male" | "Female">("Female");
   const [searchTerm, setSearchTerm] = useState("");
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [ageFilter, setAgeFilter] = useState("all");
+  const [maslakFilter, setMaslakFilter] = useState("all");
   
   // Admin features state
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
@@ -963,10 +966,23 @@ const Profiles = () => {
     };
   }, []);
 
-  // Scroll to profile if id parameter is present in URL
+  // Parse URL search parameters on mount or URL change
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const paramGender = urlParams.get('gender');
+    const paramAge = urlParams.get('age');
+    const paramLocation = urlParams.get('location');
+    const paramMaslak = urlParams.get('maslak');
+    const paramSearch = urlParams.get('search');
     const profileId = urlParams.get('id');
+
+    if (paramGender === "Male" || paramGender === "Female") {
+      setActiveGender(paramGender);
+    }
+    if (paramAge) setAgeFilter(paramAge);
+    if (paramLocation) setLocationFilter(paramLocation);
+    if (paramMaslak) setMaslakFilter(paramMaslak);
+    if (paramSearch) setSearchTerm(paramSearch);
     
     if (profileId && profiles.length > 0) {
       // Find the profile to get its gender
@@ -1051,13 +1067,50 @@ const Profiles = () => {
 
   const filteredProfiles = useMemo(() => 
     profiles
-      .filter(profile => 
-        profile.gender === activeGender &&
-        (profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.age.toString().includes(searchTerm) ||
-        profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.profession.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      .filter(profile => {
+        // Gender filter
+        if (profile.gender !== activeGender) return false;
+
+        // Search term filter
+        if (searchTerm.trim()) {
+          const term = searchTerm.toLowerCase();
+          const matchSearch =
+            profile.name.toLowerCase().includes(term) ||
+            profile.age.toString().includes(term) ||
+            profile.location.toLowerCase().includes(term) ||
+            profile.profession.toLowerCase().includes(term) ||
+            (profile.caste && profile.caste.toLowerCase().includes(term)) ||
+            (profile.maslak && profile.maslak.toLowerCase().includes(term));
+          if (!matchSearch) return false;
+        }
+
+        // Location filter
+        if (locationFilter !== "all" && locationFilter.trim()) {
+          if (!profile.location.toLowerCase().includes(locationFilter.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Maslak filter
+        if (maslakFilter !== "all" && maslakFilter.trim()) {
+          if (!profile.maslak || !profile.maslak.toLowerCase().includes(maslakFilter.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Age range filter
+        if (ageFilter !== "all" && ageFilter.trim()) {
+          const numAge = parseInt(profile.age);
+          if (!isNaN(numAge)) {
+            if (ageFilter === "18-24" && (numAge < 18 || numAge > 24)) return false;
+            if (ageFilter === "25-30" && (numAge < 25 || numAge > 30)) return false;
+            if (ageFilter === "31-35" && (numAge < 31 || numAge > 35)) return false;
+            if (ageFilter === "36-45" && (numAge < 36 || numAge > 45)) return false;
+          }
+        }
+
+        return true;
+      })
       .sort((a, b) => {
         // Premium profiles first
         const aIsPremium = a.planType === 'premium' && (!a.premiumExpiry || new Date(a.premiumExpiry) > new Date()) ? 1 : 0;
@@ -1065,7 +1118,7 @@ const Profiles = () => {
         if (bIsPremium !== aIsPremium) return bIsPremium - aIsPremium;
         return b.order - a.order;
       }),
-    [profiles, activeGender, searchTerm]
+    [profiles, activeGender, searchTerm, locationFilter, maslakFilter, ageFilter]
   );
 
   const handleEdit = useCallback((profile: Profile) => {
@@ -1415,20 +1468,6 @@ const Profiles = () => {
           {/* Gender Filter Tabs */}
           <div className="flex gap-3 justify-center">
             <button
-              onClick={() => setActiveGender("Male")}
-              className={`
-                px-8 py-3 rounded-full font-semibold text-base
-                transition-all duration-300 ease-in-out
-                transform hover:scale-105
-                ${activeGender === "Male" 
-                  ? "bg-primary text-primary-foreground shadow-button" 
-                  : "bg-muted text-muted-foreground hover:bg-primary/20"
-                }
-              `}
-            >
-              Male
-            </button>
-            <button
               onClick={() => setActiveGender("Female")}
               className={`
                 px-8 py-3 rounded-full font-semibold text-base
@@ -1440,9 +1479,75 @@ const Profiles = () => {
                 }
               `}
             >
-              Female
+              Female (दुल्हन)
+            </button>
+            <button
+              onClick={() => setActiveGender("Male")}
+              className={`
+                px-8 py-3 rounded-full font-semibold text-base
+                transition-all duration-300 ease-in-out
+                transform hover:scale-105
+                ${activeGender === "Male" 
+                  ? "bg-primary text-primary-foreground shadow-button" 
+                  : "bg-muted text-muted-foreground hover:bg-primary/20"
+                }
+              `}
+            >
+              Male (दूल्हा)
             </button>
           </div>
+
+          {/* Active Filter Chips */}
+          {(locationFilter !== "all" || ageFilter !== "all" || maslakFilter !== "all" || searchTerm) && (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 animate-fade-in">
+              <span className="text-xs text-muted-foreground font-medium">Active Filters:</span>
+              {locationFilter !== "all" && (
+                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
+                  Location: {locationFilter}
+                  <button onClick={() => setLocationFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
+              {ageFilter !== "all" && (
+                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
+                  Age: {ageFilter} yrs
+                  <button onClick={() => setAgeFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
+              {maslakFilter !== "all" && (
+                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
+                  Maslak: {maslakFilter}
+                  <button onClick={() => setMaslakFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
+              {searchTerm && (
+                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
+                  Keyword: "{searchTerm}"
+                  <button onClick={() => setSearchTerm("")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setLocationFilter("all");
+                  setAgeFilter("all");
+                  setMaslakFilter("all");
+                  setSearchTerm("");
+                }}
+                className="h-7 text-xs text-primary hover:text-primary/80"
+              >
+                Reset All
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Profiles Grid */}
