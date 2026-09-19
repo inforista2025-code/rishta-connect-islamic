@@ -1479,7 +1479,7 @@ const Profiles = () => {
                 }
               `}
             >
-              Bride (दुल्हन)
+              Bride
             </button>
             <button
               onClick={() => setActiveGender("Male")}
@@ -1493,7 +1493,7 @@ const Profiles = () => {
                 }
               `}
             >
-              Groom (दूल्हा)
+              Groom
             </button>
           </div>
 
