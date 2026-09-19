@@ -99,7 +99,7 @@ export default function Contact() {
         {/* Additional Info */}
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground">
-            Available: Monday to Saturday, 9 AM - 9 PM IST
+            Available: Monday to Friday, 9 AM - 8 PM IST
           </p>
         </div>
       </div>
