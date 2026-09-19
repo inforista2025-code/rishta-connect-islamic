@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-matrimony.jpg";
-import { QuickSearchFinder } from "@/components/QuickSearchFinder";
 
 interface HeroSectionProps {
   onScrollToHowToJoin: () => void;
@@ -32,7 +31,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
       </div>
 
       <div className="container mx-auto px-5 sm:px-6 relative">
-        <div className="max-w-[1280px] mx-auto py-12 md:py-16 lg:py-20">
+        <div className="max-w-[1280px] mx-auto py-14 md:py-20 lg:py-28">
           {/* Copy */}
           <div className="fade-up text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             <p className="text-sm md:text-base font-medium text-primary mb-3">
@@ -84,9 +83,6 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
               How to Join / Verify
             </button>
           </div>
-
-          {/* Quick Match Finder Widget */}
-          <QuickSearchFinder />
         </div>
       </div>
     </section>
