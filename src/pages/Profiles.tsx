@@ -1470,7 +1470,7 @@ const Profiles = () => {
             <button
               onClick={() => setActiveGender("Female")}
               className={`
-                px-8 py-3 rounded-full font-semibold text-base
+                px-8 py-3 rounded-full font-semibold text-base flex items-center gap-2
                 transition-all duration-300 ease-in-out
                 transform hover:scale-105
                 ${activeGender === "Female" 
@@ -1479,12 +1479,12 @@ const Profiles = () => {
                 }
               `}
             >
-              Bride
+              <span>👰</span> Bride
             </button>
             <button
               onClick={() => setActiveGender("Male")}
               className={`
-                px-8 py-3 rounded-full font-semibold text-base
+                px-8 py-3 rounded-full font-semibold text-base flex items-center gap-2
                 transition-all duration-300 ease-in-out
                 transform hover:scale-105
                 ${activeGender === "Male" 
@@ -1493,7 +1493,7 @@ const Profiles = () => {
                 }
               `}
             >
-              Groom
+              <span>🤵</span> Groom
             </button>
           </div>
 
