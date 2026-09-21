@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Users, UserPlus } from "lucide-react";
+import { MessageCircle, Users, UserPlus, Instagram } from "lucide-react";
 
 export function CommunityLinksSection() {
   const communityLinks = [
