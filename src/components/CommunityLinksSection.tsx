@@ -50,14 +50,14 @@ export function CommunityLinksSection() {
               >
                 <div
                   className={`w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                    (link as any).isInstagram
+                    link.isInstagram
                       ? "bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30"
                       : "bg-green-100 dark:bg-green-900/30"
                   }`}
                 >
                   <link.icon
                     className={`w-7 h-7 ${
-                      (link as any).isInstagram
+                      link.isInstagram
                         ? "text-pink-600 dark:text-pink-400"
                         : "text-green-600 dark:text-green-400"
                     }`}
@@ -66,9 +66,9 @@ export function CommunityLinksSection() {
                 <h3 className="font-semibold text-foreground text-base mb-1">{link.name}</h3>
                 <p className="text-xs md:text-sm text-muted-foreground mb-4">{link.description}</p>
                 <Button
-                  variant={(link as any).isInstagram ? "default" : "whatsapp"}
+                  variant={link.isInstagram ? "default" : "whatsapp"}
                   className={`w-full h-11 rounded-full ${
-                    (link as any).isInstagram
+                    link.isInstagram
                       ? "bg-gradient-to-r from-pink-500 via-purple-500 to-orange-500 hover:opacity-90 text-white border-0"
                       : ""
                   }`}
