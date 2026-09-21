@@ -101,6 +101,12 @@ export function BiodataModal({ profile, isOpen, onClose }: BiodataModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 border-primary/20 bg-background sm:rounded-2xl print:max-w-none print:max-h-none print:shadow-none print:border-none print:p-4">
         
+        {/* Hidden accessible title for Radix UI */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>Matrimonial Biodata - {profile.name} ({profileCode})</DialogTitle>
+          <DialogDescription>Detailed Islamic matrimonial profile and family details</DialogDescription>
+        </DialogHeader>
+
         {/* Islamic Header Banner */}
         <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white p-6 sm:p-8 text-center relative overflow-hidden print:bg-emerald-800 print:text-black">
           {/* Subtle Islamic Calligraphy ornament */}

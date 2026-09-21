@@ -365,8 +365,13 @@ View full profile here:`;
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button 
+              type="button"
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm h-11 rounded-xl shadow-sm hover:shadow" 
-              onClick={() => onViewBiodata(profile)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onViewBiodata(profile);
+              }}
             >
               <Eye className="w-4 h-4 mr-2" />
               View Full Biodata
