@@ -17,6 +17,7 @@ export function CommunityLinksSection() {
       icon: Users,
       url: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t",
       buttonText: "Join Community",
+      isInstagram: false,
     },
     {
       name: "Instagram",
