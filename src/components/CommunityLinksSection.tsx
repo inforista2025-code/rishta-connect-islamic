@@ -17,6 +17,14 @@ export function CommunityLinksSection() {
       url: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t",
       buttonText: "Join Community",
     },
+    {
+      name: "Instagram",
+      description: "Follow us for updates & success stories",
+      icon: Instagram,
+      url: "https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==",
+      buttonText: "Follow",
+      isInstagram: true,
+    },
   ];
 
   return (
