@@ -9,6 +9,7 @@ export function CommunityLinksSection() {
       icon: MessageCircle,
       url: "https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B",
       buttonText: "Join Channel",
+      isInstagram: false,
     },
     {
       name: "WhatsApp Community",
