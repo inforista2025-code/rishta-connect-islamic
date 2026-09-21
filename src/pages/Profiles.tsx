@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Sparkles } from "lucide-react";
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
+import { BiodataModal, BiodataProfile } from "@/components/profiles/BiodataModal";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,13 +83,15 @@ interface SortableProfileCardProps {
   viewerIsPremium: boolean;
   onEdit: (profile: Profile) => void;
   onDelete: (profile: Profile) => void;
+  onViewBiodata: (profile: Profile) => void;
 }
 
-const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, onDelete }: SortableProfileCardProps) => {
+const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, onDelete, onViewBiodata }: SortableProfileCardProps) => {
   const isPremium = profile.planType === 'premium' && (!profile.premiumExpiry || new Date(profile.premiumExpiry) > new Date());
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
+  const profileCode = `RM-${profile.gender === 'Female' ? 'BRIDE' : 'GROOM'}-${profile.id.toString().padStart(3, '0')}`;
   
   const {
     attributes,
@@ -116,35 +119,25 @@ const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, o
   }, [onDelete, profile]);
 
   const getShareText = useCallback(() => {
-    return `Assalamu Alaikum, here is a profile you may be interested in:
+    return `Assalamu Alaikum, here is a profile from Rishta Matrimony:
 
-📋 Personal Details:
-Name: ${profile.name}
-Age: ${profile.age} yrs
-DOB: ${profile.dob}
-Location: ${profile.location}
-Height: ${profile.height}
-Complexion: ${profile.complexion}
-
-🎓 Education & Career:
-Education: ${profile.education}
-Profession: ${profile.profession}
-Marital Status: ${profile.maritalStatus}
-
-🕌 Religious Information:${profile.caste ? `\nCaste: ${profile.caste}` : ''}${profile.maslak ? `\nMaslak: ${profile.maslak}` : ''}${profile.islamicKnowledge ? `\nIslamic Knowledge: ${profile.islamicKnowledge}` : ''}
+📋 Profile ID: ${profileCode}
+👤 Name: ${profile.name} (${profile.gender === 'Female' ? 'Bride' : 'Groom'})
+🎂 Age / Height: ${profile.age} yrs | ${profile.height}
+📍 Location: ${profile.location}
+🎓 Education: ${profile.education}
+💼 Profession: ${profile.profession}
+💒 Marital Status: ${profile.maritalStatus}${profile.maslak ? `\n🕌 Maslak: ${profile.maslak}` : ''}${profile.caste ? `\n🏷️ Caste: ${profile.caste}` : ''}
 
 👨‍👩‍👧‍👦 Family:
 ${profile.family}
 
 💑 Partner Preferences:
-Preferred Partner: ${profile.preferredPartner}
-Preferred Location: ${profile.preferredLocation}
-Preferred Age: ${profile.preferredAge}
+${profile.preferredPartner}
 
-📩 For Request Detailed Profile, message on WhatsApp: +91-9128719875
-
+📩 Inquire on WhatsApp: +91-9128719875
 View full profile here:`;
-  }, [profile]);
+  }, [profile, profileCode]);
 
   const getProfileUrl = useCallback(() => {
     return `${window.location.origin}/profiles?id=${profile.id}`;
@@ -154,7 +147,7 @@ View full profile here:`;
     e.stopPropagation();
     
     const shareData = {
-      title: `Rishta Profile – ${profile.name}`,
+      title: `Rishta Profile – ${profile.name} (${profileCode})`,
       text: getShareText(),
       url: getProfileUrl(),
     };
@@ -163,17 +156,15 @@ View full profile here:`;
       try {
         await navigator.share(shareData);
       } catch (err) {
-        // If user cancelled, do nothing. For any other error, show fallback modal
         if ((err as Error).name === 'AbortError') {
           return;
         }
-        // Show fallback modal for permission denied or other errors
         setShowShareModal(true);
       }
     } else {
       setShowShareModal(true);
     }
-  }, [profile.name, getShareText, getProfileUrl]);
+  }, [profile.name, profileCode, getShareText, getProfileUrl]);
 
   const handleCopyLink = useCallback(() => {
     const textToCopy = `${getShareText()}\n${getProfileUrl()}`;
@@ -197,45 +188,52 @@ View full profile here:`;
     setShowShareModal(false);
   }, [getShareText, getProfileUrl]);
 
+  const whatsappInquiryUrl = `https://wa.me/919128719875?text=${encodeURIComponent(
+    `Assalamualaikum Rishta Matrimony,\n\nI would like to inquire about:\n📋 Profile ID: ${profileCode}\n👤 Candidate: ${profile.name} (${profile.age} yrs, ${profile.gender})\n📍 Location: ${profile.location}\n🎓 Education: ${profile.education}\n💼 Profession: ${profile.profession}\n\nPlease share detailed biodata and next steps. JazakAllahu Khair.`
+  )}`;
+
   return (
     <div ref={setNodeRef} style={style} className="animate-fade-in" id={`profile-${profile.id}`}>
       {isPremium && (
         <div className="flex justify-start mb-[-1px]">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white" style={{ backgroundColor: '#6C4DF6' }}>
-            ⭐ Featured
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 shadow-sm">
+            ⭐ Featured Match
           </span>
         </div>
       )}
       <Card 
-        className={`hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${isPremium ? 'border-[#6C4DF6]' : ''}`}
-        style={isPremium ? { 
-          boxShadow: '0 0 10px rgba(108,77,246,0.3)',
-          backgroundColor: '#F7F5FF'
-        } : undefined}
+        className={`hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.01] border rounded-2xl overflow-hidden ${
+          isPremium ? 'border-amber-400/60 ring-1 ring-amber-400/30' : 'border-border'
+        }`}
       >
         <ProfileCardPhoto
           photoUrls={profile.photoUrls}
           name={profile.name}
           viewerIsPremium={viewerIsPremium}
         />
-        <CardHeader className="bg-primary/5 border-b">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        <CardHeader className="bg-muted/30 border-b pb-3">
+          <CardTitle className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {isAdmin && (
                 <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
                   <GripVertical className="w-5 h-5 text-muted-foreground" />
                 </div>
               )}
               <User className="w-5 h-5 text-primary" />
-              <span>{profile.name}</span>
+              <span className="font-bold text-lg text-foreground">{profile.name}</span>
+              <Badge variant="outline" className="font-mono text-xs font-semibold bg-background text-primary border-primary/30">
+                {profileCode}
+              </Badge>
               {isPremium && (
-                <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
-                  ⭐ Premium Verified
-                </span>
+                <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2 py-0.5 border-0">
+                  ⭐ Verified
+                </Badge>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{profile.gender}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {profile.gender === "Female" ? "Bride" : "Groom"}
+              </Badge>
               {isAdmin && (
                 <div className="flex gap-1">
                   <Button
@@ -258,155 +256,142 @@ View full profile here:`;
               )}
             </div>
           </CardTitle>
+
+          {/* Quick Highlight Pills */}
+          <div className="flex flex-wrap gap-1.5 pt-2">
+            <span className="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+              🎂 {profile.age} yrs
+            </span>
+            <span className="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-muted text-foreground font-medium">
+              📏 {profile.height}
+            </span>
+            <span className="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-muted text-foreground font-medium">
+              💒 {profile.maritalStatus}
+            </span>
+            {profile.maslak && (
+              <span className="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-medium">
+                🕌 {profile.maslak}
+              </span>
+            )}
+            <span className="inline-flex items-center text-xs px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              📍 {profile.location}
+            </span>
+          </div>
         </CardHeader>
         
-        <CardContent className="pt-6 space-y-4">
-          {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">🎂</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Age / DOB</p>
-                <p className="text-sm text-muted-foreground">{profile.age} yrs / {profile.dob}</p>
-              </div>
+        <CardContent className="pt-5 space-y-4">
+          {/* Basic & Physical Details */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-card border rounded-lg p-2.5">
+              <span className="text-xs text-muted-foreground block">Age / DOB</span>
+              <span className="font-semibold text-foreground">{profile.age} yrs {profile.dob ? `(${profile.dob})` : ''}</span>
             </div>
-            
-            <div className="flex items-start gap-2">
-              <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Location</p>
-                <p className="text-sm text-muted-foreground">{profile.location}</p>
-              </div>
+            <div className="bg-card border rounded-lg p-2.5">
+              <span className="text-xs text-muted-foreground block">Location</span>
+              <span className="font-semibold text-foreground truncate block" title={profile.location}>{profile.location}</span>
             </div>
-
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">📏</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Height</p>
-                <p className="text-sm text-muted-foreground">{profile.height}</p>
-              </div>
+            <div className="bg-card border rounded-lg p-2.5">
+              <span className="text-xs text-muted-foreground block">Height & Look</span>
+              <span className="font-semibold text-foreground">{profile.height} • {profile.complexion}</span>
             </div>
-
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">🌟</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Complexion</p>
-                <p className="text-sm text-muted-foreground">{profile.complexion}</p>
-              </div>
+            <div className="bg-card border rounded-lg p-2.5">
+              <span className="text-xs text-muted-foreground block">Marital Status</span>
+              <span className="font-semibold text-foreground">{profile.maritalStatus}</span>
             </div>
           </div>
 
           {/* Education & Profession */}
-          <div className="space-y-3 pt-2 border-t">
+          <div className="space-y-2 pt-1 border-t text-sm">
             <div className="flex items-start gap-2">
-              <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+              <GraduationCap className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Education</p>
-                <p className="text-sm text-muted-foreground">{profile.education}</p>
+                <span className="text-xs text-muted-foreground">Education:</span>
+                <p className="font-medium text-foreground">{profile.education}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2">
-              <Briefcase className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+              <Briefcase className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Profession</p>
-                <p className="text-sm text-muted-foreground">{profile.profession}</p>
+                <span className="text-xs text-muted-foreground">Profession:</span>
+                <p className="font-medium text-foreground">{profile.profession}</p>
               </div>
             </div>
           </div>
 
-          {/* Marital Status */}
-          <div className="pt-2 border-t">
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">💒</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Marital Status</p>
-                <p className="text-sm text-muted-foreground">{profile.maritalStatus}</p>
-              </div>
+          {/* Deen & Maslak if present */}
+          {(profile.caste || profile.maslak || profile.islamicKnowledge) && (
+            <div className="pt-2 border-t flex flex-wrap gap-2 text-xs">
+              {profile.maslak && (
+                <span className="px-2 py-1 rounded bg-muted text-foreground">
+                  <strong>Maslak:</strong> {profile.maslak}
+                </span>
+              )}
+              {profile.caste && (
+                <span className="px-2 py-1 rounded bg-muted text-foreground">
+                  <strong>Caste:</strong> {profile.caste}
+                </span>
+              )}
+              {profile.islamicKnowledge && (
+                <span className="px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+                  <strong>Deen:</strong> {profile.islamicKnowledge}
+                </span>
+              )}
             </div>
-          </div>
+          )}
 
-          {/* Caste */}
-          {profile.caste && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🏷️</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Caste</p>
-                  <p className="text-sm text-muted-foreground">{profile.caste}</p>
-                </div>
+          {/* Family Summary */}
+          {profile.family && (
+            <div className="pt-2 border-t text-xs">
+              <div className="flex items-start gap-1.5">
+                <Users className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-muted-foreground line-clamp-2">
+                  <strong className="text-foreground">Family:</strong> {profile.family}
+                </p>
               </div>
             </div>
           )}
 
-          {/* Maslak */}
-          {profile.maslak && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🕌</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Maslak</p>
-                  <p className="text-sm text-muted-foreground">{profile.maslak}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Islamic Knowledge */}
-          {profile.islamicKnowledge && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">📚</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Islamic Knowledge</p>
-                  <p className="text-sm text-muted-foreground">{profile.islamicKnowledge}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Family Info */}
-          <div className="pt-2 border-t">
-            <div className="flex items-start gap-2">
-              <Users className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground mb-1">Family</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">{profile.family}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Preferences */}
-          <div className="pt-2 border-t bg-muted/30 -mx-6 px-6 py-4 rounded-b-lg">
-            <p className="text-sm font-semibold text-foreground mb-2">📜 Partner Preferences:</p>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">{profile.preferredPartner}</p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">📍 {profile.preferredLocation}</Badge>
-              <Badge variant="outline">🎂 {profile.preferredAge}</Badge>
+          {/* Partner Preferences */}
+          <div className="pt-2 border-t bg-muted/20 -mx-6 px-6 py-3 rounded-b-lg">
+            <p className="text-xs font-semibold text-foreground mb-1">📜 Partner Expectations:</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{profile.preferredPartner}</p>
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="outline" className="text-[11px] bg-background">📍 {profile.preferredLocation}</Badge>
+              <Badge variant="outline" className="text-[11px] bg-background">🎂 {profile.preferredAge} yrs</Badge>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button className="flex-1 min-w-0 text-xs sm:text-sm md:text-base px-2 sm:px-4" size="lg" asChild>
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Button 
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm h-11 rounded-xl shadow-sm hover:shadow" 
+              onClick={() => onViewBiodata(profile)}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              View Full Biodata
+            </Button>
+            <Button 
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs sm:text-sm h-11 rounded-xl shadow-sm hover:shadow" 
+              asChild
+            >
               <a 
-                href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20request%20the%20detailed%20profile%20of%20${encodeURIComponent(profile.name)}%20from%20your%20platform.%20Kindly%20share%20the%20details.%20JazakAllahu%20Khair.`}
+                href={whatsappInquiryUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Request Detailed Profile
+                <MessageCircle className="w-4 h-4 mr-2" />
+                WhatsApp Inquire
               </a>
             </Button>
             <Button 
               type="button"
-              className="flex-shrink-0 px-2 sm:px-3 md:px-4" 
-              size="lg"
+              className="flex-shrink-0 px-3 h-11 rounded-xl" 
               variant="outline"
               onClick={handleShare}
-              style={{ backgroundColor: 'hsl(var(--primary) / 0.1)', borderColor: 'hsl(var(--primary) / 0.3)' }}
+              title="Share Profile"
             >
-              <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary sm:mr-1" />
-              <span className="text-primary hidden sm:inline text-xs sm:text-sm md:text-base">Share</span>
+              <Share2 className="w-4 h-4 text-primary" />
             </Button>
           </div>
           <MemberProfileActions profileId={profile.id} compact />
@@ -561,6 +546,15 @@ const Profiles = () => {
     maritalStatus: "Single"
   });
   
+  // Islamic Biodata Modal state
+  const [selectedBiodataProfile, setSelectedBiodataProfile] = useState<BiodataProfile | null>(null);
+  const [showBiodataModal, setShowBiodataModal] = useState(false);
+
+  const handleViewBiodata = useCallback((profile: Profile) => {
+    setSelectedBiodataProfile(profile);
+    setShowBiodataModal(true);
+  }, []);
+
   // Undo functionality
   const [history, setHistory] = useState<{ action: string; data: any }[]>([]);
 
@@ -1577,6 +1571,7 @@ const Profiles = () => {
                     viewerIsPremium={!!viewerIsPremium}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onViewBiodata={handleViewBiodata}
                   />
                 ))}
               </div>
@@ -1948,6 +1943,13 @@ const Profiles = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Islamic Biodata Modal */}
+      <BiodataModal
+        profile={selectedBiodataProfile}
+        isOpen={showBiodataModal}
+        onClose={() => setShowBiodataModal(false)}
+      />
 
       <Footer />
     </div>
