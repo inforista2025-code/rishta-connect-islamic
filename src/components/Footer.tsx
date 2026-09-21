@@ -1,4 +1,4 @@
-import { MessageCircle, Users, Mail, Phone } from "lucide-react";
+import { MessageCircle, Users, Mail, Phone, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer({ minimal = false }: { minimal?: boolean }) {
@@ -15,6 +15,12 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
       name: "WhatsApp Community",
       icon: Users,
       url: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t",
+      available: true
+    },
+    {
+      name: "Telegram Channel",
+      icon: Send,
+      url: "https://t.me/Rishtamatrimony",
       available: true
     },
   ];
