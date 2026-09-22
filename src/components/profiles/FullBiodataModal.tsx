@@ -16,7 +16,8 @@ import {
   HeartHandshake, 
   Sparkles, 
   Calendar, 
-  ShieldCheck 
+  ShieldCheck,
+  X 
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -124,7 +125,17 @@ ${profile.family}
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border border-primary/20 shadow-2xl">
+      <DialogContent className="max-w-3xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border border-primary/20 shadow-2xl relative [&>button]:hidden">
+        {/* Prominent High-Contrast Close (Cut) Button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-50 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/40 backdrop-blur-md shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+          title="Close Biodata"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5 stroke-[2.5]" />
+        </button>
+
         {/* Top Islamic Aesthetic Header */}
         <div className="bg-gradient-to-br from-primary via-emerald-800 to-teal-900 text-white p-6 sm:p-8 rounded-t-2xl relative overflow-hidden text-center">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
