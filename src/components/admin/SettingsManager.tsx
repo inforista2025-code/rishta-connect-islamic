@@ -11,17 +11,13 @@ import {
   KeyRound, 
   MessageCircle, 
   Mail, 
-  Send, 
-  Instagram, 
-  Users, 
   ShieldCheck, 
   CheckCircle2, 
   Eye, 
   EyeOff, 
   Loader2, 
   ExternalLink,
-  Copy,
-  Sparkles
+  Copy
 } from "lucide-react";
 
 export function SettingsManager() {
@@ -34,16 +30,12 @@ export function SettingsManager() {
   const [showPassword, setShowPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  // Official Contact and Community defaults
+  // Official Contact and Pricing details
   const contactInfo = {
     whatsapp: "+91 9128719875",
     whatsappLink: "https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony.",
     email: "info.rista2025@gmail.com",
     pricingPlan: "₹491 (2 Months Unlimited Access)",
-    whatsappChannel: "https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B",
-    whatsappCommunity: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t",
-    telegram: "https://t.me/Rishtamatrimony",
-    instagram: "https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==",
   };
 
   useEffect(() => {
@@ -117,7 +109,7 @@ export function SettingsManager() {
             Platform & Admin Settings
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your Admin account security, Official WhatsApp support info, and Community links.
+            Manage your Admin account security and Official Support & Pricing information.
           </p>
         </div>
         <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 flex items-center gap-1.5 py-1 px-3">
@@ -265,118 +257,6 @@ export function SettingsManager() {
         </Card>
 
       </div>
-
-      {/* Section 3: Official Community Channels */}
-      <Card className="border shadow-xs">
-        <CardHeader className="pb-3 border-b bg-muted/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <div>
-                <CardTitle className="text-base">Official Community Channels</CardTitle>
-                <CardDescription className="text-xs">
-                  Official channels linked in Website Header, Footer & Contact page
-                </CardDescription>
-              </div>
-            </div>
-            <Badge variant="secondary" className="text-xs">4 Channels</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            
-            {/* WhatsApp Channel */}
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:border-emerald-500/40 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold">WhatsApp Channel</p>
-                  <p className="text-[11px] text-muted-foreground">Broadcast Updates</p>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 px-2 text-xs"
-                onClick={() => window.open(contactInfo.whatsappChannel, "_blank")}
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                Open
-              </Button>
-            </div>
-
-            {/* WhatsApp Community */}
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:border-emerald-600/40 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold">WhatsApp Community</p>
-                  <p className="text-[11px] text-muted-foreground">Member Group</p>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 px-2 text-xs"
-                onClick={() => window.open(contactInfo.whatsappCommunity, "_blank")}
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                Open
-              </Button>
-            </div>
-
-            {/* Telegram Channel */}
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:border-sky-500/40 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
-                  <Send className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold">Telegram Channel</p>
-                  <p className="text-[11px] text-muted-foreground">@Rishtamatrimony</p>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 px-2 text-xs"
-                onClick={() => window.open(contactInfo.telegram, "_blank")}
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                Open
-              </Button>
-            </div>
-
-            {/* Instagram Profile */}
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:border-rose-500/40 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                  <Instagram className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold">Instagram Handle</p>
-                  <p className="text-[11px] text-muted-foreground">@rishtamatrimony786</p>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 px-2 text-xs"
-                onClick={() => window.open(contactInfo.instagram, "_blank")}
-              >
-                <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                Open
-              </Button>
-            </div>
-
-          </div>
-        </CardContent>
-      </Card>
-
     </div>
   );
 }
