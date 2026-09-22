@@ -985,21 +985,19 @@ const Profiles = () => {
       if (targetProfile) {
         // Set the correct gender tab
         setActiveGender(targetProfile.gender as "Male" | "Female");
-        setSelectedBiodataProfile(targetProfile);
-        setIsBiodataOpen(true);
         
-        // Wait for the filter to apply and DOM to render
+        // Smoothly scroll to the target profile card and highlight it
         setTimeout(() => {
           const profileElement = document.getElementById(`profile-${profileId}`);
           if (profileElement) {
             profileElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add a highlight effect
-            profileElement.style.boxShadow = '0 0 0 3px hsl(var(--primary))';
+            // Add a prominent highlight ring effect
+            profileElement.classList.add('ring-4', 'ring-primary', 'ring-offset-4', 'transition-all', 'duration-500');
             setTimeout(() => {
-              profileElement.style.boxShadow = '';
-            }, 2000);
+              profileElement.classList.remove('ring-4', 'ring-primary', 'ring-offset-4');
+            }, 3500);
           }
-        }, 500);
+        }, 400);
       }
     }
   }, [profiles]);
