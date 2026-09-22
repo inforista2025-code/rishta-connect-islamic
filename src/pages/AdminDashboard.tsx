@@ -14,6 +14,7 @@ import { TermsManager } from '@/components/admin/TermsManager';
 import { PrivacyPolicyManager } from '@/components/admin/PrivacyPolicyManager';
 import { UpdateRequestsManager } from '@/components/admin/UpdateRequestsManager';
 import { MemberActivityManager } from '@/components/admin/MemberActivityManager';
+import { SettingsManager } from '@/components/admin/SettingsManager';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
@@ -142,10 +143,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <div className="text-center py-10 text-muted-foreground">
-              <Settings className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>Settings coming soon...</p>
-            </div>
+            <SettingsManager />
           </TabsContent>
         </Tabs>
       </main>
