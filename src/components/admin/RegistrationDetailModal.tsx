@@ -106,6 +106,7 @@ export function RegistrationDetailModal({
 }: RegistrationDetailModalProps) {
   const [formData, setFormData] = useState<Partial<ProfileRecord>>({});
   const [saving, setSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
@@ -309,6 +310,93 @@ export function RegistrationDetailModal({
       toast({ title: 'Error', description: 'Failed to save profile', variant: 'destructive' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteInModal = async () => {
+    if (!profile) return;
+    const confirmDelete = window.confirm(
+      `Are you sure you want to permanently delete profile "${profile.name}"?\n\nThis will remove it from the entire website and database.`
+    );
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const pid = profile.id;
+      const regId = profile.registration_id;
+
+      // Clean up linked tables
+      try {
+        await supabase
+          .from('profile_interests')
+          .delete()
+          .or(`sender_profile_id.eq.${pid},receiver_profile_id.eq.${pid}`);
+      } catch (e) {
+        console.warn('Interests cleanup:', e);
+      }
+
+      try {
+        await supabase
+          .from('member_editable_profile')
+          .delete()
+          .eq('profile_id', pid);
+      } catch (e) {
+        console.warn('Editable profile cleanup:', e);
+      }
+
+      try {
+        await supabase
+          .from('member_sessions')
+          .delete()
+          .eq('profile_data_id', pid);
+      } catch (e) {
+        console.warn('Sessions cleanup:', e);
+      }
+
+      try {
+        await supabase
+          .from('member_otps')
+          .delete()
+          .eq('profile_data_id', pid);
+      } catch (e) {
+        console.warn('OTPs cleanup:', e);
+      }
+
+      // Delete from main profiles_data table
+      const { error: deleteError } = await supabase
+        .from('profiles_data')
+        .delete()
+        .eq('id', pid);
+
+      if (deleteError) throw deleteError;
+
+      // Delete from registrations table if linked
+      if (regId) {
+        try {
+          await supabase
+            .from('registrations')
+            .delete()
+            .eq('id', regId);
+        } catch (e) {
+          console.warn('Registrations table cleanup:', e);
+        }
+      }
+
+      toast({
+        title: 'Profile Deleted! 🗑️',
+        description: `Profile "${profile.name}" has been permanently removed from database.`,
+      });
+      onUpdate();
+      onClose();
+    } catch (error: any) {
+      console.error('Error deleting profile:', error);
+      toast({
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete profile.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -692,19 +780,44 @@ export function RegistrationDetailModal({
           </div>
         </ScrollArea>
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            <X className="w-4 h-4 mr-2" />
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving || uploading}>
-            {saving ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
+        <div className="flex items-center justify-between gap-3 pt-4 border-t">
+          <div>
+            {!isAddMode && profile && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteInModal}
+                disabled={isDeleting || saving || uploading}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-1.5" />
+                    Delete Profile
+                  </>
+                )}
+              </Button>
             )}
-            {isAddMode ? 'Create Profile' : 'Save Changes'}
-          </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onClose}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving || uploading || isDeleting}>
+              {saving ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              {isAddMode ? 'Create Profile' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

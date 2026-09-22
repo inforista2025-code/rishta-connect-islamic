@@ -13,9 +13,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star, Plus, Globe, GlobeLock } from 'lucide-react';
+import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star, Plus, Globe, GlobeLock, Trash2 } from 'lucide-react';
 import { RegistrationDetailModal } from './RegistrationDetailModal';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ProfileRecord {
   id: number;
@@ -59,6 +69,8 @@ export function RegistrationsManager() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProfile, setSelectedProfile] = useState<ProfileRecord | null>(null);
+  const [profileToDelete, setProfileToDelete] = useState<ProfileRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState(false);
   const { toast } = useToast();
@@ -155,6 +167,91 @@ export function RegistrationsManager() {
     } catch (error) {
       console.error(error);
       toast({ title: 'Error', description: 'Failed to update plan', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!profileToDelete) return;
+    setIsDeleting(true);
+    try {
+      const pid = profileToDelete.id;
+      const regId = profileToDelete.registration_id;
+
+      // 1. Delete associated interests
+      try {
+        await supabase
+          .from('profile_interests')
+          .delete()
+          .or(`sender_profile_id.eq.${pid},receiver_profile_id.eq.${pid}`);
+      } catch (e) {
+        console.warn('Interests cleanup:', e);
+      }
+
+      // 2. Delete member editable profile
+      try {
+        await supabase
+          .from('member_editable_profile')
+          .delete()
+          .eq('profile_id', pid);
+      } catch (e) {
+        console.warn('Editable profile cleanup:', e);
+      }
+
+      // 3. Delete member sessions
+      try {
+        await supabase
+          .from('member_sessions')
+          .delete()
+          .eq('profile_data_id', pid);
+      } catch (e) {
+        console.warn('Sessions cleanup:', e);
+      }
+
+      // 4. Delete member OTPs
+      try {
+        await supabase
+          .from('member_otps')
+          .delete()
+          .eq('profile_data_id', pid);
+      } catch (e) {
+        console.warn('OTPs cleanup:', e);
+      }
+
+      // 5. Delete from main profiles_data table
+      const { error: deleteError } = await supabase
+        .from('profiles_data')
+        .delete()
+        .eq('id', pid);
+
+      if (deleteError) throw deleteError;
+
+      // 6. Delete from registrations table if linked
+      if (regId) {
+        try {
+          await supabase
+            .from('registrations')
+            .delete()
+            .eq('id', regId);
+        } catch (e) {
+          console.warn('Registrations table cleanup:', e);
+        }
+      }
+
+      toast({
+        title: 'Profile Deleted! 🗑️',
+        description: `Profile "${profileToDelete.name}" has been permanently removed from website & database.`,
+      });
+      setProfileToDelete(null);
+      fetchProfiles();
+    } catch (error: any) {
+      console.error('Error deleting profile:', error);
+      toast({
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete profile from database.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -394,6 +491,15 @@ ${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
                           <XCircle className="w-4 h-4" />
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-500/10"
+                        onClick={() => setProfileToDelete(profile)}
+                        title="Permanently Delete Profile"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -414,6 +520,46 @@ ${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
         }}
         onUpdate={fetchProfiles}
       />
+
+      {/* Confirmation Dialog for Permanent Deletion */}
+      <AlertDialog open={!!profileToDelete} onOpenChange={(open) => !open && setProfileToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="w-5 h-5" />
+              Delete Profile Permanently?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 text-sm">
+              <p>
+                Are you sure you want to delete <span className="font-bold text-foreground">"{profileToDelete?.name}"</span>?
+              </p>
+              <p className="text-xs text-red-500 font-medium">
+                ⚠️ This action cannot be undone. This profile will be completely erased from the public website, member portal, and Supabase database.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteProfile();
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Yes, Delete Profile'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
