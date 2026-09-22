@@ -8,38 +8,42 @@ import {
   X, 
   Send, 
   MessageCircle, 
-  Star, 
-  User, 
-  ExternalLink, 
   RefreshCw,
-  Search,
-  CheckCircle2,
   Heart,
-  ArrowRight
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import { generateIslamicAssistantResponse, ChatMessage } from '@/lib/islamicAiKnowledge';
+
+interface ExtendedChatMessage extends ChatMessage {
+  isStreaming?: boolean;
+}
 
 const quickPrompts = [
   "🔍 Search verified Brides (Dulhan)",
   "🔍 Search verified Grooms (Dulha)",
-  "🔒 How to unlock contact numbers & photos?",
-  "⭐ What are ₹491 Premium Plan benefits?",
+  "🌸 Walidain ko shadi ke liye kaise manayein?",
+  "💍 Islam me Biwi aur Shohar ke Huqooq",
   "🤲 Salatul Istikhara method & Dua",
-  "💍 Sunnah of Mehr (Dower) in Islam",
+  "⭐ ₹491 Premium Plan ke kya fayde hain?",
+  "🚫 Jahez (Dowry) par Sahih Hadith",
+  "📜 Sahi Nikah ke zaroori Sharait",
 ];
 
 export function IslamicAssistantWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const streamingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ExtendedChatMessage[]>([
     {
       id: 'welcome-matrimony-1',
       sender: 'assistant',
-      text: `**Assalamu Alaikum! Welcome to Rishta Matrimony AI Matchmaker** 👰🤵\n\nI am your dedicated Matrimonial AI Assistant, trained on authentic **Quran & Sahih Hadith (Bukhari & Muslim)** to help you find a righteous Muslim life partner with complete privacy.\n\n### How I can assist you today:\n• **Find Compatible Matches:** Search verified brides & grooms by city & maslak.\n• **Unlock Direct Contacts:** Learn about our ₹491 (2 Months) Premium Membership.\n• **Islamic Guidance:** Istikhara Dua, Mehr rules, and Sunnah of Nikah.`,
+      text: `**Assalamu Alaikum! Welcome to Rishta Matrimony AI Matchmaker** 👰🤵\n\nI am your dedicated Matrimonial AI Assistant, trained on authentic **Quran & Sahih Hadith (Bukhari & Muslim)** to help you find a righteous Muslim life partner with complete privacy.\n\n### How I can assist you today:\n• 🔍 **Find Compatible Matches:** Search verified brides & grooms by city & maslak.\n• ⭐ **Unlock Direct Contacts:** Learn about our ₹491 (2 Months) Premium Membership.\n• 📖 **Islamic Guidance:** Istikhara Dua, Mehr rules, Walidain ki raza, and Sunnah of Nikah.\n• 💬 **Ask Any Question:** Feel free to chat or ask any matrimonial & deeni doubts! 🌸`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       actionLinks: [
         { label: '🔍 Browse Verified Profiles', url: '/profiles', variant: 'default' },
@@ -57,13 +61,26 @@ export function IslamicAssistantWidget() {
     if (isOpen) {
       scrollToBottom();
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isThinking]);
+
+  // Clean up streaming on unmount
+  useEffect(() => {
+    return () => {
+      if (streamingIntervalRef.current) {
+        clearInterval(streamingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
     if (!query.trim() || loading) return;
 
-    const userMsg: ChatMessage = {
+    if (streamingIntervalRef.current) {
+      clearInterval(streamingIntervalRef.current);
+    }
+
+    const userMsg: ExtendedChatMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
       text: query.trim(),
@@ -73,42 +90,93 @@ export function IslamicAssistantWidget() {
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInput('');
     setLoading(true);
+    setIsThinking(true);
 
     try {
-      const response = await generateIslamicAssistantResponse(query.trim());
+      // Natural thinking delay (350ms - 500ms) to feel like real AI processing
+      await new Promise((r) => setTimeout(r, 450));
       
-      const botMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+      const response = await generateIslamicAssistantResponse(query.trim());
+      setIsThinking(false);
+
+      const botMessageId = `bot-${Date.now()}`;
+      const fullText = response.text;
+      
+      // Initialize streaming message
+      const initialBotMsg: ExtendedChatMessage = {
+        id: botMessageId,
         sender: 'assistant',
-        text: response.text,
+        text: '',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        actionLinks: response.actionLinks,
-        profileMatches: response.profileMatches,
+        isStreaming: true
       };
 
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [...prev, initialBotMsg]);
+
+      // Stream text chunk by chunk (typewriter effect)
+      let currentIdx = 0;
+      const chunkSize = 3; // stream 3 characters per tick for smooth natural typing
+      const tickSpeed = 16; // ~60fps smooth pace
+
+      streamingIntervalRef.current = setInterval(() => {
+        currentIdx += chunkSize;
+        if (currentIdx >= fullText.length) {
+          if (streamingIntervalRef.current) {
+            clearInterval(streamingIntervalRef.current);
+          }
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === botMessageId
+                ? {
+                    ...msg,
+                    text: fullText,
+                    isStreaming: false,
+                    actionLinks: response.actionLinks,
+                    profileMatches: response.profileMatches,
+                  }
+                : msg
+            )
+          );
+          setLoading(false);
+        } else {
+          const displayedText = fullText.slice(0, currentIdx);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === botMessageId
+                ? { ...msg, text: displayedText }
+                : msg
+            )
+          );
+        }
+      }, tickSpeed);
+
     } catch (err) {
-      const errorMsg: ChatMessage = {
+      setIsThinking(false);
+      const errorMsg: ExtendedChatMessage = {
         id: `bot-err-${Date.now()}`,
         sender: 'assistant',
-        text: `Assalamu Alaikum. I encountered a momentary issue. Please try again or chat with our matchmaking team directly on WhatsApp (+91 9128719875).`,
+        text: `Assalamu Alaikum. I encountered a momentary connection issue. Please feel free to try again or reach out directly to our team on WhatsApp (+91 9128719875) 🌸`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         actionLinks: [
           { label: '💬 Official WhatsApp Support', url: 'https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20need%20assistance.', isExternal: true, variant: 'whatsapp' }
         ]
       };
       setMessages((prev) => [...prev, errorMsg]);
-    } finally {
       setLoading(false);
     }
   };
 
   const handleResetChat = () => {
+    if (streamingIntervalRef.current) {
+      clearInterval(streamingIntervalRef.current);
+    }
+    setLoading(false);
+    setIsThinking(false);
     setMessages([
       {
         id: 'welcome-reset',
         sender: 'assistant',
-        text: `**Assalamu Alaikum! Rishta Matrimony Matchmaker AI ready.**\n\nHow can I help you find your righteous life partner or answer your matrimonial questions today?`,
+        text: `**Assalamu Alaikum! Rishta Matrimony Matchmaker AI ready.** 👰🤵✨\n\nHow can I help you find your righteous life partner or answer your matrimonial & deeni questions today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         actionLinks: [
           { label: '🔍 Browse Profiles', url: '/profiles', variant: 'default' },
@@ -119,49 +187,66 @@ export function IslamicAssistantWidget() {
   };
 
   // Helper to format text cleanly without markdown clutter
-  const renderCleanText = (text: string) => {
+  const renderCleanText = (text: string, isStreaming?: boolean) => {
     const lines = text.split('\n');
-    return lines.map((line, idx) => {
-      const trimmed = line.trim();
-      if (!trimmed) return <div key={idx} className="h-1.5" />;
+    return (
+      <div className="space-y-1">
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <div key={idx} className="h-1.5" />;
 
-      // Header 3 (###)
-      if (trimmed.startsWith('###')) {
-        return (
-          <div key={idx} className="font-bold text-xs sm:text-sm text-foreground mt-2 mb-1 flex items-center gap-1.5 text-primary border-l-2 border-primary pl-2">
-            {trimmed.replace(/^###\s*/, '')}
-          </div>
-        );
-      }
+          // Header 3 (###)
+          if (trimmed.startsWith('###')) {
+            return (
+              <div key={idx} className="font-bold text-xs sm:text-sm text-foreground mt-2.5 mb-1 flex items-center gap-1.5 text-primary border-l-2 border-primary pl-2">
+                {trimmed.replace(/^###\s*/, '')}
+              </div>
+            );
+          }
 
-      // Blockquotes (>)
-      if (trimmed.startsWith('>')) {
-        return (
-          <div key={idx} className="border-l-2 border-amber-500/60 bg-amber-500/5 px-2.5 py-1.5 rounded-r-lg my-1.5 text-[11px] sm:text-xs text-foreground/90 italic">
-            {trimmed.replace(/^>\s*/, '')}
-          </div>
-        );
-      }
+          // Blockquotes (>)
+          if (trimmed.startsWith('>')) {
+            return (
+              <div key={idx} className="border-l-2 border-amber-500/60 bg-amber-500/10 dark:bg-amber-500/5 px-2.5 py-1.5 rounded-r-lg my-1.5 text-[11px] sm:text-xs text-foreground/90 italic">
+                {trimmed.replace(/^>\s*/, '')}
+              </div>
+            );
+          }
 
-      // Bullet points (• or *)
-      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('* ')) {
-        const cleanItem = trimmed.replace(/^([•\-\*]\s*)/, '');
-        return (
-          <div key={idx} className="flex items-start gap-1.5 my-0.5 text-xs text-foreground/90">
-            <span className="text-primary mt-0.5 text-[10px]">●</span>
-            <span>{cleanItem.replace(/\*\*/g, '')}</span>
-          </div>
-        );
-      }
+          // Bullet points (• or * or -)
+          if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('* ')) {
+            const cleanItem = trimmed.replace(/^([•\-\*]\s*)/, '');
+            return (
+              <div key={idx} className="flex items-start gap-1.5 my-0.5 text-xs text-foreground/90">
+                <span className="text-primary mt-0.5 text-[10px]">●</span>
+                <span>{cleanItem.replace(/\*\*/g, '')}</span>
+              </div>
+            );
+          }
 
-      // Bold text or regular paragraph
-      const cleanLine = trimmed.replace(/\*\*/g, '');
-      return (
-        <p key={idx} className="text-xs sm:text-[13px] text-foreground/90 leading-relaxed my-0.5">
-          {cleanLine}
-        </p>
-      );
-    });
+          // Numbered items (1. or 2.)
+          if (/^\d+\.\s/.test(trimmed)) {
+            return (
+              <div key={idx} className="flex items-start gap-1.5 my-1 text-xs text-foreground/90">
+                <span className="font-bold text-primary text-[11px] shrink-0">{trimmed.slice(0, 2)}</span>
+                <span>{trimmed.slice(3).replace(/\*\*/g, '')}</span>
+              </div>
+            );
+          }
+
+          // Regular paragraph
+          const cleanLine = trimmed.replace(/\*\*/g, '');
+          return (
+            <p key={idx} className="text-xs sm:text-[13px] text-foreground/90 leading-relaxed my-0.5">
+              {cleanLine}
+            </p>
+          );
+        })}
+        {isStreaming && (
+          <span className="inline-block w-1.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle rounded-sm" />
+        )}
+      </div>
+    );
   };
 
   return (
@@ -198,7 +283,7 @@ export function IslamicAssistantWidget() {
           {/* Header */}
           <div className="bg-gradient-to-r from-[#2A0F1A] via-[#1F0A13] to-[#16060D] text-white p-3.5 sm:p-4 border-b border-pink-900/40 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-pink-950/80 border border-pink-700/40 flex items-center justify-center text-pink-300">
+              <div className="w-9 h-9 rounded-xl bg-pink-950/80 border border-pink-700/40 flex items-center justify-center text-pink-300 shadow-inner">
                 <Heart className="w-4 h-4 text-primary fill-primary/30" />
               </div>
               <div>
@@ -208,8 +293,9 @@ export function IslamicAssistantWidget() {
                     Rishta Matchmaker AI
                   </h3>
                 </div>
-                <p className="text-[11px] text-pink-300/80 font-medium">
-                  Halal Marriage & Proposal Finder
+                <p className="text-[11px] text-pink-300/80 font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                  <span>Interactive Islamic Assistant</span>
                 </p>
               </div>
             </div>
@@ -267,12 +353,12 @@ export function IslamicAssistantWidget() {
                 >
                   {/* Message Content */}
                   <div>
-                    {renderCleanText(msg.text)}
+                    {renderCleanText(msg.text, msg.isStreaming)}
                   </div>
 
                   {/* Profile Match Cards (Interactive Proposal Cards) */}
-                  {msg.profileMatches && msg.profileMatches.length > 0 && (
-                    <div className="mt-3 space-y-2 pt-2 border-t border-border/40">
+                  {!msg.isStreaming && msg.profileMatches && msg.profileMatches.length > 0 && (
+                    <div className="mt-3 space-y-2 pt-2 border-t border-border/40 animate-in fade-in duration-300">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
                         Matching Verified Proposals:
                       </p>
@@ -315,8 +401,8 @@ export function IslamicAssistantWidget() {
                   )}
 
                   {/* Action Link Buttons */}
-                  {msg.actionLinks && msg.actionLinks.length > 0 && (
-                    <div className="mt-3 pt-2.5 border-t border-border/40 flex flex-wrap gap-1.5">
+                  {!msg.isStreaming && msg.actionLinks && msg.actionLinks.length > 0 && (
+                    <div className="mt-3 pt-2.5 border-t border-border/40 flex flex-wrap gap-1.5 animate-in fade-in duration-300">
                       {msg.actionLinks.map((link, lIdx) => (
                         link.isExternal ? (
                           <a
@@ -348,33 +434,39 @@ export function IslamicAssistantWidget() {
                                 : 'bg-muted hover:bg-primary/10 text-foreground hover:text-primary border border-border'
                             }`}
                           >
-                            {link.variant === 'default' && <Star className="w-3 h-3 text-amber-300" />}
                             <span>{link.label}</span>
+                            <ArrowRight className="w-3 h-3" />
                           </button>
                         )
                       ))}
                     </div>
                   )}
                 </div>
-
                 <span className="text-[10px] text-muted-foreground mt-1 px-1">
                   {msg.timestamp}
                 </span>
               </div>
             ))}
 
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border rounded-2xl p-3 max-w-[75%] rounded-bl-none">
-                <Sparkles className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
-                <span>Searching verified matrimonial proposals...</span>
+            {/* Thinking / Typing Animation Indicator */}
+            {isThinking && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border/80 px-3.5 py-2.5 rounded-2xl rounded-bl-none shadow-xs w-fit animate-in fade-in duration-200">
+                <span className="flex gap-1 items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"></span>
+                </span>
+                <span className="text-[11px] text-primary/80 font-medium ml-1">
+                  Rishta AI typing response... ✍️
+                </span>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Footer */}
-          <div className="p-3 bg-card border-t border-border shrink-0">
+          {/* Footer Input Form */}
+          <div className="p-3 bg-card border-t border-border/60 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -383,26 +475,25 @@ export function IslamicAssistantWidget() {
               className="flex items-center gap-2"
             >
               <Input
-                placeholder="Ask about Brides, Grooms, ₹491 Plan, or Istikhara..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your question or search city/maslak..."
+                className="h-10 text-xs sm:text-sm bg-muted/40 rounded-xl focus-visible:ring-primary/40"
                 disabled={loading}
-                className="h-10 text-xs sm:text-sm bg-muted/40 rounded-xl"
               />
               <Button
                 type="submit"
+                size="sm"
                 disabled={!input.trim() || loading}
-                size="icon"
-                className="h-10 w-10 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-10 px-3.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shrink-0 font-medium"
               >
                 <Send className="w-4 h-4" />
               </Button>
             </form>
-            <p className="text-[10px] text-center text-muted-foreground mt-1.5">
-              Rishta Matrimony • Verified Islamic Proposals • 100% Modesty & Privacy
+            <p className="text-[10px] text-center text-muted-foreground/80 mt-1.5">
+              Trained on Quran & Sahih Hadith (Bukhari & Muslim) • 100% Halal AI
             </p>
           </div>
-
         </div>
       )}
     </>

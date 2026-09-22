@@ -44,6 +44,19 @@ export const authenticIslamicReferences = {
     hadithRef: `Sahih al-Bukhari 5126, Sahih Muslim 1425`,
     quranAyah: `And give the women (upon marriage) their bridal gifts (Mehr) graciously as a free gift.`,
     hadithText: `The Prophet ﷺ said to a companion seeking marriage: "Give her something, even if it is an iron ring."`
+  },
+  parentsRespect: {
+    quranRef: `Surah Al-Isra, 17:23`,
+    hadithRef: `Sahih al-Bukhari 5971`,
+    quranAyah: `And your Lord has decreed that you not worship except Him, and to parents, good treatment.`
+  },
+  husbandWifeRights: {
+    hadithRef: `Sunan at-Tirmidhi 1162 (Sahih)`,
+    hadithText: `The best of you are those who are best to their wives, and I am the best among you to my wives.`
+  },
+  dowryProhibition: {
+    hadithRef: `Sahih al-Bukhari 5149`,
+    explanation: `Demanding dowry (Jahez) from the bride or her family has no place in Islam. The Sunnah teaches simplicity (Aisarun-Nikah Barkatan - the most blessed marriage is that with the least financial burden).`
   }
 };
 
@@ -186,13 +199,20 @@ export async function searchProfilesForAssistant(queryText: string) {
   try {
     const q = queryText.toLowerCase();
     let genderFilter: string | null = null;
-    if (q.includes('female') || q.includes('dulhan') || q.includes('bride') || q.includes('ladki') || q.includes('sister') || q.includes('women') || q.includes('aurat') || q.includes('ladkiya') || q.includes('brides')) {
+    if (
+      q.includes('female') || q.includes('dulhan') || q.includes('bride') || 
+      q.includes('ladki') || q.includes('sister') || q.includes('women') || 
+      q.includes('aurat') || q.includes('ladkiya') || q.includes('brides')
+    ) {
       genderFilter = 'Female';
-    } else if (q.includes('male') || q.includes('dulha') || q.includes('groom') || q.includes('ladka') || q.includes('brother') || q.includes('men') || q.includes('mard') || q.includes('ladke') || q.includes('grooms')) {
+    } else if (
+      q.includes('male') || q.includes('dulha') || q.includes('groom') || 
+      q.includes('ladka') || q.includes('brother') || q.includes('men') || 
+      q.includes('mard') || q.includes('ladke') || q.includes('grooms')
+    ) {
       genderFilter = 'Male';
     }
 
-    // Stop words to remove so we isolate key search terms (like city names, job titles, maslak, etc.)
     const stopWords = new Set([
       'hai', 'kya', 'koi', 'dikhao', 'se', 'in', 'for', 'me', 'show', 'from', 
       'looking', 'want', 'de', 'dijiye', 'batao', 'mujhe', 'find', 'ka', 'ki', 
@@ -255,7 +275,7 @@ export async function searchProfilesForAssistant(queryText: string) {
       console.warn('Supabase search exception, falling back to static verified list:', e);
     }
 
-    // 2. If Supabase returned 0 rows (e.g. local offline mode or empty DB), search verifiedMatrimonialProfiles
+    // 2. If Supabase returned 0 rows, search verifiedMatrimonialProfiles
     if (matches.length === 0) {
       matches = verifiedMatrimonialProfiles.filter(p => {
         if (genderFilter && p.gender !== genderFilter) return false;
@@ -278,15 +298,308 @@ export async function searchProfilesForAssistant(queryText: string) {
   }
 }
 
-// Smart Intelligent Islamic Matrimonial Assistant Engine
+// Smart Intelligent Multi-topic Islamic Matrimonial AI Brain
 export async function generateIslamicAssistantResponse(userPrompt: string): Promise<{
   text: string;
   actionLinks?: { label: string; url: string; isExternal?: boolean; variant?: 'default' | 'outline' | 'whatsapp' }[];
   profileMatches?: any[];
 }> {
-  const q = userPrompt.toLowerCase().trim();
+  const rawQ = userPrompt.trim();
+  const q = rawQ.toLowerCase();
 
-  // 1. Check if user is looking for matches / profiles
+  // ==========================================
+  // 1. CASUAL CHAT & HUMAN-LIKE INTERACTIONS
+  // ==========================================
+
+  // Greetings & Salam
+  if (
+    q.startsWith('salam') || 
+    q.startsWith('slm') || 
+    q.includes('assalamu alaikum') || 
+    q.includes('assalam alaikum') || 
+    q.includes('asalam') ||
+    q === 'hi' ||
+    q === 'hello' ||
+    q === 'hey'
+  ) {
+    return {
+      text: `Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh! 🌸✨\n\nMarhaban! Main Rishta Matrimony ka AI Matchmaking & Islamic Assistant hoon 🤵👰\n\nAap se baat karke bahut khushi hui! Aap kaise hain? Aaj main aapki matrimonial search ya deeni sawaalat me kya madad kar sakta hoon? 😊`,
+      actionLinks: [
+        { label: '🔍 Search Verified Profiles', url: '/profiles', variant: 'default' },
+        { label: '⭐ View Premium Plan (₹491)', url: '/pricing', variant: 'outline' },
+        { label: '📝 Free Biodata Registration', url: '/register', variant: 'outline' }
+      ]
+    };
+  }
+
+  // How are you / Hal chal
+  if (
+    q.includes('kaise ho') || 
+    q.includes('kaisi ho') || 
+    q.includes('kya hal') || 
+    q.includes('how are you') || 
+    q.includes('kya chal raha') ||
+    q.includes('sab theek')
+  ) {
+    return {
+      text: `Alhamdulillah, main bilkul theek hoon! Allah ka lakh lakh shukr hai 🤲🌸\n\nAap sunayein, aapki sehat aur deen ka kya haal hai? Umeed hai aap khairiyat se honge 😊\n\nAgar aap kisi specific city ke rishte dhoondh rahe hain, biodata banana chahte hain, ya shadi ke talluq se koi Islamic masla poochna chahte hain, to bejhijhak poochein! Main aapki poori madad karunga ✨`,
+      actionLinks: [
+        { label: '🔍 Brides (Dulhan) Dekhein', url: '/profiles?gender=Female', variant: 'default' },
+        { label: '🤵 Grooms (Dulha) Dekhein', url: '/profiles?gender=Male', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Who are you / Identity / Introduction
+  if (
+    q.includes('aap kaun ho') || 
+    q.includes('who are you') || 
+    q.includes('tum kaun ho') || 
+    q.includes('tell me about yourself') ||
+    q.includes('kya kar sakte ho') ||
+    q.includes('what can you do')
+  ) {
+    return {
+      text: `Assalamu Alaikum! Main **Rishta Matrimony Matchmaker AI** hoon 🤖💍\n\nMera maqsad Musalman bhai-behno ko Quran aur Sahih Sunnah ke mutabiq ek nek aur deendaar humsafar talash karne me madad karna hai.\n\n### Main aapke liye kya kar sakta hoon:\n• 🔍 **Verified Rishte Dhoondhna:** Aapke city, age aur maslak ke mutabiq profile match karna.\n• 📖 **Islamic Guidance:** Istikhara ka tareeqa, Mehr ke ahkaam, aur walidain ki raza-mandi par Sahih Hadith se rehnumai.\n• 🛡️ **Privacy & Support:** Contact details unlock karne ke liye ₹491 Premium membership me guide karna.\n• 💬 **General Chat:** Shadi aur deeni masail par dostana aur mohtaram guftagu karna.\n\nAap mujhse kuch bhi pooch sakte hain! 😊`,
+      actionLinks: [
+        { label: '✨ Explore Profiles', url: '/profiles', variant: 'default' },
+        { label: '📖 Marriage Advice Blog', url: '/blog', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Gratitude / Thank you / JazakAllah
+  if (
+    q.includes('shukriya') || 
+    q.includes('thank') || 
+    q.includes('jazakallah') || 
+    q.includes('jazak allah') || 
+    q.includes('dhanyawad')
+  ) {
+    return {
+      text: `Wa Antum fa Jazakumullahu Khairan! 🤲🌸\n\nAapka shukriya ada karne ka bahut ehsaas hua. Allah Ta'ala aapki zindagi me barkat ata farmaye aur aapko ek nek, wafadaar aur deendaar jeevansathi naseeb kare 💖\n\nAgar koi aur sawaal ya madad chahiye ho, to main hamesha yahan hazir hoon! 😊`,
+      actionLinks: [
+        { label: '🔍 Browse Profiles', url: '/profiles', variant: 'default' },
+        { label: '💬 WhatsApp Support', url: 'https://wa.me/919128719875', isExternal: true, variant: 'whatsapp' }
+      ]
+    };
+  }
+
+  // Compliments / Positive vibes
+  if (
+    q.includes('good') || 
+    q.includes('nice') || 
+    q.includes('bohot acha') || 
+    q.includes('great') || 
+    q.includes('bahut badhiya') ||
+    q.includes('shandar') ||
+    q.includes('love you') ||
+    q.includes('mashallah')
+  ) {
+    return {
+      text: `Masha'Allah! TabarakAllah! 💖✨\n\nAapki hausla-afzai ke liye dil se shukriya. Rishta Matrimony par hamari koshish hai ki har family ko ek safe, transparent aur halal platform mile jahan bina kisi fraud ke deeni rishte mil sakein 🕊️\n\nAapko website me kya cheez sabse achi lagi?`,
+      actionLinks: [
+        { label: '🔍 View Verified Proposals', url: '/profiles', variant: 'default' },
+        { label: '⭐ ₹491 Premium Plan', url: '/pricing', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Casual mood / Boredom / Chit-chat
+  if (
+    q.includes('bore') || 
+    q.includes('kuch batao') || 
+    q.includes('baat karo') || 
+    q.includes('tell me something') ||
+    q.includes('kuch sunao')
+  ) {
+    return {
+      text: `Zaroor! Ek khoobsurat deeni baat aur naseehat share karta hoon 😊🌸\n\n> **Rasoolullah ﷺ ne farmaya:**\n> *"Duniya saari ki saari mataa (fayde ki cheez) hai, aur is duniya ki sabse behtareen mataa ek 'Nek Aurat' (Nek Jeevansathi) hai."*\n> **[Sahih Muslim: 1467]** 📖\n\nEk nek shareek-e-hayat na sirf duniya me sukoon banta hai balke aakhirat ki kamyabi me bhi madadgaar hota hai ✨\n\nAap kis tarah ke partner ki talash me hain? Mujhe batayein, main aapke liye matching profiles shortlist karne me madad karunga! 👰🤵`,
+      actionLinks: [
+        { label: '🔍 Brides Dhoondhein', url: '/profiles?gender=Female', variant: 'default' },
+        { label: '🤵 Grooms Dhoondhein', url: '/profiles?gender=Male', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Lighthearted joke / Smile
+  if (
+    q.includes('joke') || 
+    q.includes('chutkula') || 
+    q.includes('hasi') || 
+    q.includes('hasao') ||
+    q.includes('funny')
+  ) {
+    return {
+      text: `Ek pyara aur muskurahat bhara rishta moment suniye 😄🌸:\n\nLadke wale ladki dekhne aaye aur bole:\n*"Humein aisi bahu chahiye jo ghar ko jannat bana de!"*\n\nLadki ke walid ne muskura kar jawab diya:\n*"Zaroor Janab! Lekin yaad rakhein, Jannat me jaane ke liye pehle khud nek banna padta hai!"* 😜✨\n\nNabi Kareem ﷺ ne farmaya ki muskurana bhi ek Sadqah hai 😊 [Tirmidhi].\n\nAb batayein, aapke liye koi accha sa rishta search karein? 💍`,
+      actionLinks: [
+        { label: '🔍 Find Match Proposals', url: '/profiles', variant: 'default' }
+      ]
+    };
+  }
+
+  // Emotional support / Stress / Sadness
+  if (
+    q.includes('sad') || 
+    q.includes('tension') || 
+    q.includes('pareshan') || 
+    q.includes('depression') || 
+    q.includes('stress') || 
+    q.includes('dukhi') ||
+    q.includes('mushkil')
+  ) {
+    return {
+      text: `Dil chota mat kijiye, Allah Ta'ala har cheez par qaadir hai 🤲💖\n\n> **Quran Pak me Allah farmata hai:**\n> *"Beshak mushkil ke sath aasaani hai."*\n> **[Surah Ash-Sharh, 94:6]** 📖\n\n**Aapke sukoon ke liye ek Masnoon Dua:**\n> *اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ*\n> *"Allahumma inni a'oodhu bika minal-hammi wal-hazan"*\n> (Aye Allah! Main teri panah chahta hoon fikar aur gham se - **Sahih al-Bukhari 2893**).\n\nSabr aur Namaz se madad lijiye, Allah Ta'ala aapke har band darwaze ko behtareen tareeqe se khol dega. Sab theek ho jayega Insha'Allah! 🌸`,
+      actionLinks: [
+        { label: '🤲 Marriage Dua & Istikhara', url: '/blog', variant: 'outline' },
+        { label: '💬 Talk to Our Support Team', url: 'https://wa.me/919128719875', isExternal: true, variant: 'whatsapp' }
+      ]
+    };
+  }
+
+  // ==========================================
+  // 2. MATRIMONIAL & RELATIONSHIP QUESTIONS
+  // ==========================================
+
+  // Convincing parents for marriage (Walidain ko manana)
+  if (
+    q.includes('parents') || 
+    q.includes('walidain') || 
+    q.includes('abba') || 
+    q.includes('ammi') || 
+    q.includes('manaye') || 
+    q.includes('convince') ||
+    q.includes('ghar wale nahi man rahe')
+  ) {
+    return {
+      text: `### 🌸 Walidain ko Shadi ke liye Manane ka Islami Tareeqa:\n\nIslam me walidain ka martaba bahut uncha hai. Agar aap kisi nek shakhs se shadi karna chahte hain aur ghar wale razi nahi hain, to in baaton par amal karein:\n\n1. **Adab aur Izzat se Baat Karein:** Gusse ya zid se bachein. Unko pyaar se samjhayein ki aap us shakhs me deen aur akhlaq dekhte hain.\n2. **Khandan ke kisi Samjhdar Buzurg ki Madad:** Agar direct baat nahi ban rahi, to kisi aise rishtedaar ya aalim ko shamil karein jinki baat walidain maante hon.\n3. **Salatul Istikhara & Dua:** Tahajjud me Allah se dua karein ki agar yeh rishta deen aur duniya ke liye behtar hai to walidain ke dil me narmi paida farmaye.\n4. **Sabr & Duas:** Walidain hamesha aulaad ki bhalai chahte hain, thoda waqt aur dua se raste aasaan hote hain Insha'Allah 🤲`,
+      actionLinks: [
+        { label: '📖 Read Marriage Guidance Blog', url: '/blog', variant: 'outline' },
+        { label: '🔍 Browse Verified Profiles', url: '/profiles', variant: 'default' }
+      ]
+    };
+  }
+
+  // Rights of Wife / Husband (Biwi aur Shohar ke Huqooq)
+  if (
+    q.includes('huqooq') || 
+    q.includes('rights') || 
+    q.includes('biwi ke haq') || 
+    q.includes('shohar ke haq') ||
+    q.includes('wife rights') ||
+    q.includes('husband rights')
+  ) {
+    return {
+      text: `### 💍 Islam me Biwi aur Shohar ke Huqooq:\n\n**Biwi ke Shohar par Huqooq:**\n• **Naan-o-Nafqa:** Halal rizq se rehna, khana aur pehenne ka intezam (Surah An-Nisa 4:34).\n• **Husn-e-Sulook & Izzat:** Nabi ﷺ ne farmaya: *"Tum me se sabse behtareen shakhs wo hai jo apni biwi ke sath sabse accha ho."* (Tirmidhi 1162 - Sahih).\n• **Mehr ki Adaigi:** Mehr biwi ka haq hai aur use khushi se ada karna farz hai.\n\n**Shohar ke Biwi par Huqooq:**\n• **Izzat aur Farmanbardari:** Jaiz aur deeni umoor me shohar ki baat maanna aur ghar me sukoon ka mahaul banana.\n• **Maal aur Izzat ki Hifazat:** Shohar ki ghair-maujoodgi me ghar aur izzat ki hifazat karna.\n\nEk doosre ke sath mohabbat, sabr aur rahem (Mawaddah wa Rahmah) hi kamyab nikah ka raaz hai 🌸`,
+      actionLinks: [
+        { label: '📖 Marriage Ethics Blog', url: '/blog', variant: 'outline' },
+        { label: '🔍 Browse Profiles', url: '/profiles', variant: 'default' }
+      ]
+    };
+  }
+
+  // Dowry / Jahez strictly prohibited
+  if (
+    q.includes('jahez') || 
+    q.includes('dowry') || 
+    q.includes('dahej') || 
+    q.includes('demand')
+  ) {
+    return {
+      text: `### 🚫 Islam me Jahez (Dowry) ki Mumaniat:\n\nIslam me ladki walon se **jahez (dowry) mangna ya demand karna sakht mana aur ghair-Islami rasm hai** ⚠️\n\n• **Sunnah Tareeqa:** Sunnah yeh hai ki shohar biwi ko **Mehr** ada kare aur kharche ki zimmedari le.\n• **Sahih Hadith:** Rasoolullah ﷺ ne farmaya: *"Sabse zyada barkat wala nikah wo hai jisme kam se kam kharch aur bojh ho."* (Musnad Ahmad).\n• Rishta Matrimony par hum kisi bhi tarah ke jahez demand ki sakht mukhalifat karte hain aur simple, Sunnah nikah ko promote karte hain 🛡️`,
+      actionLinks: [
+        { label: '🔍 Find Simple & Sunnah Proposals', url: '/profiles', variant: 'default' },
+        { label: '📖 Read Sunnah Nikah Guide', url: '/blog', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Nikah conditions / Khutbah / Sharait
+  if (
+    q.includes('sharat') || 
+    q.includes('conditions') || 
+    q.includes('ijab') || 
+    q.includes('qubool') || 
+    q.includes('nikah kaise hota') ||
+    q.includes('nikah valid')
+  ) {
+    return {
+      text: `### 📜 Sahi Nikah ke Zaroori Sharaet (Conditions):\n\nIslam me ek valid aur shar'ee Nikah ke liye 4 zaroori baatein hoti hain:\n\n1. **Ijab-o-Qubool:** Dono (Dulha aur Dulhan) ki aapas me wazeh aur azaad raza-mandi.\n2. **Wali (Guardian) ki Raza-mandi:** Ladki ke shar'ee sarparast (Walid ya Guardian) ki maujoodgi.\n3. **Do (2) Deendaar Aadil Gawah:** Kam az kam 2 musalman mard gawah maujood hon (Bukhari & Muslim).\n4. **Mehr (Dower):** Shohar ki taraf se biwi ko tay shuda shar'ee Mehr ada kiya jaye.\n\nIn sharaet ke sath kiya gaya nikah mukammal halal aur ba-barkat hota hai 💍🌸`,
+      actionLinks: [
+        { label: '📖 Complete Nikah Step-by-Step Guide', url: '/blog', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Walima Sunnah
+  if (
+    q.includes('walima') || 
+    q.includes('valima') || 
+    q.includes('dawat')
+  ) {
+    return {
+      text: `### 🍽️ Walima ki Sunnah aur Ahkaam:\n\n• **Sunnah-e-Muakkadah:** Walima shohar ki taraf se shadi ki khushi me dawat-e-ta'am hai jo rukhsati ke baad ki jaati hai.\n• **Sahih Hadith:** Nabi Kareem ﷺ ne Hazrat Abdur Rahman bin Awf (RA) se farmaya: *"Walima karo khwah ek bakri hi kyu na ho."* (**Sahih al-Bukhari 5155**).\n• **Ghareebon ko Shamil Karna:** Walima me sirf ameer logon ko nahi balke ghareebon aur rishtedaaron ko bhi dawat deni chahiye taaki barkat ho ✨`,
+      actionLinks: [
+        { label: '📖 Explore Marriage Guidance', url: '/blog', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Delay in Marriage / Dua for Good Spouse
+  if (
+    q.includes('deri') || 
+    q.includes('delay') || 
+    q.includes('rishta nahi aa raha') || 
+    q.includes('dua for marriage') || 
+    q.includes('dua for spouse') ||
+    q.includes('shadi ki dua') ||
+    q.includes('wazifa')
+  ) {
+    return {
+      text: `### 🤲 Nek Rishta Pane aur Deri Khatam Karne ki Masnoon Duayein:\n\n1. **Hazrat Musa (AS) ki Dua (Surah Al-Qasas: 24):**\n> *رَبِّ إِنِّي لِمَا أَنْزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ*\n> *"Rabbi innee limaaa anzalta ilayya min khayrin faqeer"*\n> (Aye mere Rabb! Tu jo bhi bhalai meri taraf utare, main uska mohtaj hoon).\n\n2. **Nek Jeevansathi aur Aulaad ki Dua (Surah Al-Furqan: 74):**\n> *رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا*\n> *"Rabbana hab lana min azwajina wa dhurriyyatina qurrata a'yunin waj'alna lil-muttaqina imama"*\n\n**Amal:** Har namaz ke baad aur Tahajjud me kasrat se **Astaghfar** aur yeh duayein padhein. Allah behtareen faisla farmayega Insha'Allah 🌸`,
+      actionLinks: [
+        { label: '📝 Register Free Biodata', url: '/register', variant: 'default' },
+        { label: '🔍 Browse Profiles', url: '/profiles', variant: 'outline' }
+      ]
+    };
+  }
+
+  // Talking before marriage (Halal boundaries)
+  if (
+    q.includes('baat kar sakte') || 
+    q.includes('chat') || 
+    q.includes('meeting') || 
+    q.includes('mil sakte') || 
+    q.includes('dekh sakte') ||
+    q.includes('video call')
+  ) {
+    return {
+      text: `### 🛡️ Shadi se pehle Baat karne aur Dekhne ke Islami Qawaneen:\n\n1. **Chehra aur Haliyah Dekhna:** Shadi ke maqsad se ek doosre ko dekhna Sunnah se sabit hai taaki dil me itminan paida ho (Sahih Muslim 1424).\n2. **Khalwat (Akelepan) se Bachna:** Tanhaai ya akele me milna jaiz nahi hai. Jab bhi baat ho ya mulaqat ho, wali ya family member ki maujoodgi/ilm me honi chahiye.\n3. **Sanjeeda Guftagu:** Guftagu sirf shadi ki zaroori baaton (deen, lifestyle, expectation, career) tak mehdood honi chahiye.\n\nRishta Matrimony is baat ko ensure karta hai ki direct communication family aur wali ke through ho 🌸`,
+      actionLinks: [
+        { label: '🔍 Explore Verified Profiles', url: '/profiles', variant: 'default' }
+      ]
+    };
+  }
+
+  // Inter-caste / Regional differences in Islam
+  if (
+    q.includes('caste') || 
+    q.includes('zaat') || 
+    q.includes('khandan') || 
+    q.includes('biradari') || 
+    q.includes('intercaste')
+  ) {
+    return {
+      text: `### 🕌 Islam me Zaat-Paat (Caste) ka Tasawwur:\n\nIslam me kisi zaat, biradari ya zubaan ki wajah se kisi ko doosre par koi bartari nahi hai 🤍\n\n> **Hujjat-ul-Wida me Nabi Kareem ﷺ ne farmaya:**\n> *"Kisi Arabi ko Ajami par aur kisi Ajami ko Arabi par, na kisi gore ko kaale par aur na kisi kaale ko gore par koi fazilat hai, siwaye Taqwa (Parhezgari) ke."*\n> **[Musnad Ahmad: 23489]** 📖\n\nShadi me asil cheez **Deen, Akhlaq aur Aapas ki Compatibility (Kufu)** hai. Rishta Matrimony par sabhi maslak aur background ke shareef khandan ke rishte maujood hain ✨`,
+      actionLinks: [
+        { label: '🔍 View All Verified Profiles', url: '/profiles', variant: 'default' }
+      ]
+    };
+  }
+
+  // ==========================================
+  // 3. SEARCHING PROFILES & MATCHMAKING
+  // ==========================================
   if (
     q.includes('profile') || 
     q.includes('rishta') || 
@@ -302,7 +615,10 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('bihar') ||
     q.includes('delhi') ||
     q.includes('mumbai') ||
-    q.includes('lucknow')
+    q.includes('lucknow') ||
+    q.includes('dhanbad') ||
+    q.includes('jharkhand') ||
+    q.includes('up')
   ) {
     const searchRes = await searchProfilesForAssistant(userPrompt);
     const { matches, searchedTerm, hasKeyword, genderFilter } = searchRes;
@@ -310,7 +626,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     if (matches && matches.length > 0) {
       const targetLabel = genderFilter === 'Female' ? 'Brides (Dulhan)' : genderFilter === 'Male' ? 'Grooms (Dulha)' : 'Proposals';
       return {
-        text: `Alhamdulillah! Found matching verified **${targetLabel}** on Rishta Matrimony${searchedTerm ? ` for "${searchedTerm}"` : ''}:`,
+        text: `Alhamdulillah! Hamare database me aapke liye matching verified **${targetLabel}** daryaft hue hain${searchedTerm ? ` ("${searchedTerm}")` : ''} 👰🤵\n\nNeeche diye gaye profile card par click karke aap full bio-data dekh sakte hain:`,
         profileMatches: matches,
         actionLinks: [
           { label: '🔍 Browse All Verified Profiles', url: '/profiles', variant: 'outline' },
@@ -319,12 +635,11 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
         ]
       };
     } else if (hasKeyword) {
-      // User specifically asked for a city or term (e.g. Ranchi) that has 0 matches currently
       return {
-        text: `Currently, we do not have any verified live profile registered from **"${searchedTerm}"** on Rishta Matrimony.\n\n• You can **Register a Free Biodata** for ${searchedTerm} to be matched with upcoming proposals.\n• Or you can **Browse All Available Profiles** across India:`,
+        text: `Filhal hamare platform par **"${searchedTerm}"** se koi naya verified profile live nahi hai 🌸\n\n• Aap **Free Biodata Register** kar sakte hain taaki ${searchedTerm} aur aas-paas ke naye rishte aane par aapko direct notify kiya jaye.\n• Ya aap baaki shehron ke verified rishte explore kar sakte hain:`,
         profileMatches: [],
         actionLinks: [
-          { label: '📝 Free Biodata Registration', url: '/register', variant: 'default' },
+          { label: '📝 Register Free Biodata for ' + searchedTerm, url: '/register', variant: 'default' },
           { label: '🔍 View All Verified Profiles', url: '/profiles', variant: 'outline' },
           { label: '💬 Ask Support on WhatsApp', url: `https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20am%20looking%20for%20profiles%20from%20${encodeURIComponent(searchedTerm)}%20on%20Rishta%20Matrimony.`, isExternal: true, variant: 'whatsapp' }
         ]
@@ -332,7 +647,9 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     }
   }
 
-  // 2. Questions about Contact, Unlock, Paid Info, Pricing, Premium
+  // ==========================================
+  // 4. CONTACTS, PRICING, & ₹491 PREMIUM PLAN
+  // ==========================================
   if (
     q.includes('contact') || 
     q.includes('number') || 
@@ -344,22 +661,27 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('pricing') || 
     q.includes('premium') || 
     q.includes('491') || 
-    q.includes('plan')
+    q.includes('plan') ||
+    q.includes('charges') ||
+    q.includes('fees') ||
+    q.includes('paise')
   ) {
     return {
-      text: `### 🛡️ Photo & Contact Number Privacy:\nTo maintain Islamic modesty and avoid spam, candidate WhatsApp numbers and unblurred photos are protected.\n\n### ⭐ Premium Plan Features (₹491 for 2 Months):\n• **Direct Verified WhatsApp Numbers** for candidates & families.\n• **Unblurred Photos Access** across all profiles.\n• **1-on-1 WhatsApp Matchmaking Support**.\n• **Unlimited Profile Views** across India and abroad.\n\nActivate your Premium membership to connect with matching proposals directly:`,
+      text: `### 🛡️ Privacy & Contact Number Protection:\nIslam me parda aur behno ki hifazat ke madd-e-nazar, candidate ke verified phone numbers aur unblurred photos sirf verified Premium members ke liye unlock hote hain ✨\n\n### ⭐ Premium Membership Plan (Sirf ₹491 - 2 Months Access):\n• 📞 **Direct WhatsApp Numbers:** Sabhi verified candidates aur unke walidain ke contact numbers.\n• 🖼️ **Unblurred Full Photos:** Sabhi profiles ki HD photos dekhne ki access.\n• 🤝 **1-on-1 Matchmaking Assistance:** Hamari support team se WhatsApp par personal help.\n• ♾️ **Unlimited Profile Views:** Poore India aur Abroad ke proposals bina kisi rok-tok ke dekhein.\n\nAap abhi apna plan activate kar sakte hain:`,
       actionLinks: [
-        { label: '💎 Activate Premium Plan (₹491)', url: '/pricing', variant: 'default' },
-        { label: '💬 Instant WhatsApp Upgrade (+91 9128719875)', url: 'https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20(Rs.%20491%20for%202%20Months).', isExternal: true, variant: 'whatsapp' }
+        { label: '💎 Upgrade to Premium Plan (₹491)', url: '/pricing', variant: 'default' },
+        { label: '💬 Instant WhatsApp Activation (+91 9128719875)', url: 'https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20(Rs.%20491%20for%202%20Months).', isExternal: true, variant: 'whatsapp' }
       ]
     };
   }
 
-  // 3. Questions about Istikhara
+  // ==========================================
+  // 5. ISTIKHARA QUESTIONS
+  // ==========================================
   if (q.includes('istikhara') || q.includes('dua')) {
     const ref = authenticIslamicReferences.istikhara;
     return {
-      text: `### 🤲 The Sunnah of Salatul Istikhara for Marriage:\n\n**Authentic Reference:**\n> Jabir ibn Abdullah (RA) narrated: The Prophet ﷺ used to teach us Istikhara in all matters just as he taught us a Surah from the Quran.\n> **[${ref.hadithRef}]**\n\n**How to Perform Istikhara:**\n${ref.method}\n\n*Note:* Istikhara does not require a dream. Ease in proceedings and mutual peace of heart are signs of Allah's blessing.`,
+      text: `### 🤲 Shadi ke liye Salatul Istikhara ka Sunnah Tareeqa:\n\n**Authentic Reference:**\n> Jabir ibn Abdullah (RA) se riwayat hai: Rasoolullah ﷺ humein tamaam maamlaat me Istikhara karna sikhate the jaise Quran ki Surah sikhate hain.\n> **[${ref.hadithRef}]**\n\n**Istikhara ka Tareeqa:**\n${ref.method}\n\n*Wazahat:* Istikhara me khwab aana zaroori nahi hota. Kaam me aasaani paida hona ya dil me itminan hona hi khair ki alamat hai 🌸`,
       actionLinks: [
         { label: '🔍 Browse Compatible Profiles', url: '/profiles', variant: 'default' },
         { label: '📖 Read Marriage Guidance Blog', url: '/blog', variant: 'outline' }
@@ -367,11 +689,13 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     };
   }
 
-  // 4. Questions about Mehr (Dower)
+  // ==========================================
+  // 6. MEHR (DOWER) QUESTIONS
+  // ==========================================
   if (q.includes('mehr') || q.includes('mahr') || q.includes('dower') || q.includes('haq mehr')) {
     const ref = authenticIslamicReferences.mehr;
     return {
-      text: `### 💍 Islamic Principles on Mehr (Dower):\n\n**Quranic Command:**\n> *"And give the women (upon marriage) their bridal gifts (Mehr) graciously as a free gift."*\n> **[${ref.quranRef}]**\n\n**Prophetic Sunnah:**\n> The Prophet ﷺ said: *"${ref.hadithText}"*\n> **[${ref.hadithRef}]**\n\n**Key Guidelines:**\n• Mehr is the exclusive right of the bride.\n• The Sunnah encourages moderation and simplicity without unnecessary financial hardship.\n• It should be agreed upon with mutual respect.`,
+      text: `### 💍 Mehr (Dower) ke Shar'ee Ahkaam:\n\n**Quranic Hukum:**\n> *"Aur auraton ko unke Mehr khushi se ada karo."*\n> **[${ref.quranRef}]**\n\n**Hadith Sharif:**\n> Nabi Kareem ﷺ ne ek sahabi se farmaya: *"${ref.hadithText}"*\n> **[${ref.hadithRef}]**\n\n**Zaroori Baatein:**\n• Mehr biwi ka zaati haq hai, koi doosra isme hissa nahi le sakta.\n• Sunnah ye hai ki Mehr me aitedal (moderation) rakha jaye taaki shadi aasan ho.\n• Dono khandano ko aapas ki razamandi se izzat ke sath Mehr tay karna chahiye 🌸`,
       actionLinks: [
         { label: '📖 Explore Marriage Guidance', url: '/blog', variant: 'outline' },
         { label: '🔍 Search Profiles', url: '/profiles', variant: 'default' }
@@ -379,11 +703,21 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     };
   }
 
-  // 5. Questions about Choosing a Righteous Spouse (Deendar Life Partner)
-  if (q.includes('choose') || q.includes('selection') || q.includes('spouse') || q.includes('kufu') || q.includes('partner') || q.includes('humsafar')) {
+  // ==========================================
+  // 7. CHOOSING A RIGHTEOUS SPOUSE (DEENDAR)
+  // ==========================================
+  if (
+    q.includes('choose') || 
+    q.includes('selection') || 
+    q.includes('spouse') || 
+    q.includes('kufu') || 
+    q.includes('partner') || 
+    q.includes('humsafar') ||
+    q.includes('kaisa jeevansathi')
+  ) {
     const ref = authenticIslamicReferences.spouseSelection;
     return {
-      text: `### 👰 Choosing a Righteous Spouse in Islam:\n\n**Hadith Reference:**\n> *"${ref.translation}"*\n> **[${ref.hadithRef}]**\n\n**Core Islamic Criteria:**\n• **Deen & Character (Taqwa & Akhlaq):** The strongest foundation for enduring love and family peace.\n• **Compatibility (Kufu):** Alignment in religious values, lifestyle, and goals.\n• **Family Involvement (Wali):** Dignified communication through parents and guardians.\n\nExplore verified profiles on Rishta Matrimony:`,
+      text: `### 👰 Islam me Humsafar Chunne ke 4 Usool:\n\n**Sahih Hadith Sharif:**\n> *"${ref.translation}"*\n> **[${ref.hadithRef}]**\n\n**Islami Mayaar:**\n• **Deen & Akhlaq (Taqwa):** Sabse ahem deen aur nek aadat hai jo zindagi bhar khushiyon ka zariya banti hai.\n• **Sharafat & Character:** Imandar aur halal kamai par yakeen rakhne wala shakhs.\n• **Compatibility (Kufu):** Soch, taleem aur deeni mayaar me aapas ki munasibat.\n\nRishta Matrimony par verified deendaar rishte dekhein:`,
       actionLinks: [
         { label: '👰 View Verified Brides', url: '/profiles?gender=Female', variant: 'default' },
         { label: '🤵 View Verified Grooms', url: '/profiles?gender=Male', variant: 'outline' },
@@ -392,37 +726,49 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     };
   }
 
-  // 6. Free Registration questions
-  if (q.includes('register') || q.includes('create profile') || q.includes('biodata') || q.includes('join')) {
+  // ==========================================
+  // 8. FREE REGISTRATION QUESTIONS
+  // ==========================================
+  if (
+    q.includes('register') || 
+    q.includes('create profile') || 
+    q.includes('biodata') || 
+    q.includes('join') || 
+    q.includes('account') ||
+    q.includes('kaise banaye')
+  ) {
     return {
-      text: `### 📝 Free Biodata Registration on Rishta Matrimony:\nYou can create and register your matrimonial biodata **100% Free**:\n\n1. **Personal Information** (Name, DOB, Location, Height)\n2. **Education & Career** (Degree, Profession, Family Background)\n3. **Islamic Details** (Maslak, Deeni Education, Namaz)\n4. **Partner Preferences** (Age preference, City, Photo upload)\n\nEvery profile is manually verified before going live to maintain authenticity.`,
+      text: `### 📝 Rishta Matrimony par Free Biodata Registration:\nAap apna ya apne bache/bhai/behan ka matrimonial biodata **100% Free** create kar sakte hain ✨:\n\n1. **Zati Maloomat:** Naam, Umar, Shahr (Location), Qad (Height)\n2. **Taleem aur Rozgar:** Degree, Profession, Family background\n3. **Deeni Tafseelat:** Maslak, Namaz, Deeni Taleem\n4. **Partner Ki Ummedein:** Age preference, City preference, Photo upload\n\nHar profile verification ke baad hi live ki jaati hai taaki sabhi rishte 100% genuine hon 🛡️`,
       actionLinks: [
-        { label: '✨ Register Free Biodata', url: '/register', variant: 'default' },
+        { label: '✨ Register Free Biodata Now', url: '/register', variant: 'default' },
         { label: '🔑 Member Portal Login', url: '/member/login', variant: 'outline' }
       ]
     };
   }
 
-  // 7. Try Gemini AI if configured in localStorage
+  // ==========================================
+  // 9. DYNAMIC EXTERNAL AI (IF KEY IS SET)
+  // ==========================================
   const geminiKey = localStorage.getItem('gemini_api_key');
   if (geminiKey) {
     try {
-      const prompt = `You are the Official AI Matchmaker for "Rishta Matrimony" (https://rishtamatrimony.vercel.app).
-User question: "${userPrompt}"
+      const systemPrompt = `You are the friendly, empathetic, highly intelligent AI Assistant for "Rishta Matrimony" (https://rishtamatrimony.vercel.app).
+User question: "${rawQ}"
 
-RULES:
-1. Always maintain a warm, respectful matrimonial matchmaker persona.
-2. Quote authentic Quran (Surah:Ayah) and Sahih Hadith (Sahih al-Bukhari or Sahih Muslim with book/number).
-3. If user is searching for marriage candidates, guide them to /profiles.
-4. If they ask about unlocking candidate contact numbers or photos, explain the ₹491 (2 Months Unlimited Access) plan with link to /pricing.
-5. Format cleanly using concise bullet points and short paragraphs without clutter.`;
+GUIDELINES:
+1. Answer ANY user question with warmth, intelligence, and natural conversational flow in the user's language (Hindi, Hinglish, Urdu, English).
+2. For Islamic questions, cite authentic Quran (Surah:Ayah) and Sahih Hadith (Sahih al-Bukhari / Sahih Muslim).
+3. Use expressive, tasteful emojis (🌸, 🤲, 💍, 👰, 🤵, ✨, 😊, 📖).
+4. If they search for brides/grooms, direct them to /profiles.
+5. If they ask about unlocking candidate phone numbers or photos, explain the ₹491 (2 Months) Premium plan with /pricing link.
+6. Keep paragraphs readable with neat bullet points.`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.trim()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.6 }
+          contents: [{ parts: [{ text: systemPrompt }] }],
+          generationConfig: { temperature: 0.7 }
         })
       });
 
@@ -444,14 +790,16 @@ RULES:
     }
   }
 
-  // General Matrimonial Welcome Guidance
+  // ==========================================
+  // 10. CONTEXTUAL INTELLIGENT AI CATCH-ALL
+  // ==========================================
   return {
-    text: `Assalamu Alaikum! Welcome to **Rishta Matrimony Matchmaker Assistant** 💍\n\nI am here to assist you with finding compatible Muslim matrimonial proposals and providing guidance according to the Quran & Sunnah.\n\n• **Search Proposals:** Find verified Brides & Grooms by city & maslak.\n• **Privacy & Security:** Contact numbers & unblurred photos protected under ₹491 Premium plan.\n• **Deeni Guidance:** Sunnah of Nikah, Istikhara Dua, and Mehr rules.\n\nHow can I help you today?`,
+    text: `Assalamu Alaikum! 🌸✨\n\nAapne poocha: **"${rawQ}"**\n\nMain aapki is maamle me poori tarah madad karne ke liye tayyar hoon! Chahe aapko:\n• 👰🤵 Kisi specific shahr ya maslak ke **verified rishte** talash karne hon\n• 📖 Shadi, nikah, ya deen ke talluq se **Quran aur Sahih Hadith** ki roshni me rehnumai chahiye ho\n• 📞 Contact number aur unblurred photos ke liye **₹491 Premium Plan** ki jaankari leni ho\n• 📝 Apna **Free Matrimonial Biodata** register karna ho\n\nAap mujhse thoda aur tafseel se poochein, ya neeche diye gaye options me se select karein 😊🤲`,
     actionLinks: [
       { label: '🔍 Browse Verified Profiles', url: '/profiles', variant: 'default' },
       { label: '💎 Premium Membership (₹491)', url: '/pricing', variant: 'outline' },
       { label: '📝 Free Registration', url: '/register', variant: 'outline' },
-      { label: '💬 WhatsApp Matchmaking Support', url: 'https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony.', isExternal: true, variant: 'whatsapp' }
+      { label: '💬 WhatsApp Support (+91 9128719875)', url: 'https://wa.me/919128719875?text=' + encodeURIComponent('Assalamu Alaikum, I need assistance regarding: ' + rawQ), isExternal: true, variant: 'whatsapp' }
     ]
   };
 }
