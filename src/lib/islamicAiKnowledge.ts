@@ -323,7 +323,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     .replace(/mahr/g, 'mehr');
 
   // ==========================================
-  // 1. FREE REGISTRATION & BIODATA CREATION
+  // 1. FREE REGISTRATION & BIODATA CREATION & LINK
   // (High Priority to prevent false match routing)
   // ==========================================
   if (
@@ -343,10 +343,17 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('account banaye') || 
     q.includes('id banaye') ||
     q.includes('join') ||
-    q.includes('kaise banaye')
+    q.includes('kaise banaye') ||
+    (q.includes('link') && (q.includes('register') || q.includes('form') || q.includes('biodata')))
   ) {
+    if (q.includes('link')) {
+      return {
+        text: `Ye lijiye, Free Biodata Registration ka direct link:\n\n👉 [✨ Open Free Biodata Registration Form](/register)\n\nAap is link par click karke 2 minute me apna ya apne kisi family member (bhai, behan, beta, beti) ka 100% Free matrimonial biodata bana sakte hain 🌸\n\n💬 *Kya aapko registration form me kisi deeni ya personal detail me madad chahiye?*`,
+      };
+    }
+
     return {
-      text: `### 📝 Free Biodata Registration on Rishta Matrimony:\nAap apna ya apne kisi family member (bhai, behan, beta, beti) ka matrimonial biodata **100% Free** register kar sakte hain ✨\n\n**Aasan 4 Steps:**\n1. **Personal Details:** Naam, Umar, Shahr (Location), Height\n2. **Education & Career:** Degree, Profession, Family background\n3. **Islamic Information:** Maslak, Namaz, Deeni Taleem\n4. **Partner Preferences:** Age, City preference & Photo upload\n\nAap website ke top menu me **"Register"** button par click karke 2 minute me form bhar sakte hain 🌸\n\n💬 *Kya aap dulhan (bride) ya dulha (groom) ka biodata register karna chahte hain?*`,
+      text: `### 📝 Free Biodata Registration on Rishta Matrimony:\nAap apna ya apne kisi family member ka matrimonial biodata **100% Free** register kar sakte hain ✨\n\n👉 [✨ Click Here to Open Register Page](/register)\n\n**Aasan 4 Steps:**\n1. **Personal Details:** Naam, Umar, Shahr (Location), Height\n2. **Education & Career:** Degree, Profession, Family background\n3. **Islamic Information:** Maslak, Namaz, Deeni Taleem\n4. **Partner Preferences:** Age, City preference & Photo upload\n\n💬 *Kya aap dulhan (bride) ya dulha (groom) ka biodata register karna chahte hain?*`,
     };
   }
 

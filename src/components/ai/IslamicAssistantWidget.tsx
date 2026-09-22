@@ -235,6 +235,41 @@ export function IslamicAssistantWidget() {
             );
           }
 
+          // Interactive Link Button (e.g. 👉 [Label](url) or [Label](url))
+          const linkMatch = trimmed.match(/(?:👉\s*)?\[(.*?)\]\((.*?)\)/);
+          if (linkMatch) {
+            const [, linkText, linkUrl] = linkMatch;
+            const isExternal = linkUrl.startsWith('http') || linkUrl.includes('wa.me');
+            
+            return (
+              <div key={idx} className="my-2">
+                {isExternal ? (
+                  <a
+                    href={linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all"
+                  >
+                    <span>{linkText}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate(linkUrl);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all cursor-pointer group"
+                  >
+                    <span>{linkText}</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                )}
+              </div>
+            );
+          }
+
           // Regular paragraph
           const cleanLine = trimmed.replace(/\*\*/g, '');
           return (
