@@ -170,11 +170,11 @@ export function Navbar() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden" 
+            className="md:hidden h-11 w-11 text-primary hover:bg-primary/10 rounded-lg transition-all" 
             onClick={() => setIsOpen(!isOpen)} 
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="h-8 w-8 stroke-[2.5]" /> : <Menu className="h-8 w-8 stroke-[2.5]" />}
           </Button>
         </div>
 
