@@ -1462,44 +1462,44 @@ const Profiles = () => {
         </div>
       )}
 
-      {/* Islamic Premium Header Section */}
-      <div className="relative bg-gradient-to-b from-primary/15 via-muted/30 to-background pt-10 pb-10 px-4 text-center overflow-hidden border-b mb-8">
-        <div className="max-w-4xl mx-auto relative z-10">
+      {/* Islamic Premium Header Section - Compact */}
+      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background pt-6 pb-6 px-4 text-center overflow-hidden border-b mb-6">
+        <div className="max-w-3xl mx-auto relative z-10">
           {/* Bismillah Calligraphy */}
-          <div className="text-3xl sm:text-4xl font-serif text-primary/80 mb-2">
+          <div className="text-2xl font-serif text-primary/80 mb-1">
             ﷽
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight mb-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mb-2">
             Verified Islamic Profiles
           </h1>
           
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
-            Find your ideal Muslim life partner according to the Quran & Sunnah. Browse authentic, verified rishta proposals.
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed mb-4">
+            Find your ideal Muslim life partner according to the Quran & Sunnah. Browse authentic rishta proposals.
           </p>
 
-          {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50 shadow-sm">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>100% Free & Verified Profiles</span>
+          {/* Trust Badges - Compact */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50 shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>100% Free & Verified</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300/50 shadow-sm">
-              <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-              <span>Complete Photo & Contact Privacy</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300/50 shadow-xs">
+              <Lock className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+              <span>Photo & Contact Privacy</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/50 shadow-sm">
-              <Heart className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/50 shadow-xs">
+              <Heart className="w-3 h-3 text-amber-600 dark:text-amber-400" />
               <span>Halal Matchmaking</span>
             </span>
           </div>
         </div>
       </div>
 
-      <main className="container mx-auto px-4 pb-12">
+      <main className="container mx-auto px-4 pb-10">
         {/* Admin Toggle */}
         {user && (
-          <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out animate-fade-in">
+          <div className="max-w-4xl mx-auto mb-4 transition-all duration-300 ease-in-out animate-fade-in">
             <Button
               variant={isAdmin ? "default" : "outline"}
               size="sm"
@@ -1514,9 +1514,9 @@ const Profiles = () => {
         )}
 
         {/* Alert Note */}
-        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3 shadow-sm">
-          <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-foreground">
+        <div className="max-w-4xl mx-auto mb-6 bg-primary/10 border border-primary/20 rounded-xl p-3.5 flex items-start gap-2.5 shadow-xs">
+          <AlertCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <p className="text-xs sm:text-sm text-foreground">
             <strong>⚠️ Note:</strong> Detailed biodata and contact details are available only to verified registered members.
           </p>
         </div>
@@ -1763,50 +1763,50 @@ const Profiles = () => {
           </DndContext>
         )}
 
-        {/* Premium Islamic Bottom Registration Banner */}
-        <div className="mt-16 bg-gradient-to-br from-emerald-900 via-primary to-teal-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-emerald-500/30 relative overflow-hidden text-center max-w-4xl mx-auto">
+        {/* Premium Islamic Bottom Registration Banner - Compact */}
+        <div className="mt-12 bg-gradient-to-br from-emerald-900 via-primary to-teal-950 text-white rounded-2xl p-5 sm:p-7 shadow-lg border border-emerald-500/30 relative overflow-hidden text-center max-w-3xl mx-auto">
           {/* Subtle Background Glow */}
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-primary/20 rounded-full blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-emerald-200 border border-white/15 backdrop-blur-sm shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>100% Free Islamic Matrimonial Network</span>
+          <div className="relative z-10 max-w-xl mx-auto space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-white/10 text-emerald-200 border border-white/15 backdrop-blur-sm shadow-xs">
+              <Sparkles className="w-3 h-3 text-amber-300" />
+              <span>100% Free Matrimonial Network</span>
             </span>
 
-            <h3 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
               Looking for a Righteous Life Partner?
             </h3>
 
-            <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed max-w-xl mx-auto">
-              Create your verified matrimonial profile in under 2 minutes. Full privacy protection for photos and contacts according to Islamic guidelines.
+            <p className="text-xs text-emerald-100/90 leading-relaxed max-w-lg mx-auto">
+              Create your verified matrimonial profile in under 2 minutes with complete privacy protection.
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
               <Button
-                size="lg"
+                size="default"
                 onClick={() => navigate("/register")}
-                className="w-full sm:w-auto bg-white text-emerald-950 hover:bg-emerald-50 font-extrabold text-sm sm:text-base px-8 h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.03] gap-2 cursor-pointer"
+                className="w-full sm:w-auto bg-white text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm px-6 h-10 rounded-xl shadow-md transition-all duration-200 gap-1.5 cursor-pointer"
               >
-                <UserPlus className="w-5 h-5 text-emerald-800" />
-                <span>Register Your Profile Free</span>
-                <ArrowRight className="w-4 h-4 text-emerald-800" />
+                <UserPlus className="w-4 h-4 text-emerald-800" />
+                <span>Register Profile Free</span>
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-800" />
               </Button>
 
               <Button
-                size="lg"
+                size="default"
                 variant="outline"
                 asChild
-                className="w-full sm:w-auto border-white/30 bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base px-6 h-12 rounded-xl backdrop-blur-sm transition-all duration-300 gap-2 cursor-pointer"
+                className="w-full sm:w-auto border-white/30 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm px-5 h-10 rounded-xl backdrop-blur-sm transition-all duration-200 gap-1.5 cursor-pointer"
               >
                 <a
                   href="https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony."
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MessageCircle className="w-5 h-5 text-emerald-300" />
+                  <MessageCircle className="w-4 h-4 text-emerald-300" />
                   <span>WhatsApp Inquiry</span>
                 </a>
               </Button>
