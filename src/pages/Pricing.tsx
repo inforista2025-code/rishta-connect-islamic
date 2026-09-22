@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, MessageCircle, ArrowRight, UserPlus, HelpCircle, ShieldCheck, Zap } from "lucide-react";
+import { Check, Sparkles, MessageCircle, ArrowRight, UserPlus, HelpCircle, ShieldCheck, Zap, Lock, Eye, Star, PhoneCall, Image, Send, Search } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageSkeleton } from "@/components/PageSkeleton";
@@ -29,55 +29,87 @@ export default function Pricing() {
 
   const freePlanFeatures = [
     {
-      title: "100% Free Registration",
-      description: "Create your verified profile with authentic deeni and personal details."
+      title: "100% Free Lifetime Registration",
+      description: "Submit authentic biodata & create your verified account without paying anything.",
+      status: "included"
     },
     {
       title: "Personal Member Dashboard",
-      description: "Secure login with OTP to manage your profile and tracked matches."
+      description: "Secure login with OTP to track matching profiles and received interests.",
+      status: "included"
     },
     {
-      title: "Browse Verified Profiles",
-      description: "Explore verified opposite-gender rishta proposals across the community."
+      title: "Browse All Verified Profiles",
+      description: "Explore rishta proposals across all communities, cities and sects.",
+      status: "included"
     },
     {
       title: "5 Send Interest Requests / Month",
-      description: "Express genuine interest in suitable profiles directly from your dashboard."
+      description: "Express initial interest in suitable profiles directly from your dashboard.",
+      status: "included"
     },
     {
-      title: "Shortlist & Bookmark Profiles",
-      description: "Save potential matches to review later with your family."
+      title: "Shortlist & Save Profiles",
+      description: "Bookmark favorite profiles to discuss and review anytime with your family.",
+      status: "included"
     },
     {
-      title: "Multi-Platform Profile Promotion",
-      description: "Profile shared on our official WhatsApp & Telegram community channels."
+      title: "Photo Visibility: Blurred",
+      description: "Profile photos are blurred for standard privacy (Unlocks in Premium).",
+      status: "limited"
+    },
+    {
+      title: "Contact Details: Hidden",
+      description: "Phone & WhatsApp numbers are protected (Unlocks in Premium).",
+      status: "limited"
+    },
+    {
+      title: "Who Viewed My Profile: Locked",
+      description: "Visitor list is hidden for free accounts.",
+      status: "limited"
     }
   ];
 
   const premiumPlanFeatures = [
     {
       title: "Clear Original Photos Unlocked",
-      description: "View high-resolution profile photos with full clarity for confident decisions."
+      description: "View high-resolution profile photos in full 100% clarity with zero blur.",
+      highlight: true
     },
     {
       title: "Direct WhatsApp & Contact Access",
-      description: "Get verified contact details of interested matches instantly without waiting."
+      description: "Get verified phone and WhatsApp numbers instantly to talk directly to families.",
+      highlight: true
     },
     {
       title: "Unlimited Send Interests",
-      description: "Send unlimited proposals every month without any monthly quota restrictions."
+      description: "Send unlimited proposals every month without any quota or limits.",
+      highlight: true
     },
     {
-      title: "⭐ Premium Verified Badge",
-      description: "Exclusive badge on your profile builds instant trust among serious families."
+      title: "See 'Who Viewed My Profile'",
+      description: "Full visibility of all members & families who checked out your profile.",
+      highlight: true
     },
     {
-      title: "Priority Top Ranking",
-      description: "Your profile is highlighted at the top of search results and recommendations."
+      title: "⭐ Verified Premium Badge",
+      description: "Gold verified badge on your profile builds instant trust and credibility.",
+      highlight: false
     },
     {
-      title: "Dedicated WhatsApp Matchmaking Line",
-      description: "Direct priority support and personalized matchmaking assistance from our team."
+      title: "Top Search & Recommendation Ranking",
+      description: "Your profile appears at the top of Browse lists so more families contact you first.",
+      highlight: false
+    },
+    {
+      title: "Weekly Priority Reposting",
+      description: "Profile reshared weekly across WhatsApp & Telegram groups for max reach.",
+      highlight: false
+    },
+    {
+      title: "Dedicated Matchmaking Support",
+      description: "Direct priority WhatsApp helpline for instant guidance and query resolution.",
+      highlight: false
     }
   ];
 
@@ -154,11 +186,19 @@ export default function Pricing() {
                 <div className="space-y-3">
                   {freePlanFeatures.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check className="w-3.5 h-3.5" />
-                      </div>
+                      {feature.status === "included" ? (
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center shrink-0 mt-0.5">
+                          <Lock className="w-3 h-3" />
+                        </div>
+                      )}
                       <div className="min-w-0">
-                        <p className="font-semibold text-xs sm:text-sm text-foreground">{feature.title}</p>
+                        <p className={`font-semibold text-xs sm:text-sm ${feature.status === "included" ? "text-foreground" : "text-muted-foreground"}`}>
+                          {feature.title}
+                        </p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
@@ -206,12 +246,22 @@ export default function Pricing() {
               <CardContent className="space-y-4 pt-2">
                 <div className="space-y-3">
                   {premiumPlanFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5">
+                    <div 
+                      key={index} 
+                      className={`flex items-start gap-3 p-2 rounded-xl transition-colors ${feature.highlight ? "bg-primary/10 border border-primary/20" : ""}`}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                         <Check className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-xs sm:text-sm text-foreground">{feature.title}</p>
+                        <p className="font-bold text-xs sm:text-sm text-foreground flex items-center gap-1.5">
+                          <span>{feature.title}</span>
+                          {feature.highlight && (
+                            <span className="text-[10px] uppercase font-extrabold bg-primary/20 text-primary px-1.5 py-0.2 rounded">
+                              Unlocked
+                            </span>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
