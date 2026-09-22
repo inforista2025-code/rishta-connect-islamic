@@ -59,9 +59,9 @@ export default function Register() {
                 <HelpCircle className="w-6 h-6 text-amber-200" />
               </div>
               <div>
-                <h4 className="font-bold text-base text-white">Form Bharne Me Koi Pareshani?</h4>
+                <h4 className="font-bold text-base text-white">Need Help with Registration?</h4>
                 <p className="text-xs text-emerald-100 mt-0.5">
-                  Aap seedhe hamare WhatsApp support par apna Biodata send karke bhi register karwa sakte hain.
+                  If you face any difficulty while filling out this form, our support team is here to assist you.
                 </p>
               </div>
             </div>
