@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Lock, Heart, Sparkles } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Lock, Heart, Sparkles, Search, SlidersHorizontal, UserX, RotateCcw } from "lucide-react";
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
 import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
@@ -13,6 +13,13 @@ import { Footer } from "@/components/Footer";
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -1115,6 +1122,42 @@ const Profiles = () => {
     [profiles, activeGender, searchTerm, locationFilter, maslakFilter, ageFilter]
   );
 
+  // Extract dynamic filter options from profiles
+  const availableLocations = useMemo(() => {
+    const locSet = new Set<string>();
+    profiles.forEach(p => {
+      if (p.location && p.location !== "N/A") {
+        // Split locations by comma if applicable to get primary cities
+        const parts = p.location.split(',').map(s => s.trim());
+        parts.forEach(part => {
+          if (part.length > 2) locSet.add(part);
+        });
+      }
+    });
+    return Array.from(locSet).sort();
+  }, [profiles]);
+
+  const availableMaslaks = useMemo(() => {
+    const masSet = new Set<string>();
+    profiles.forEach(p => {
+      if (p.maslak && p.maslak !== "N/A") {
+        masSet.add(p.maslak.trim());
+      }
+    });
+    return Array.from(masSet).sort();
+  }, [profiles]);
+
+  const femaleCount = useMemo(() => profiles.filter(p => p.gender === "Female").length, [profiles]);
+  const maleCount = useMemo(() => profiles.filter(p => p.gender === "Male").length, [profiles]);
+  const isAnyFilterActive = locationFilter !== "all" || ageFilter !== "all" || maslakFilter !== "all" || searchTerm.trim() !== "";
+
+  const handleResetFilters = useCallback(() => {
+    setLocationFilter("all");
+    setAgeFilter("all");
+    setMaslakFilter("all");
+    setSearchTerm("");
+  }, []);
+
   const handleEdit = useCallback((profile: Profile) => {
     setEditingProfile(profile);
     setNewProfileData(profile);
@@ -1478,107 +1521,219 @@ const Profiles = () => {
           </p>
         </div>
 
-        {/* Search and Filter Section */}
-        <div className="max-w-7xl mx-auto px-4 mb-8 space-y-6">
-          <Input
-            type="text"
-            placeholder="Search profiles by name, age, location, or profession..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md mx-auto"
-          />
-          
-          {/* Gender Filter Tabs */}
-          <div className="flex gap-3 justify-center">
+        {/* Search, Filter Bar & Gender Switcher */}
+        <div className="max-w-6xl mx-auto px-4 mb-10 space-y-6">
+          {/* Gender Switcher Tabs with Live Badges */}
+          <div className="flex flex-wrap gap-3 justify-center items-center">
             <button
               onClick={() => setActiveGender("Female")}
               className={`
-                px-8 py-3 rounded-full font-semibold text-base flex items-center gap-2
-                transition-all duration-300 ease-in-out
-                transform hover:scale-105
+                px-6 sm:px-8 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2.5
+                transition-all duration-300 ease-in-out shadow-sm
+                transform hover:scale-[1.03] active:scale-[0.98] cursor-pointer
                 ${activeGender === "Female" 
-                  ? "bg-primary text-primary-foreground shadow-button" 
-                  : "bg-muted text-muted-foreground hover:bg-primary/20"
+                  ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30" 
+                  : "bg-card text-foreground hover:bg-muted border"
                 }
               `}
             >
-              <span>👰</span> Bride
+              <span>👰</span>
+              <span>Brides</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${activeGender === "Female" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"}`}>
+                {femaleCount}
+              </span>
             </button>
             <button
               onClick={() => setActiveGender("Male")}
               className={`
-                px-8 py-3 rounded-full font-semibold text-base flex items-center gap-2
-                transition-all duration-300 ease-in-out
-                transform hover:scale-105
+                px-6 sm:px-8 py-3 rounded-full font-bold text-sm sm:text-base flex items-center gap-2.5
+                transition-all duration-300 ease-in-out shadow-sm
+                transform hover:scale-[1.03] active:scale-[0.98] cursor-pointer
                 ${activeGender === "Male" 
-                  ? "bg-primary text-primary-foreground shadow-button" 
-                  : "bg-muted text-muted-foreground hover:bg-primary/20"
+                  ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30" 
+                  : "bg-card text-foreground hover:bg-muted border"
                 }
               `}
             >
-              <span>🤵</span> Groom
+              <span>🤵</span>
+              <span>Grooms</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${activeGender === "Male" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"}`}>
+                {maleCount}
+              </span>
             </button>
           </div>
 
-          {/* Active Filter Chips */}
-          {(locationFilter !== "all" || ageFilter !== "all" || maslakFilter !== "all" || searchTerm) && (
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 animate-fade-in">
-              <span className="text-xs text-muted-foreground font-medium">Active Filters:</span>
-              {locationFilter !== "all" && (
-                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
-                  Location: {locationFilter}
-                  <button onClick={() => setLocationFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              )}
-              {ageFilter !== "all" && (
-                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
-                  Age: {ageFilter} yrs
-                  <button onClick={() => setAgeFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              )}
-              {maslakFilter !== "all" && (
-                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
-                  Maslak: {maslakFilter}
-                  <button onClick={() => setMaslakFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              )}
+          {/* Search Bar & Multi-Filter Dropdown Controls */}
+          <div className="bg-card border rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+            {/* Top Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by name, city, caste, education, or profession..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 rounded-xl bg-background border-muted-foreground/20 text-sm focus-visible:ring-primary"
+              />
               {searchTerm && (
-                <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-1 text-xs">
-                  Keyword: "{searchTerm}"
-                  <button onClick={() => setSearchTerm("")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
+                <button 
+                  onClick={() => setSearchTerm("")} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setLocationFilter("all");
-                  setAgeFilter("all");
-                  setMaslakFilter("all");
-                  setSearchTerm("");
-                }}
-                className="h-7 text-xs text-primary hover:text-primary/80"
-              >
-                Reset All
-              </Button>
             </div>
-          )}
+
+            {/* Filter Dropdowns Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Location Select */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-primary" />
+                  <span>City / State</span>
+                </label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background text-xs sm:text-sm">
+                    <SelectValue placeholder="All Locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🌍 All Locations</SelectItem>
+                    {availableLocations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Maslak / Sect Select */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                  <span>Maslak / Sect</span>
+                </label>
+                <Select value={maslakFilter} onValueChange={setMaslakFilter}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background text-xs sm:text-sm">
+                    <SelectValue placeholder="All Maslaks" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🕌 All Maslaks</SelectItem>
+                    {availableMaslaks.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Age Range Select */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-primary" />
+                  <span>Age Group</span>
+                </label>
+                <Select value={ageFilter} onValueChange={setAgeFilter}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background text-xs sm:text-sm">
+                    <SelectValue placeholder="All Ages" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🎂 All Age Groups</SelectItem>
+                    <SelectItem value="18-24">18 – 24 yrs</SelectItem>
+                    <SelectItem value="25-30">25 – 30 yrs</SelectItem>
+                    <SelectItem value="31-35">31 – 35 yrs</SelectItem>
+                    <SelectItem value="36-45">36 – 45 yrs</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Active Filter Chips & Reset */}
+            {isAnyFilterActive && (
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-muted-foreground font-semibold">Active:</span>
+                  {locationFilter !== "all" && (
+                    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5 text-xs rounded-lg">
+                      Location: {locationFilter}
+                      <button onClick={() => setLocationFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {maslakFilter !== "all" && (
+                    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5 text-xs rounded-lg">
+                      Maslak: {maslakFilter}
+                      <button onClick={() => setMaslakFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {ageFilter !== "all" && (
+                    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5 text-xs rounded-lg">
+                      Age: {ageFilter} yrs
+                      <button onClick={() => setAgeFilter("all")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {searchTerm.trim() && (
+                    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5 text-xs rounded-lg">
+                      "{searchTerm}"
+                      <button onClick={() => setSearchTerm("")} className="hover:bg-muted-foreground/20 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetFilters}
+                  className="h-8 text-xs text-primary hover:text-primary/80 gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset Filters</span>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Results Summary Bar */}
+          <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground px-1">
+            <p>
+              Showing <span className="font-bold text-foreground">{filteredProfiles.length}</span> verified {activeGender === "Female" ? "Bride" : "Groom"} {filteredProfiles.length === 1 ? "profile" : "profiles"}
+            </p>
+          </div>
         </div>
 
-        {/* Profiles Grid */}
+        {/* Profiles Grid or Empty State */}
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <ProfileSkeleton key={i} />
             ))}
+          </div>
+        ) : filteredProfiles.length === 0 ? (
+          <div className="max-w-md mx-auto my-12 p-8 bg-card border rounded-2xl text-center shadow-sm space-y-4 animate-fade-in">
+            <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <UserX className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">No Profiles Found</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                We couldn't find any {activeGender.toLowerCase()} profile matching your search or filter criteria.
+              </p>
+            </div>
+            {isAnyFilterActive && (
+              <Button onClick={handleResetFilters} variant="outline" className="text-xs h-9 rounded-xl gap-1.5">
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Clear All Filters</span>
+              </Button>
+            )}
           </div>
         ) : (
           <DndContext
