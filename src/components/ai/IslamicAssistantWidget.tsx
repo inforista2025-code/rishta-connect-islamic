@@ -43,13 +43,8 @@ export function IslamicAssistantWidget() {
     {
       id: 'welcome-matrimony-1',
       sender: 'assistant',
-      text: `**Assalamu Alaikum! Welcome to Rishta Matrimony AI Matchmaker** 👰🤵\n\nI am your dedicated Matrimonial AI Assistant, trained on authentic **Quran & Sahih Hadith (Bukhari & Muslim)** to help you find a righteous Muslim life partner with complete privacy.\n\n### How I can assist you today:\n• 🔍 **Find Compatible Matches:** Search verified brides & grooms by city & maslak.\n• ⭐ **Unlock Direct Contacts:** Learn about our ₹491 (2 Months) Premium Membership.\n• 📖 **Islamic Guidance:** Istikhara Dua, Mehr rules, Walidain ki raza, and Sunnah of Nikah.\n• 💬 **Ask Any Question:** Feel free to chat or ask any matrimonial & deeni doubts! 🌸`,
+      text: `**Assalamu Alaikum! Welcome to Rishta Matrimony AI Matchmaker** 👰🤵✨\n\nI am your dedicated Matrimonial AI Assistant, trained on authentic **Quran & Sahih Hadith (Bukhari & Muslim)** to help you find a righteous Muslim life partner with complete privacy.\n\n### How I can assist you today:\n• 🔍 **Search Proposals:** Find verified brides & grooms by city & maslak.\n• 📖 **Islamic Guidance:** Istikhara Dua, Mehr rules, Walidain ki raza, and Sunnah of Nikah.\n• 💬 **Conversational AI:** Feel free to chat or ask any questions, deeni masail, or advice! 🌸`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      actionLinks: [
-        { label: '🔍 Browse Verified Profiles', url: '/profiles', variant: 'default' },
-        { label: '⭐ Premium Membership (₹491)', url: '/pricing', variant: 'outline' },
-        { label: '📝 Free Registration', url: '/register', variant: 'outline' }
-      ]
     }
   ]);
 
@@ -178,10 +173,6 @@ export function IslamicAssistantWidget() {
         sender: 'assistant',
         text: `**Assalamu Alaikum! Rishta Matrimony Matchmaker AI ready.** 👰🤵✨\n\nHow can I help you find your righteous life partner or answer your matrimonial & deeni questions today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        actionLinks: [
-          { label: '🔍 Browse Profiles', url: '/profiles', variant: 'default' },
-          { label: '⭐ Premium Plan (₹491)', url: '/pricing', variant: 'outline' }
-        ]
       }
     ]);
   };
