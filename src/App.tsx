@@ -22,6 +22,7 @@ import MemberLogin from "./pages/MemberLogin";
 import MemberDashboard from "./pages/MemberDashboard";
 import PremiumDashboard from "./pages/PremiumDashboard";
 import { MemberProtectedRoute } from "./components/MemberProtectedRoute";
+import { IslamicAssistantWidget } from "./components/ai/IslamicAssistantWidget";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          {/* Global AI Islamic Marriage Assistant Floating Widget */}
+          <IslamicAssistantWidget />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
