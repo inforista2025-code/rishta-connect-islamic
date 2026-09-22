@@ -25,25 +25,9 @@ export default function Register() {
             Islamic Matrimonial Registration
           </h1>
           
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Find a righteous life partner according to the Quran & Sunnah. Fill out the biodata form below to join our verified matrimonial network.
           </p>
-
-          {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50 shadow-sm">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>100% Free & Verified Profiles</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300/50 shadow-sm">
-              <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-              <span>Complete Photo & Contact Privacy</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/50 shadow-sm">
-              <Heart className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Halal Matchmaking</span>
-            </span>
-          </div>
         </div>
       </div>
 
