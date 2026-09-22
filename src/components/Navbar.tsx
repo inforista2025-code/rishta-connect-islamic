@@ -167,15 +167,14 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden h-11 w-11 text-primary hover:bg-primary/10 rounded-lg transition-all" 
+          <button 
+            type="button"
+            className="md:hidden w-11 h-11 rounded-xl text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center transition-all active:scale-95 shadow-xs" 
             onClick={() => setIsOpen(!isOpen)} 
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="h-8 w-8 stroke-[2.5]" /> : <Menu className="h-8 w-8 stroke-[2.5]" />}
-          </Button>
+            {isOpen ? <X className="w-7 h-7 stroke-[2.5]" /> : <Menu className="w-7 h-7 stroke-[2.5]" />}
+          </button>
         </div>
 
         {/* Mobile Menu */}
