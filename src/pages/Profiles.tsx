@@ -994,10 +994,6 @@ const Profiles = () => {
         // Set the correct gender tab
         setActiveGender(targetProfile.gender as "Male" | "Female");
         
-        // Auto-open full biodata modal
-        setSelectedBiodataProfile(targetProfile);
-        setIsBiodataOpen(true);
-        
         // Smoothly scroll to the target profile card and highlight it
         setTimeout(() => {
           const profileElement = document.getElementById(`profile-${profileId}`);
