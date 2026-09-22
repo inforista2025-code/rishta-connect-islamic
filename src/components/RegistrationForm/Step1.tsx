@@ -76,7 +76,6 @@ export function Step1({ form }: Step1Props) {
 
   const selectedDate = form.watch("dateOfBirth");
   const calculatedAge = selectedDate ? differenceInYears(new Date(), selectedDate) : null;
-  const currentGender = form.watch("gender");
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -93,7 +92,49 @@ export function Step1({ form }: Step1Props) {
         </div>
       </div>
 
-      {/* Gender Field */}
+      {/* 1. Email Address */}
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-primary" />
+              <span>Email Address *</span>
+            </FormLabel>
+            <FormControl>
+              <Input placeholder="your.email@example.com" type="email" {...field} className="h-11" />
+            </FormControl>
+            <FormDescription className="text-[11px]">
+              Email recorded for profile verification.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* 2. Full Name */}
+      <FormField
+        control={form.control}
+        name="fullName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-primary" />
+              <span>Full Name *</span>
+            </FormLabel>
+            <FormControl>
+              <Input placeholder="Enter your complete name" {...field} className="h-11" />
+            </FormControl>
+            <FormDescription className="text-[11px]">
+              Enter your complete name as per ID or official documents.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* 3. Gender (Right after Name) */}
       <FormField
         control={form.control}
         name="gender"
@@ -124,189 +165,113 @@ export function Step1({ form }: Step1Props) {
         )}
       />
 
-      {/* Full Name & Email */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="fullName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-primary" />
-                <span>Full Name *</span>
-              </FormLabel>
-              <FormControl>
-                <Input placeholder="Candidate's official full name" {...field} className="h-11" />
-              </FormControl>
-              <FormDescription className="text-[11px]">
-                Enter complete name as per Aadhar / ID proof.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-primary" />
-                <span>Email Address *</span>
-              </FormLabel>
-              <FormControl>
-                <Input placeholder="example@gmail.com" type="email" {...field} className="h-11" />
-              </FormControl>
-              <FormDescription className="text-[11px]">
-                Official updates and confirmation will be sent here.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {/* Date of Birth with Live Age */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="dateOfBirth"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-                  <span>Date of Birth *</span>
+      {/* 4. Date of Birth */}
+      <FormField
+        control={form.control}
+        name="dateOfBirth"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                <span>Date of Birth *</span>
+              </span>
+              {calculatedAge !== null && (
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  Age: {calculatedAge} Years
                 </span>
-                {calculatedAge !== null && (
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                    Age: {calculatedAge} Years
-                  </span>
-                )}
-              </FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal h-11",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "dd MMMM yyyy")
-                      ) : (
-                        <span>Select Date of Birth</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[120]" align="start">
-                  <div className="p-3 border-b border-border bg-muted/30">
-                    <div className="flex gap-2">
-                      <Select
-                        value={calendarMonth.getMonth().toString()}
-                        onValueChange={handleMonthChange}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue placeholder="Month" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[130]">
-                          {months.map((month, index) => (
-                            <SelectItem key={month} value={index.toString()}>
-                              {month}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={calendarMonth.getFullYear().toString()}
-                        onValueChange={handleYearChange}
-                      >
-                        <SelectTrigger className="w-[105px]">
-                          <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[220px] z-[130]">
-                          {years.map((year) => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={(date) => {
-                      field.onChange(date);
-                      if (date) setCalendarMonth(date);
-                    }}
-                    month={calendarMonth}
-                    onMonthChange={setCalendarMonth}
-                    disabled={(date) =>
-                      date > new Date(currentYear - 18, 11, 31) || date < new Date("1945-01-01")
-                    }
-                    initialFocus
-                    className="pointer-events-auto p-3"
-                  />
-                  {selectedDate && (
-                    <div className="p-2 border-t border-border bg-muted/20">
-                      <PopoverClose asChild>
-                        <Button className="w-full" size="sm">
-                          <Check className="w-4 h-4 mr-1.5" />
-                          Confirm Date
-                        </Button>
-                      </PopoverClose>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
-              <FormDescription className="text-[11px]">
-                Must be at least 18 years old.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Marital Status */}
-        <FormField
-          control={form.control}
-          name="maritalStatus"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 text-primary" />
-                <span>Marital Status *</span>
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              )}
+            </FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
                 <FormControl>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select marital status" />
-                  </SelectTrigger>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full pl-3 text-left font-normal h-11",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
                 </FormControl>
-                <SelectContent className="z-[120]">
-                  <SelectItem value="Single">Single (Never Married)</SelectItem>
-                  <SelectItem value="Divorced">Divorced</SelectItem>
-                  <SelectItem value="Widowed">Widowed</SelectItem>
-                  <SelectItem value="Khula">Khula</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription className="text-[11px]">
-                Current status.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[120]" align="start">
+                <div className="p-3 border-b border-border bg-muted/30">
+                  <div className="flex gap-2">
+                    <Select
+                      value={calendarMonth.getMonth().toString()}
+                      onValueChange={handleMonthChange}
+                    >
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[130]">
+                        {months.map((month, index) => (
+                          <SelectItem key={month} value={index.toString()}>
+                            {month}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={calendarMonth.getFullYear().toString()}
+                      onValueChange={handleYearChange}
+                    >
+                      <SelectTrigger className="w-[105px]">
+                        <SelectValue placeholder="Year" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[220px] z-[130]">
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={(date) => {
+                    field.onChange(date);
+                    if (date) setCalendarMonth(date);
+                  }}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
+                  disabled={(date) =>
+                    date > new Date(currentYear - 18, 11, 31) || date < new Date("1945-01-01")
+                  }
+                  initialFocus
+                  className="pointer-events-auto p-3"
+                />
+                {selectedDate && (
+                  <div className="p-2 border-t border-border bg-muted/20">
+                    <PopoverClose asChild>
+                      <Button className="w-full" size="sm">
+                        <Check className="w-4 h-4 mr-1.5" />
+                        Confirm Date
+                      </Button>
+                    </PopoverClose>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+            <FormDescription className="text-[11px]">
+              Select your accurate DOB.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      {/* Height & Complexion */}
+      {/* 5. Height & 6. Caste */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
@@ -331,11 +296,37 @@ export function Step1({ form }: Step1Props) {
                   ))}
                 </SelectContent>
               </Select>
+              <FormDescription className="text-[11px]">
+                Enter height in ft/in or cm.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="caste"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-primary" />
+                <span>Caste *</span>
+              </FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your caste (e.g. Ansari, Khan, Syed, Any)" {...field} className="h-11" />
+              </FormControl>
+              <FormDescription className="text-[11px]">
+                Provide your correct caste information.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* 7. Complexion & 8. Marital Status */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="complexion"
@@ -359,65 +350,76 @@ export function Step1({ form }: Step1Props) {
                   ))}
                 </SelectContent>
               </Select>
+              <FormDescription className="text-[11px]">
+                Enter your complexion (e.g., Fair, Wheatish, Medium).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-      </div>
 
-      {/* Caste & Maslak */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="maslak"
+          name="maritalStatus"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-primary" />
-                <span>Maslak / Sect *</span>
+                <Heart className="w-3.5 h-3.5 text-primary" />
+                <span>Marital Status *</span>
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select Maslak / Sect" />
+                    <SelectValue placeholder="Select marital status" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="z-[120]">
-                  {maslaks.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Single">Single</SelectItem>
+                  <SelectItem value="Divorced">Divorced</SelectItem>
+                  <SelectItem value="Widowed">Widowed</SelectItem>
+                  <SelectItem value="Khula">Khula</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription className="text-[11px]">
-                Islamic tradition / school of thought.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="caste"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-primary" />
-                <span>Caste / Community (Optional)</span>
-              </FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Ansari, Khan, Syed, Sheikh, Kokani" {...field} className="h-11" />
-              </FormControl>
-              <FormDescription className="text-[11px]">
-                Leave blank or write "Any" if not applicable.
+                Select your current marital status.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
+
+      {/* 9. Maslak */}
+      <FormField
+        control={form.control}
+        name="maslak"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+              <span>Maslak *</span>
+            </FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select Maslak (e.g., Sunni, Deobandi, Barelvi, Salafi)" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="z-[120]">
+                {maslaks.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormDescription className="text-[11px]">
+              Enter your Islamic maslak (e.g., Sunni, Deobandi, Barelvi).
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
