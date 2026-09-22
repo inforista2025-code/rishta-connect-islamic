@@ -48,7 +48,7 @@ export function IslamicAssistantWidget() {
     {
       id: 'welcome-matrimony-1',
       sender: 'assistant',
-      text: `**Assalamu Alaikum! Welcome to Rishta Matrimony AI Matchmaker** 👰🤵✨\n\nI am your dedicated Matrimonial AI Assistant, trained on authentic **Quran & Sahih Hadith (Bukhari & Muslim)** to help you find a righteous Muslim life partner with complete privacy.\n\n### How I can assist you today:\n• 🔍 **Search Proposals:** Find verified brides & grooms by city & maslak.\n• 📖 **Islamic Guidance:** Istikhara Dua, Mehr rules, Walidain ki raza, and Sunnah of Nikah.\n• 💬 **Conversational AI:** Feel free to chat, ask any questions, deeni masail, or advice! 🌸\n\n💬 *Aap kis shahr ke rishte dhoondh rahe hain ya shadi ke talluq se kya poochna chahte hain?*`,
+      text: `**Assalamu Alaikum!** 🌸✨\nWelcome to **Rishta Matrimony AI** 👰🤵\n\nMain aapka Halal Matchmaking Assistant hoon. Main aapke liye verified rishte dhoondhne aur shadi ke deeni masail me madad karne ke liye hazir hoon.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta talash kar rahe hain ya apna biodata register karna chahte hain? 😊*`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
@@ -172,7 +172,7 @@ export function IslamicAssistantWidget() {
       {
         id: 'welcome-reset',
         sender: 'assistant',
-        text: `**Assalamu Alaikum! Rishta Matrimony Matchmaker AI ready.** 👰🤵✨\n\nHow can I help you find your righteous life partner or answer your matrimonial & deeni questions today?\n\n💬 *Aap kis tarah ke rishte ya information talash kar rahe hain?*`,
+        text: `**Assalamu Alaikum!** 🌸✨\nRishta Matrimony Matchmaker AI ready.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya biodata banana chahte hain? 😊*`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
     ]);

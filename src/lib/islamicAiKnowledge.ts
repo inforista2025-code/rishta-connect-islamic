@@ -219,7 +219,8 @@ export async function searchProfilesForAssistant(queryText: string) {
       'ke', 'female', 'male', 'bride', 'groom', 'dulhan', 'dulha', 'profile', 
       'profiles', 'rishta', 'rishte', 'ladki', 'ladka', 'match', 'matches', 
       'please', 'bhi', 'kuch', 'hoga', 'wali', 'wala', 'aur', 'the', 'a', 'an', 'is', 'are',
-      'search', 'all', 'available', 'matrimony', 'shaadi', 'nikah', 'dhoondo', 'mil', 'sakta', 'bhejo'
+      'search', 'all', 'available', 'matrimony', 'shaadi', 'nikah', 'dhoondo', 'mil', 'sakta', 'bhejo',
+      'mera', 'meri', 'mere', 'apna', 'apni', 'apne', 'karna', 'karni', 'karne', 'chahiye', 'karo', 'chaho'
     ]);
 
     const words = q
@@ -317,10 +318,40 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     .replace(/shadi/g, 'shaadi')
     .replace(/walden/g, 'walidain')
     .replace(/duha/g, 'dulha')
+    .replace(/ragister/g, 'register')
+    .replace(/registar/g, 'register')
     .replace(/mahr/g, 'mehr');
 
   // ==========================================
-  // 1. CASUAL CHAT & HUMAN-LIKE INTERACTIONS
+  // 1. FREE REGISTRATION & BIODATA CREATION
+  // (High Priority to prevent false match routing)
+  // ==========================================
+  if (
+    q.includes('register') || 
+    q.includes('registration') || 
+    q.includes('biodata') || 
+    q.includes('create profile') || 
+    q.includes('profile banana') || 
+    q.includes('profile banaye') || 
+    q.includes('profile create') || 
+    q.includes('profile register') || 
+    q.includes('mera profile') ||
+    q.includes('meri profile') ||
+    q.includes('add profile') || 
+    q.includes('nayi profile') || 
+    q.includes('form') || 
+    q.includes('account banaye') || 
+    q.includes('id banaye') ||
+    q.includes('join') ||
+    q.includes('kaise banaye')
+  ) {
+    return {
+      text: `### 📝 Free Biodata Registration on Rishta Matrimony:\nAap apna ya apne kisi family member (bhai, behan, beta, beti) ka matrimonial biodata **100% Free** register kar sakte hain ✨\n\n**Aasan 4 Steps:**\n1. **Personal Details:** Naam, Umar, Shahr (Location), Height\n2. **Education & Career:** Degree, Profession, Family background\n3. **Islamic Information:** Maslak, Namaz, Deeni Taleem\n4. **Partner Preferences:** Age, City preference & Photo upload\n\nAap website ke top menu me **"Register"** button par click karke 2 minute me form bhar sakte hain 🌸\n\n💬 *Kya aap dulhan (bride) ya dulha (groom) ka biodata register karna chahte hain?*`,
+    };
+  }
+
+  // ==========================================
+  // 2. CASUAL CHAT & HUMAN-LIKE INTERACTIONS
   // ==========================================
 
   // How are you / Hal chal / "Aap kaise hain" / "Aap kaese hain"
@@ -333,10 +364,10 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('kya haal') || 
     q.includes('how are you') || 
     q.includes('how r u') || 
-    q.includes('kya chal raha') ||
-    q.includes('sab theek') ||
-    q.includes('khairiyat') ||
-    q === 'kaise ho' ||
+    q.includes('kya chal raha') || 
+    q.includes('sab theek') || 
+    q.includes('khairiyat') || 
+    q === 'kaise ho' || 
     q === 'kaise hain'
   ) {
     return {
@@ -350,9 +381,9 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.startsWith('slm') || 
     q.includes('assalamu alaikum') || 
     q.includes('assalam alaikum') || 
-    q.includes('asalam') ||
-    q === 'hi' ||
-    q === 'hello' ||
+    q.includes('asalam') || 
+    q === 'hi' || 
+    q === 'hello' || 
     q === 'hey'
   ) {
     return {
@@ -365,8 +396,8 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('aap kaun ho') || 
     q.includes('who are you') || 
     q.includes('tum kaun ho') || 
-    q.includes('tell me about yourself') ||
-    q.includes('kya kar sakte ho') ||
+    q.includes('tell me about yourself') || 
+    q.includes('kya kar sakte ho') || 
     q.includes('what can you do')
   ) {
     return {
@@ -393,9 +424,9 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('nice') || 
     q.includes('bohot acha') || 
     q.includes('great') || 
-    q.includes('bahut badhiya') ||
-    q.includes('shandar') ||
-    q.includes('love you') ||
+    q.includes('bahut badhiya') || 
+    q.includes('shandar') || 
+    q.includes('love you') || 
     q.includes('mashallah')
   ) {
     return {
@@ -408,7 +439,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('bore') || 
     q.includes('kuch batao') || 
     q.includes('baat karo') || 
-    q.includes('tell me something') ||
+    q.includes('tell me something') || 
     q.includes('kuch sunao')
   ) {
     return {
@@ -421,7 +452,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('joke') || 
     q.includes('chutkula') || 
     q.includes('hasi') || 
-    q.includes('hasao') ||
+    q.includes('hasao') || 
     q.includes('funny')
   ) {
     return {
@@ -436,7 +467,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('pareshan') || 
     q.includes('depression') || 
     q.includes('stress') || 
-    q.includes('dukhi') ||
+    q.includes('dukhi') || 
     q.includes('mushkil')
   ) {
     return {
@@ -445,7 +476,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   }
 
   // ==========================================
-  // 2. MATRIMONIAL & RELATIONSHIP QUESTIONS
+  // 3. MATRIMONIAL & RELATIONSHIP GUIDANCE
   // ==========================================
 
   // Convincing parents for marriage (Walidain ko manana)
@@ -455,7 +486,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('abba') || 
     q.includes('ammi') || 
     q.includes('manaye') || 
-    q.includes('convince') ||
+    q.includes('convince') || 
     q.includes('ghar wale nahi man rahe')
   ) {
     return {
@@ -468,8 +499,8 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('huqooq') || 
     q.includes('rights') || 
     q.includes('biwi ke haq') || 
-    q.includes('shohar ke haq') ||
-    q.includes('wife rights') ||
+    q.includes('shohar ke haq') || 
+    q.includes('wife rights') || 
     q.includes('husband rights')
   ) {
     return {
@@ -495,7 +526,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('conditions') || 
     q.includes('ijab') || 
     q.includes('qubool') || 
-    q.includes('nikah kaise hota') ||
+    q.includes('nikah kaise hota') || 
     q.includes('nikah valid')
   ) {
     return {
@@ -521,7 +552,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('rishta nahi aa raha') || 
     q.includes('dua for marriage') || 
     q.includes('dua for spouse') || 
-    q.includes('shadi ki dua') ||
+    q.includes('shadi ki dua') || 
     q.includes('wazifa')
   ) {
     return {
@@ -554,46 +585,6 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     return {
       text: `### 🕌 Islam me Zaat-Paat (Caste) ka Tasawwur:\n\nIslam me kisi zaat, biradari ya zubaan ki wajah se kisi ko doosre par koi bartari nahi hai 🤍\n\n> **Hujjat-ul-Wida me Nabi Kareem ﷺ ne farmaya:**\n> *"Kisi Arabi ko Ajami par aur kisi Ajami ko Arabi par, na kisi gore ko kaale par aur na kisi kaale ko gore par koi fazilat hai, siwaye Taqwa (Parhezgari) ke."*\n> **[Musnad Ahmad: 23489]** 📖\n\nShadi me asil cheez **Deen, Akhlaq aur Aapas ki Compatibility (Kufu)** hai. Rishta Matrimony par sabhi maslak aur background ke shareef khandan ke rishte maujood hain ✨\n\n💬 *Aap kis city ya state ke rishton ko prefer kar rahe hain?*`,
     };
-  }
-
-  // ==========================================
-  // 3. SEARCHING PROFILES & MATCHMAKING
-  // ==========================================
-  if (
-    q.includes('profile') || 
-    q.includes('rishta') || 
-    q.includes('dulhan') || 
-    q.includes('dulha') || 
-    q.includes('bride') || 
-    q.includes('groom') || 
-    q.includes('match') || 
-    q.includes('ladki') || 
-    q.includes('ladka') ||
-    q.includes('ranchi') ||
-    q.includes('patna') ||
-    q.includes('bihar') ||
-    q.includes('delhi') ||
-    q.includes('mumbai') ||
-    q.includes('lucknow') ||
-    q.includes('dhanbad') ||
-    q.includes('jharkhand') ||
-    q.includes('up')
-  ) {
-    const searchRes = await searchProfilesForAssistant(userPrompt);
-    const { matches, searchedTerm, hasKeyword, genderFilter } = searchRes;
-
-    if (matches && matches.length > 0) {
-      const targetLabel = genderFilter === 'Female' ? 'Brides (Dulhan)' : genderFilter === 'Male' ? 'Grooms (Dulha)' : 'Proposals';
-      return {
-        text: `Alhamdulillah! Hamare database me aapke liye matching verified **${targetLabel}** daryaft hue hain${searchedTerm ? ` ("${searchedTerm}")` : ''} 👰🤵\n\nNeeche diye gaye profile card par click karke aap direct profile page par jaakar us card ko view kar sakte hain:\n\n💬 *Kya aap inme se kisi profile ki education, profession ya family details ke bare me aur jan-na chahte hain?*`,
-        profileMatches: matches,
-      };
-    } else if (hasKeyword) {
-      return {
-        text: `Filhal hamare platform par **"${searchedTerm}"** se koi naya verified profile live nahi hai 🌸\n\n• Aap **Free Biodata Register** kar sakte hain taaki ${searchedTerm} aur aas-paas ke naye rishte aane par aapko direct notify kiya jaye.\n• Ya aap baaki shehron ke verified rishte explore kar sakte hain.\n\n💬 *Kya aap kisi doosri nearby city (jaise Patna, Ranchi, Dhanbad, Delhi) ke rishte dekhna chahenge?*`,
-        profileMatches: [],
-      };
-    }
   }
 
   // ==========================================
@@ -659,19 +650,50 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   }
 
   // ==========================================
-  // 8. FREE REGISTRATION QUESTIONS
+  // 8. SEARCHING PROFILES & MATCHMAKING
+  // (Triggered ONLY when user explicitly searches)
   // ==========================================
-  if (
-    q.includes('register') || 
-    q.includes('create profile') || 
-    q.includes('biodata') || 
-    q.includes('join') || 
-    q.includes('account') || 
-    q.includes('kaise banaye')
-  ) {
-    return {
-      text: `### 📝 Rishta Matrimony par Free Biodata Registration:\nAap apna ya apne bache/bhai/behan ka matrimonial biodata **100% Free** create kar sakte hain ✨:\n\n1. **Zati Maloomat:** Naam, Umar, Shahr (Location), Qad (Height)\n2. **Taleem aur Rozgar:** Degree, Profession, Family background\n3. **Deeni Tafseelat:** Maslak, Namaz, Deeni Taleem\n4. **Partner Ki Ummedein:** Age preference, City preference, Photo upload\n\nHar profile verification ke baad hi live ki jaati hai taaki sabhi rishte 100% genuine hon 🛡️\n\n💬 *Kya aap chahenge ki main biodata fill karne ka direct process bataoon?*`,
-    };
+  const isExplicitSearch = 
+    q.includes('dhoondo') || 
+    q.includes('dhoond') || 
+    q.includes('search') || 
+    q.includes('find') || 
+    q.includes('dikhao') || 
+    q.includes('show') || 
+    q.includes('chahiye') || 
+    q.includes('looking for') || 
+    q.includes('available') || 
+    q.includes('match') || 
+    q.includes('dulhan') || 
+    q.includes('dulha') || 
+    q.includes('bride') || 
+    q.includes('groom') || 
+    q.includes('ranchi') || 
+    q.includes('patna') || 
+    q.includes('bihar') || 
+    q.includes('delhi') || 
+    q.includes('mumbai') || 
+    q.includes('lucknow') || 
+    q.includes('dhanbad') || 
+    q.includes('jharkhand') || 
+    q.includes('up');
+
+  if (isExplicitSearch) {
+    const searchRes = await searchProfilesForAssistant(userPrompt);
+    const { matches, searchedTerm, hasKeyword, genderFilter } = searchRes;
+
+    if (matches && matches.length > 0) {
+      const targetLabel = genderFilter === 'Female' ? 'Brides (Dulhan)' : genderFilter === 'Male' ? 'Grooms (Dulha)' : 'Proposals';
+      return {
+        text: `Alhamdulillah! Hamare database me aapke liye matching verified **${targetLabel}** daryaft hue hain${searchedTerm ? ` ("${searchedTerm}")` : ''} 👰🤵\n\nNeeche diye gaye profile card par click karke aap direct profile page par jaakar us card ko view kar sakte hain:\n\n💬 *Kya aap inme se kisi profile ki education, profession ya family details ke bare me aur jan-na chahte hain?*`,
+        profileMatches: matches,
+      };
+    } else if (hasKeyword) {
+      return {
+        text: `Filhal hamare platform par **"${searchedTerm}"** se koi naya verified profile live nahi hai 🌸\n\n• Aap **Free Biodata Register** kar sakte hain taaki ${searchedTerm} aur aas-paas ke naye rishte aane par aapko direct notify kiya jaye.\n• Ya aap baaki shehron ke verified rishte explore kar sakte hain.\n\n💬 *Kya aap kisi doosri nearby city (jaise Patna, Ranchi, Dhanbad, Delhi) ke rishte dekhna chahenge?*`,
+        profileMatches: [],
+      };
+    }
   }
 
   // ==========================================
