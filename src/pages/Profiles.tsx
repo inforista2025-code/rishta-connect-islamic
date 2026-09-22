@@ -217,7 +217,13 @@ View full profile here:`;
           backgroundColor: '#FCFBFF'
         } : undefined}
       >
-        <div onClick={() => onViewBiodata(profile)} className="cursor-pointer">
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewBiodata(profile);
+          }} 
+          className="cursor-pointer"
+        >
           <ProfileCardPhoto
             photoUrls={profile.photoUrls}
             name={profile.name}
@@ -245,7 +251,10 @@ View full profile here:`;
                   </div>
                 )}
                 <h3 
-                  onClick={() => onViewBiodata(profile)} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewBiodata(profile);
+                  }} 
                   className="font-bold text-xl text-foreground hover:text-primary transition-colors cursor-pointer truncate"
                 >
                   {profile.name}
@@ -348,7 +357,10 @@ View full profile here:`;
             <Button 
               className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm" 
               size="default" 
-              onClick={() => onViewBiodata(profile)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewBiodata(profile);
+              }}
             >
               <Eye className="w-4 h-4" />
               <span>View Full Biodata</span>

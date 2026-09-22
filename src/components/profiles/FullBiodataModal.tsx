@@ -126,6 +126,12 @@ ${profile.family}
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border border-primary/20 shadow-2xl relative [&>button]:hidden">
+        {/* Hidden Dialog Header for screen readers & Radix UI requirements */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>Islamic Matrimonial Biodata - {profile.name}</DialogTitle>
+          <DialogDescription>Full biodata, family background and preferences for {profile.name} (ID: #{profileCode})</DialogDescription>
+        </DialogHeader>
+
         {/* Prominent High-Contrast Close (Cut) Button */}
         <button
           onClick={() => onOpenChange(false)}
