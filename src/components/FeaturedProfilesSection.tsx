@@ -1,18 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BadgeCheck, MapPin, GraduationCap, Briefcase, Lock, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
+import { BadgeCheck, MapPin, GraduationCap, Briefcase, Lock, ArrowRight } from "lucide-react";
 
 interface FeaturedProfile {
   id: number;
@@ -183,9 +175,9 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function FeaturedProfilesSection() {
-  const [profiles, setProfiles] = useState<FeaturedProfile[] | null>(null);
-  const [api, setApi] = useState<CarouselApi>();
-  const [isPaused, setIsPaused] = useState(false);
+  const [allProfiles, setAllProfiles] = useState<FeaturedProfile[]>([]);
+  const [displayedProfiles, setDisplayedProfiles] = useState<FeaturedProfile[] | null>(null);
+  const [startIndex, setStartIndex] = useState(0);
   const navigate = useNavigate();
   const { member } = useMemberAuth();
 
@@ -193,12 +185,12 @@ export function FeaturedProfilesSection() {
     member?.plan_type === "premium" &&
     (!member?.premium_expiry || new Date(member.premium_expiry) > new Date());
 
-  // Load and shuffle all verified profiles
+  // 1. Fetch and shuffle all verified profiles on mount
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("profiles_data")
           .select("id, name, gender, age, location, education, profession, photo_urls, verification_status")
           .eq("is_live", true)
@@ -213,13 +205,15 @@ export function FeaturedProfilesSection() {
           listToUse = FALLBACK_PROFILES;
         }
 
-        // Shuffle so profiles are never fixed and change on every visit
-        const randomized = shuffleArray(listToUse);
-        setProfiles(randomized);
+        const shuffled = shuffleArray(listToUse);
+        setAllProfiles(shuffled);
+        setDisplayedProfiles(shuffled.slice(0, 4));
       } catch (err) {
-        console.warn("Featured profiles load fallback:", err);
+        console.warn("Error loading featured profiles:", err);
         if (active) {
-          setProfiles(shuffleArray(FALLBACK_PROFILES));
+          const shuffled = shuffleArray(FALLBACK_PROFILES);
+          setAllProfiles(shuffled);
+          setDisplayedProfiles(shuffled.slice(0, 4));
         }
       }
     })();
@@ -229,16 +223,25 @@ export function FeaturedProfilesSection() {
     };
   }, []);
 
-  // Continuous auto-loop scroll effect (advances every 3.5 seconds)
+  // 2. Rotate to the next batch of 4 profiles automatically every 8 seconds
   useEffect(() => {
-    if (!api || isPaused) return;
+    if (allProfiles.length <= 4) return;
 
     const interval = setInterval(() => {
-      api.scrollNext();
-    }, 3500);
+      setStartIndex((prev) => {
+        const nextIndex = (prev + 4) % allProfiles.length;
+        // Slice 4 items, wrapping around if needed
+        let nextFour = allProfiles.slice(nextIndex, nextIndex + 4);
+        if (nextFour.length < 4) {
+          nextFour = [...nextFour, ...allProfiles.slice(0, 4 - nextFour.length)];
+        }
+        setDisplayedProfiles(nextFour);
+        return nextIndex;
+      });
+    }, 8000);
 
     return () => clearInterval(interval);
-  }, [api, isPaused]);
+  }, [allProfiles]);
 
   const open = (id: number, gender?: string | null) => {
     const genderParam = gender === "Female" ? "Female" : "Male";
@@ -246,184 +249,117 @@ export function FeaturedProfilesSection() {
   };
 
   return (
-    <section 
-      className="py-12 md:py-16 bg-gradient-to-b from-background via-muted/20 to-background overflow-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
-    >
-      <div className="container mx-auto px-4 sm:px-6">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7 md:mb-9">
+    <section className="py-12 md:py-16 bg-background">
+      <div className="container mx-auto px-5 sm:px-6">
+        <div className="flex items-end justify-between gap-4 mb-7 md:mb-9">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Live Verified Members</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-              Meet Some of Our Members
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-1">
-              Genuine, admin-verified profiles continuously updating from our community
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Meet Some of Our Members</h2>
+            <p className="text-sm md:text-base text-muted-foreground mt-1.5">
+              Genuine, admin-verified profiles from our community
             </p>
           </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => api?.scrollPrev()}
-              className="h-8 w-8 p-0 rounded-full border-border/80 hover:bg-primary/10 hover:text-primary transition-colors"
-              aria-label="Previous Profile"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => api?.scrollNext()}
-              className="h-8 w-8 p-0 rounded-full border-border/80 hover:bg-primary/10 hover:text-primary transition-colors"
-              aria-label="Next Profile"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/profiles")}
-              className="text-xs sm:text-sm font-semibold text-primary hover:bg-primary/10 rounded-full gap-1 ml-1"
-            >
-              <span>See All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </div>
+          <button
+            onClick={() => navigate("/profiles")}
+            className="shrink-0 inline-flex items-center gap-1 text-sm md:text-base font-semibold text-primary hover:underline"
+          >
+            See All <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Loading Skeletons */}
-        {!profiles && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-4 shadow-sm animate-pulse">
-                <Skeleton className="w-full aspect-square rounded-xl mb-3" />
+        {/* 4-Profile Grid (Exactly Original Style) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {!displayedProfiles &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4">
+                <Skeleton className="w-full aspect-square rounded-lg mb-3" />
                 <Skeleton className="h-4 w-2/3 mb-2" />
-                <Skeleton className="h-3 w-1/2 mb-2" />
-                <Skeleton className="h-8 w-full rounded-full mt-3" />
+                <Skeleton className="h-3 w-1/2" />
               </div>
             ))}
-          </div>
-        )}
 
-        {/* Profiles Loop Carousel */}
-        {profiles && profiles.length > 0 && (
-          <Carousel
-            setApi={setApi}
-            opts={{
-              align: "start",
-              loop: true,
-              dragFree: false,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-3 md:-ml-4">
-              {profiles.map((p) => {
-                const photo = p.photo_urls?.[0];
-                return (
-                  <CarouselItem
-                    key={p.id}
-                    className="pl-3 md:pl-4 basis-[72%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+          {displayedProfiles?.map((p) => {
+            const photo = p.photo_urls?.[0];
+            return (
+              <article
+                key={p.id}
+                onClick={() => open(p.id, p.gender)}
+                className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden shadow-card hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in"
+              >
+                <div className="relative aspect-square bg-muted overflow-hidden">
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt={viewerIsPremium ? `Profile photo of ${p.name}` : `Blurred profile photo of ${p.name}`}
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className={
+                        viewerIsPremium
+                          ? "w-full h-full object-cover object-[center_25%]"
+                          : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(6px)]"
+                      }
+                    />
+                  ) : (
+                    <div className="w-full h-full grid place-items-center text-muted-foreground text-xs text-center p-2">
+                      <span className="text-2xl mb-1">{p.gender === "Female" ? "👰" : "🤵"}</span>
+                      <span>{p.gender === "Female" ? "Bride Profile" : "Groom Profile"}</span>
+                    </div>
+                  )}
+                  {!viewerIsPremium && photo && (
+                    <>
+                      <div className="absolute inset-0 bg-foreground/10" />
+                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        <Lock className="w-3 h-3" /> Premium Unlock
+                      </span>
+                    </>
+                  )}
+                  {p.verification_status?.toLowerCase() === "verified" && (
+                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-sage px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                      <BadgeCheck className="w-3 h-3" /> Verified
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-3 md:p-4">
+                  <h3 className="font-semibold text-foreground text-sm md:text-base leading-tight truncate">
+                    {p.name?.trim()}
+                    {p.age ? <span className="text-muted-foreground font-normal">, {p.age}</span> : null}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-[11px] md:text-xs text-muted-foreground">
+                    {p.location && (
+                      <li className="flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 mt-px shrink-0 text-primary/70" />
+                        <span className="line-clamp-1">{p.location.trim()}</span>
+                      </li>
+                    )}
+                    {p.education && (
+                      <li className="flex items-start gap-1.5">
+                        <GraduationCap className="w-3.5 h-3.5 mt-px shrink-0 text-primary/70" />
+                        <span className="line-clamp-1">{p.education.trim()}</span>
+                      </li>
+                    )}
+                    {p.profession && (
+                      <li className="flex items-start gap-1.5">
+                        <Briefcase className="w-3.5 h-3.5 mt-px shrink-0 text-primary/70" />
+                        <span className="line-clamp-1">{p.profession.trim()}</span>
+                      </li>
+                    )}
+                  </ul>
+                  <Button
+                    size="sm"
+                    className="w-full mt-3 rounded-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      open(p.id, p.gender);
+                    }}
                   >
-                    <article
-                      onClick={() => open(p.id, p.gender)}
-                      className="group cursor-pointer h-full flex flex-col justify-between rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/40 hover:-translate-y-1 transition-all duration-300"
-                    >
-                      {/* Photo Container */}
-                      <div className="relative aspect-square bg-muted/50 overflow-hidden">
-                        {photo ? (
-                          <img
-                            src={photo}
-                            alt={viewerIsPremium ? `Profile photo of ${p.name}` : `Blurred profile photo of ${p.name}`}
-                            loading="lazy"
-                            decoding="async"
-                            draggable={false}
-                            className={
-                              viewerIsPremium
-                                ? "w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-500"
-                                : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(7px)] group-hover:scale-115 transition-transform duration-500"
-                            }
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-muted to-primary/10 text-muted-foreground text-xs p-4 text-center">
-                            <span className="text-3xl mb-1">{p.gender === "Female" ? "👰" : "🤵"}</span>
-                            <span className="text-[11px] font-medium text-foreground/70">{p.gender === "Female" ? "Bride Profile" : "Groom Profile"}</span>
-                          </div>
-                        )}
-
-                        {/* Blurred Photo Privacy Badge */}
-                        {!viewerIsPremium && photo && (
-                          <>
-                            <div className="absolute inset-0 bg-foreground/10" />
-                            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 backdrop-blur-xs px-2.5 py-0.5 text-[10px] font-semibold text-primary shadow-xs">
-                              <Lock className="w-3 h-3" /> Photo Protected
-                            </span>
-                          </>
-                        )}
-
-                        {/* Verified Badge */}
-                        <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-emerald-600/95 text-white px-2 py-0.5 text-[10px] font-semibold shadow-xs">
-                          <BadgeCheck className="w-3 h-3" /> Verified
-                        </span>
-                      </div>
-
-                      {/* Info Container */}
-                      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-bold text-foreground text-sm sm:text-base leading-tight truncate group-hover:text-primary transition-colors">
-                            {p.name?.trim()}
-                            {p.age ? <span className="text-muted-foreground font-normal text-xs sm:text-sm">, {p.age} yrs</span> : null}
-                          </h3>
-
-                          <ul className="mt-2.5 space-y-1.5 text-[11px] sm:text-xs text-muted-foreground">
-                            {p.location && (
-                              <li className="flex items-start gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
-                                <span className="line-clamp-1">{p.location.trim()}</span>
-                              </li>
-                            )}
-                            {p.education && (
-                              <li className="flex items-start gap-1.5">
-                                <GraduationCap className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
-                                <span className="line-clamp-1">{p.education.trim()}</span>
-                              </li>
-                            )}
-                            {p.profession && (
-                              <li className="flex items-start gap-1.5">
-                                <Briefcase className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
-                                <span className="line-clamp-1">{p.profession.trim()}</span>
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-
-                        <Button
-                          size="sm"
-                          className="w-full mt-3.5 rounded-full text-xs font-semibold group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            open(p.id, p.gender);
-                          }}
-                        >
-                          <span>View Profile</span>
-                          <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 transition-transform" />
-                        </Button>
-                      </div>
-                    </article>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-          </Carousel>
-        )}
+                    View Profile
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
