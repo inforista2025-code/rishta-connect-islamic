@@ -50,39 +50,6 @@ export default function Register() {
       {/* Main Form Container */}
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto">
-          {/* Quick Process Roadmap */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 bg-card p-4 rounded-2xl border shadow-sm text-center">
-            <div className="flex items-center gap-3 p-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">
-                1
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-foreground">Step 1: Fill Form</p>
-                <p className="text-[11px] text-muted-foreground">Submit authentic details & photo</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-2 border-t sm:border-t-0 sm:border-l border-border/80">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center shrink-0 text-sm">
-                2
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-foreground">Step 2: Verification</p>
-                <p className="text-[11px] text-muted-foreground">Admin reviews within 24 hours</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-2 border-t sm:border-t-0 sm:border-l border-border/80">
-              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center shrink-0 text-sm">
-                3
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-foreground">Step 3: Matchmaking</p>
-                <p className="text-[11px] text-muted-foreground">Receive suitable Rishta proposals</p>
-              </div>
-            </div>
-          </div>
-
           <RegistrationForm />
 
           {/* Need Help WhatsApp Banner */}
