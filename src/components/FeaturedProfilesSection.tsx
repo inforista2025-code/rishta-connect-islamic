@@ -223,7 +223,7 @@ export function FeaturedProfilesSection() {
     };
   }, []);
 
-  // 2. Rotate to the next batch of 4 profiles automatically every 8 seconds
+  // 2. Rotate to the next batch of 4 profiles automatically every 45 seconds
   useEffect(() => {
     if (allProfiles.length <= 4) return;
 
@@ -238,7 +238,7 @@ export function FeaturedProfilesSection() {
         setDisplayedProfiles(nextFour);
         return nextIndex;
       });
-    }, 8000);
+    }, 45000);
 
     return () => clearInterval(interval);
   }, [allProfiles]);
