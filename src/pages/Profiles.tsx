@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Lock, Heart, Sparkles } from "lucide-react";
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
 import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
@@ -1419,12 +1419,41 @@ const Profiles = () => {
         </div>
       )}
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Available Profiles</h2>
-          <p className="text-muted-foreground text-lg">Browse verified profiles from our community</p>
-        </div>
+      {/* Islamic Premium Header Section */}
+      <div className="relative bg-gradient-to-b from-primary/15 via-muted/30 to-background pt-10 pb-10 px-4 text-center overflow-hidden border-b mb-8">
+        <div className="max-w-4xl mx-auto relative z-10">
+          {/* Bismillah Calligraphy */}
+          <div className="text-3xl sm:text-4xl font-serif text-primary/80 mb-2">
+            ﷽
+          </div>
 
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight mb-3">
+            Verified Islamic Profiles
+          </h1>
+          
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
+            Find your ideal Muslim life partner according to the Quran & Sunnah. Browse authentic, verified rishta proposals.
+          </p>
+
+          {/* Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50 shadow-sm">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>100% Free & Verified Profiles</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300/50 shadow-sm">
+              <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+              <span>Complete Photo & Contact Privacy</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/50 shadow-sm">
+              <Heart className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Halal Matchmaking</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <main className="container mx-auto px-4 pb-12">
         {/* Admin Toggle */}
         {user && (
           <div className="max-w-4xl mx-auto mb-6 transition-all duration-300 ease-in-out animate-fade-in">
@@ -1442,7 +1471,7 @@ const Profiles = () => {
         )}
 
         {/* Alert Note */}
-        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3">
+        <div className="max-w-4xl mx-auto mb-8 bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3 shadow-sm">
           <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-foreground">
             <strong>⚠️ Note:</strong> Detailed biodata and contact details are available only to verified registered members.
