@@ -2,16 +2,23 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Sparkles, MessageCircle, ArrowRight, UserPlus, HelpCircle, ShieldCheck, Zap } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { useNavigate } from "react-router-dom";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Pricing() {
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate initial load for skeleton display
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, []);
@@ -19,197 +26,245 @@ export default function Pricing() {
   if (isLoading) {
     return <PageSkeleton type="pricing" />;
   }
+
   const freePlanFeatures = [
     {
-      title: "Free Registration",
-      description: "Start your journey without any cost — simple and accessible for everyone."
+      title: "100% Free Registration",
+      description: "Create your verified profile with authentic deeni and personal details."
     },
     {
       title: "Personal Member Dashboard",
-      description: "Secure login with WhatsApp + Email OTP — access your profile, matches, and activity anytime."
+      description: "Secure login with OTP to manage your profile and tracked matches."
     },
     {
       title: "Browse Verified Profiles",
-      description: "Explore all verified opposite-gender profiles across the community (photos blurred, contact hidden — upgrade to unlock)."
+      description: "Explore verified opposite-gender rishta proposals across the community."
     },
     {
       title: "5 Send Interest Requests / Month",
-      description: "Express interest in profiles you like — connect with up to 5 members every month."
+      description: "Express genuine interest in suitable profiles directly from your dashboard."
     },
     {
-      title: "Shortlist & Save Profiles",
-      description: "Bookmark profiles you like and revisit them anytime from your dashboard."
+      title: "Shortlist & Bookmark Profiles",
+      description: "Save potential matches to review later with your family."
     },
     {
-      title: "Profile Sharing Across Communities",
-      description: "Your profile is posted on WhatsApp Community, WhatsApp Channel, Telegram Channel, and Facebook Page."
-    },
-    {
-      title: "Basic Match Recommendations",
-      description: "Get suggested profiles based on your basic preferences — refreshed regularly."
-    },
-    {
-      title: "Community Access & Chat Support",
-      description: "Receive matchmaking updates, Islamic reminders, and help from our support team over chat."
+      title: "Multi-Platform Profile Promotion",
+      description: "Profile shared on our official WhatsApp & Telegram community channels."
     }
   ];
 
   const premiumPlanFeatures = [
     {
-      title: "Unlimited Profile Access",
-      description: "Browse every verified profile without daily limits — full biodata, family details, and preferences unlocked."
+      title: "Clear Original Photos Unlocked",
+      description: "View high-resolution profile photos with full clarity for confident decisions."
     },
     {
-      title: "Clear Original Photos",
-      description: "View all profile photos in full clarity — no blur, no restrictions — so you can decide with confidence."
+      title: "Direct WhatsApp & Contact Access",
+      description: "Get verified contact details of interested matches instantly without waiting."
     },
     {
-      title: "Direct Contact Access",
-      description: "Get WhatsApp number and email of matched profiles instantly, without waiting for admin approval."
+      title: "Unlimited Send Interests",
+      description: "Send unlimited proposals every month without any monthly quota restrictions."
     },
     {
-      title: "Unlimited Interests",
-      description: "Send unlimited Send Interest requests every month — free members are capped at just 5."
+      title: "⭐ Premium Verified Badge",
+      description: "Exclusive badge on your profile builds instant trust among serious families."
     },
     {
-      title: "Premium Profile Badge",
-      description: "A verified Premium badge on your profile builds trust and gets you noticed first by serious families."
+      title: "Priority Top Ranking",
+      description: "Your profile is highlighted at the top of search results and recommendations."
     },
     {
-      title: "Priority Ranking in Matches",
-      description: "Your profile appears at the top of Recommended and Browse lists, so more families see you first."
-    },
-    {
-      title: "See Who Viewed You",
-      description: "Full visibility into every member who viewed your profile — turn interest into real conversations."
-    },
-    {
-      title: "Personalized Match Recommendations",
-      description: "Curated opposite-gender verified profiles matched to your city, sect, and preferences."
-    },
-    {
-      title: "Priority Profile Reposting",
-      description: "Your profile is reshared weekly across WhatsApp, Telegram, and Facebook groups for maximum reach."
-    },
-    {
-      title: "Dedicated Matchmaking Support",
-      description: "Direct WhatsApp line to our matchmaking team for faster replies, guidance, and follow-ups."
+      title: "Dedicated WhatsApp Matchmaking Line",
+      description: "Direct priority support and personalized matchmaking assistance from our team."
     }
   ];
 
   const handleWhatsAppUpgrade = () => {
     window.open(
-      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Connect%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20for%20Rs.%20491%20for%202%20months.%20Kindly%20guide%20me%20with%20the%20next%20steps%2C%20JazakAllah%20khair.",
+      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20(Rs.%20491%20for%202%20Months).%20Kindly%20share%20payment%20details.%20JazakAllahu%20Khair.",
       "_blank"
     );
   };
+
+  const faqs = [
+    {
+      question: "How do I upgrade to the Premium Plan?",
+      answer: "Click on 'Upgrade via WhatsApp' to message our support team. You can pay securely via Google Pay, PhonePe, Paytm, or UPI QR code. Your premium benefits will be activated within 15 minutes of payment confirmation."
+    },
+    {
+      question: "Is photo privacy respected in the Free and Premium plans?",
+      answer: "Yes, absolutely. We strictly adhere to Islamic privacy standards. Photos are shown only to verified, serious candidates seeking marriage."
+    },
+    {
+      question: "Can I register for free first and upgrade later?",
+      answer: "Yes! Registration is 100% free. You can browse profiles, create your biodata, and upgrade to the Premium plan whenever you wish to view contact numbers or clear photos."
+    },
+    {
+      question: "What happens after 2 months of Premium Plan?",
+      answer: "Your account will simply revert to the Free Plan. There are no automatic deductions or hidden charges. You can renew only if you wish."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Header */}
-      <div className="py-16 px-4 text-center bg-gradient-to-b from-primary/5 to-background">
-        <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4 leading-tight max-w-5xl mx-auto">
-          🌸 Find Your Halal Rishta with Barakah – Choose the Plan That Suits You Best!
-        </h1>
+      {/* Islamic Header Section */}
+      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background pt-8 pb-8 px-4 text-center overflow-hidden border-b mb-8">
+        <div className="max-w-3xl mx-auto relative z-10">
+          <div className="text-2xl font-serif text-primary/80 mb-1">
+            ﷽
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight mb-2">
+            Simple & Transparent Membership Plans
+          </h1>
+          
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Find your righteous life partner with barakah. Choose the plan that best suits your family's matchmaking needs.
+          </p>
+        </div>
       </div>
 
-      {/* Pricing Cards */}
-      <div className="container max-w-7xl mx-auto px-4 py-12 md:py-16 pt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      {/* Pricing Cards Container */}
+      <div className="container max-w-6xl mx-auto px-4 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           
           {/* Free Plan Card */}
-          <Card className="border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl md:text-3xl mb-3 text-foreground">
-                Free Registration Plan
-              </CardTitle>
-              <CardDescription className="text-base text-muted-foreground leading-relaxed">
-                Begin your rishta journey with sincerity and ease — absolutely free. Let your profile reach more families, In shaa Allah.
-              </CardDescription>
-            </CardHeader>
+          <Card className="border border-border/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-card flex flex-col justify-between">
+            <div>
+              <CardHeader className="text-center pb-4 pt-6">
+                <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-semibold px-3 py-1">
+                  Basic Matchmaking
+                </Badge>
+                <CardTitle className="text-2xl sm:text-3xl font-extrabold text-foreground">
+                  Free Registration
+                </CardTitle>
+                <div className="text-3xl font-bold text-foreground mt-2">
+                  ₹0 <span className="text-sm font-normal text-muted-foreground">/ Forever</span>
+                </div>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                  Begin your matrimonial search with complete sincerity and ease.
+                </CardDescription>
+              </CardHeader>
 
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                {freePlanFeatures.map((feature, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
-                        <Check className="w-3 h-3 text-primary" />
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-3">
+                  {freePlanFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-3.5 h-3.5" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{feature.title}</p>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-xs sm:text-sm text-foreground">{feature.title}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </CardContent>
+            </div>
 
+            <div className="p-6 pt-0">
               <Button 
+                onClick={() => navigate("/register")}
                 variant="outline"
                 size="lg" 
-                className="w-full mt-6 border-primary/30 hover:bg-primary/5 text-primary font-semibold rounded-full transition-all duration-300"
+                className="w-full h-11 border-primary/40 hover:bg-primary/5 text-primary font-bold text-xs sm:text-sm rounded-xl transition-all duration-200 gap-2 cursor-pointer"
               >
-                Continue Free Plan
+                <UserPlus className="w-4 h-4" />
+                <span>Start Free Registration</span>
               </Button>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Premium Plan Card */}
-          <Card className="border-2 border-primary shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-primary/5 to-card relative overflow-hidden">
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-primary text-primary-foreground shadow-md">
-                Most Popular
-              </Badge>
+          <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl bg-gradient-to-b from-primary/5 via-card to-card relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[11px] font-bold px-4 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-300" />
+              <span>Recommended</span>
             </div>
 
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl md:text-3xl mb-3 text-foreground">
-                Premium Rishta Plan
-              </CardTitle>
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                ₹491 / 2 Months
-              </div>
-              <CardDescription className="text-base text-muted-foreground leading-relaxed">
-                Find your life partner faster with personalized support and Barakah-filled process, In shaa Allah.
-              </CardDescription>
-            </CardHeader>
+            <div>
+              <CardHeader className="text-center pb-4 pt-6">
+                <Badge className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-primary text-primary-foreground">
+                  ⭐ Full Contact & Photos
+                </Badge>
+                <CardTitle className="text-2xl sm:text-3xl font-extrabold text-foreground">
+                  Premium Rishta Plan
+                </CardTitle>
+                <div className="text-3xl sm:text-4xl font-extrabold text-primary mt-2">
+                  ₹491 <span className="text-sm font-semibold text-muted-foreground">/ 2 Months</span>
+                </div>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                  Direct contacts, unblurred photos & dedicated matchmaking support.
+                </CardDescription>
+              </CardHeader>
 
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                {premiumPlanFeatures.map((feature, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center mt-0.5">
-                        <Check className="w-3 h-3 text-primary" />
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-3">
+                  {premiumPlanFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-3.5 h-3.5" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{feature.title}</p>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-xs sm:text-sm text-foreground">{feature.title}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </CardContent>
+            </div>
 
+            <div className="p-6 pt-0">
               <Button 
                 onClick={handleWhatsAppUpgrade}
                 size="lg" 
-                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all duration-200 gap-2 cursor-pointer"
               >
-                Upgrade via WhatsApp
+                <MessageCircle className="w-4 h-4 text-emerald-300" />
+                <span>Upgrade via WhatsApp (₹491)</span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
-            </CardContent>
+            </div>
           </Card>
 
         </div>
 
-        {/* Footer */}
-        <div className="mt-16 text-center">
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-            🌸 With sincerity, dua, and effort — may every rishta bring peace, deen, and happiness. 🤍
+        {/* Frequently Asked Questions Section */}
+        <div className="mt-16 max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center justify-center gap-2">
+              <HelpCircle className="w-5 h-5 text-primary" />
+              <span>Frequently Asked Questions</span>
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Common questions regarding our membership plans and activation
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full bg-card border rounded-2xl p-2 sm:p-4 shadow-xs">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`} className="border-b last:border-b-0 px-2">
+                <AccordionTrigger className="text-left font-semibold text-xs sm:text-sm text-foreground hover:no-underline hover:text-primary py-3.5">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-xs sm:text-sm text-muted-foreground leading-relaxed pb-3.5">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+
+        {/* Islamic Hadith Footer Quote */}
+        <div className="mt-12 text-center">
+          <p className="text-xs sm:text-sm italic text-muted-foreground max-w-xl mx-auto">
+            "When a person marries, they have fulfilled half of their religion, so let them fear Allah regarding the remaining half." – Prophet Muhammad ﷺ
           </p>
         </div>
       </div>
@@ -218,3 +273,4 @@ export default function Pricing() {
     </div>
   );
 }
+
