@@ -10,6 +10,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -91,51 +93,32 @@ export function Step1({ form }: Step1Props) {
         </div>
       </div>
 
-      {/* Gender Selection */}
+      {/* Gender Field */}
       <FormField
         control={form.control}
         name="gender"
         render={({ field }) => (
           <FormItem className="space-y-2">
-            <FormLabel className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <User className="w-4 h-4 text-primary" />
-              <span>Gender *</span>
-            </FormLabel>
+            <FormLabel>Gender *</FormLabel>
             <FormControl>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={() => field.onChange("Female")}
-                  className={`p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer ${
-                    field.value === "Female"
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/20 shadow-sm"
-                      : "border-border hover:border-primary/40 bg-card"
-                  }`}
-                >
-                  <span className="text-2xl sm:text-3xl">👰</span>
-                  <div className="text-left">
-                    <p className="font-bold text-sm sm:text-base text-foreground">Female (Bride)</p>
-                    <p className="text-[11px] text-muted-foreground">Dulhan Profile</p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => field.onChange("Male")}
-                  className={`p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer ${
-                    field.value === "Male"
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/20 shadow-sm"
-                      : "border-border hover:border-primary/40 bg-card"
-                  }`}
-                >
-                  <span className="text-2xl sm:text-3xl">🤵</span>
-                  <div className="text-left">
-                    <p className="font-bold text-sm sm:text-base text-foreground">Male (Groom)</p>
-                    <p className="text-[11px] text-muted-foreground">Dulha Profile</p>
-                  </div>
-                </button>
-              </div>
+              <RadioGroup
+                onValueChange={field.onChange}
+                value={field.value}
+                className="flex gap-6 pt-1"
+              >
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <RadioGroupItem value="Male" id="male" />
+                  <Label htmlFor="male" className="cursor-pointer font-medium text-sm">Male</Label>
+                </div>
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <RadioGroupItem value="Female" id="female" />
+                  <Label htmlFor="female" className="cursor-pointer font-medium text-sm">Female</Label>
+                </div>
+              </RadioGroup>
             </FormControl>
+            <FormDescription className="text-[11px]">
+              Select correct gender for matchmaking.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
