@@ -87,7 +87,7 @@ export function Step1({ form }: Step1Props) {
             <span>Personal Information</span>
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Basic details for matchmaking & verification (ID ke mutabiq bharein)
+            Basic details for matchmaking & verification (as per official ID)
           </p>
         </div>
       </div>
