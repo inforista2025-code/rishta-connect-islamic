@@ -17,7 +17,7 @@ import {
   EyeOff, 
   Loader2, 
   ExternalLink,
-  Copy
+  Save
 } from "lucide-react";
 
 export function SettingsManager() {
@@ -30,13 +30,14 @@ export function SettingsManager() {
   const [showPassword, setShowPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  // Official Contact and Pricing details
-  const contactInfo = {
-    whatsapp: "+91 9128719875",
-    whatsappLink: "https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony.",
-    email: "info.rista2025@gmail.com",
-    pricingPlan: "₹491 (2 Months Unlimited Access)",
-  };
+  // Editable Contact Info state
+  const [whatsappNumber, setWhatsappNumber] = useState(() => {
+    return localStorage.getItem("admin_support_whatsapp") || "+91 9128719875";
+  });
+  const [supportEmail, setSupportEmail] = useState(() => {
+    return localStorage.getItem("admin_support_email") || "info.rista2025@gmail.com";
+  });
+  const [isSavingContact, setIsSavingContact] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -91,13 +92,29 @@ export function SettingsManager() {
     }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: `${label} copied to clipboard.`,
-    });
+  const handleSaveContact = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingContact(true);
+    try {
+      localStorage.setItem("admin_support_whatsapp", whatsappNumber.trim());
+      localStorage.setItem("admin_support_email", supportEmail.trim());
+      toast({
+        title: "Contact Details Saved! ✅",
+        description: "Official WhatsApp and Email support details have been updated.",
+      });
+    } catch (err) {
+      toast({
+        title: "Save Failed",
+        description: "Could not save details locally.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingContact(false);
+    }
   };
+
+  const cleanWaNumber = whatsappNumber.replace(/[^0-9]/g, "");
+  const waTestUrl = `https://wa.me/${cleanWaNumber || "919128719875"}?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony.`;
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -109,7 +126,7 @@ export function SettingsManager() {
             Platform & Admin Settings
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your Admin account security and Official Support & Pricing information.
+            Manage your Admin password and Official Support WhatsApp & Email details.
           </p>
         </div>
         <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 flex items-center gap-1.5 py-1 px-3">
@@ -184,75 +201,84 @@ export function SettingsManager() {
           </CardContent>
         </Card>
 
-        {/* Section 2: Official Support & Pricing */}
+        {/* Section 2: Official Support Details (Editable) */}
         <Card className="border shadow-xs">
           <CardHeader className="pb-3 border-b bg-muted/20">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-emerald-600" />
               <div>
-                <CardTitle className="text-base">Official Support & Pricing</CardTitle>
+                <CardTitle className="text-base">Official Support Details</CardTitle>
                 <CardDescription className="text-xs">
-                  Active contact and pricing details used across website
+                  Update Official WhatsApp and Email used for member support
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {/* WhatsApp */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-card">
-              <div className="space-y-0.5">
-                <p className="text-[11px] text-muted-foreground uppercase font-semibold">Official WhatsApp</p>
-                <p className="text-sm font-medium">{contactInfo.whatsapp}</p>
+          <CardContent className="pt-4">
+            <form onSubmit={handleSaveContact} className="space-y-4">
+              {/* WhatsApp Number Field */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    Official WhatsApp Number
+                  </Label>
+                  <a
+                    href={waTestUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-emerald-600 hover:underline flex items-center gap-0.5 font-medium"
+                  >
+                    Test WhatsApp <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <Input
+                  type="text"
+                  placeholder="+91 9128719875"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  required
+                />
               </div>
-              <div className="flex items-center gap-1.5">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-8 w-8 p-0"
-                  onClick={() => copyToClipboard(contactInfo.whatsapp, "WhatsApp number")}
-                  title="Copy Number"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="h-8 px-2.5 text-xs text-emerald-600 border-emerald-500/30"
-                  onClick={() => window.open(contactInfo.whatsappLink, "_blank")}
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  Test
-                </Button>
-              </div>
-            </div>
 
-            {/* Email */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-card">
-              <div className="space-y-0.5">
-                <p className="text-[11px] text-muted-foreground uppercase font-semibold">Official Support Email</p>
-                <p className="text-sm font-medium truncate max-w-[200px] sm:max-w-none">{contactInfo.email}</p>
+              {/* Support Email Field */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-primary" />
+                    Official Support Email
+                  </Label>
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="text-[11px] text-primary hover:underline flex items-center gap-0.5 font-medium"
+                  >
+                    Test Email <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <Input
+                  type="email"
+                  placeholder="info.rista2025@gmail.com"
+                  value={supportEmail}
+                  onChange={(e) => setSupportEmail(e.target.value)}
+                  required
+                />
               </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-8 w-8 p-0 shrink-0"
-                onClick={() => copyToClipboard(contactInfo.email, "Support email")}
-                title="Copy Email"
-              >
-                <Copy className="w-3.5 h-3.5" />
+
+              {/* Save Button */}
+              <Button type="submit" disabled={isSavingContact} className="w-full" variant="outline">
+                {isSavingContact ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving Details...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2 text-emerald-600" />
+                    Save Support Details
+                  </>
+                )}
               </Button>
-            </div>
-
-            {/* Pricing Plan */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-primary/5 border-primary/20">
-              <div className="space-y-0.5">
-                <p className="text-[11px] text-primary uppercase font-semibold">Current Premium Plan</p>
-                <p className="text-sm font-bold text-foreground">{contactInfo.pricingPlan}</p>
-              </div>
-              <Badge variant="default" className="bg-primary text-xs">
-                Active
-              </Badge>
-            </div>
+            </form>
           </CardContent>
         </Card>
 
