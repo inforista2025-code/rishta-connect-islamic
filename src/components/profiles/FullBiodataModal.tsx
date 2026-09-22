@@ -132,17 +132,6 @@ ${profile.family}
             <DialogHeader className="p-0 text-left">
               {/* Islamic Aesthetic Banner */}
               <div className="bg-gradient-to-br from-emerald-800 via-primary to-teal-900 text-white p-5 sm:p-7 rounded-xl text-center relative overflow-hidden shadow-md">
-                {/* Prominent High-Visibility Cut / Close Button */}
-                <button
-                  type="button"
-                  onClick={() => onOpenChange(false)}
-                  className="absolute right-3 top-3 sm:right-4 sm:top-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 active:scale-95 text-white border border-white/40 shadow-lg backdrop-blur-md transition-all cursor-pointer"
-                  title="Close Biodata"
-                  aria-label="Close"
-                >
-                  <X className="w-6 h-6 stroke-[2.5]" />
-                </button>
-
                 <div className="text-2xl sm:text-3xl font-serif text-amber-200 mb-1">
                   ﷽
                 </div>
@@ -150,7 +139,7 @@ ${profile.family}
                   Islamic Matrimonial Biodata
                 </DialogDescription>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 mb-2 pr-8 sm:pr-0">
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 bg-emerald-500/30 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-300/40 text-emerald-100 text-xs font-semibold">
                     <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
                     <span>🛡️ 100% Verified Profile</span>
