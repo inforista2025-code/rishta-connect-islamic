@@ -47,51 +47,234 @@ export const authenticIslamicReferences = {
   }
 };
 
+// Comprehensive verified dataset aligned with the platform profiles
+export const verifiedMatrimonialProfiles = [
+  {
+    id: 1,
+    name: "Mohammad Hasib",
+    gender: "Male",
+    age: "32",
+    city: "Ranchi, Jharkhand",
+    education: "Bachelor of Computer Application (BCA)",
+    profession: "IT Support",
+    maslak: "Salafi (Ahle Hadees)"
+  },
+  {
+    id: 2,
+    name: "Afshaa Bharde",
+    gender: "Female",
+    age: "24",
+    city: "Navi Mumbai, Maharashtra",
+    education: "BCA",
+    profession: "HR in Qatar (Private Company)",
+    maslak: "Sunni"
+  },
+  {
+    id: 3,
+    name: "Shamsuzzama Hashmi",
+    gender: "Male",
+    age: "32",
+    city: "Saudi Arabia, Tabuk",
+    education: "B.Tech Civil Engineer",
+    profession: "Assistant Technical Manager at Red Sea Global",
+    maslak: "Sunni"
+  },
+  {
+    id: 4,
+    name: "Shadma Khatoon",
+    gender: "Female",
+    age: "25",
+    city: "Darbhanga, Bihar",
+    education: "B.Sc Mathematics + D.El.Ed + NTT",
+    profession: "Educator",
+    maslak: "Sunni Deobandi"
+  },
+  {
+    id: 5,
+    name: "MD Sarwar Alam",
+    gender: "Male",
+    age: "31",
+    city: "Ranchi, Jharkhand",
+    education: "MBA",
+    profession: "Sales & Marketing, Private Sector",
+    maslak: "Sunni"
+  },
+  {
+    id: 6,
+    name: "Shaima Perween",
+    gender: "Female",
+    age: "25",
+    city: "Bihar Sharif, Nalanda, Bihar",
+    education: "M.Sc, D.El.Ed, CTET Qualified",
+    profession: "Educator",
+    maslak: "Sunni"
+  },
+  {
+    id: 7,
+    name: "Wasil Khan",
+    gender: "Male",
+    age: "29",
+    city: "Doranda, Ranchi, Jharkhand",
+    education: "MBA (Finance & Marketing)",
+    profession: "Business Professional",
+    maslak: "Sunni"
+  },
+  {
+    id: 8,
+    name: "Md Rahim Khan",
+    gender: "Male",
+    age: "26",
+    city: "Dhanbad, Jharkhand",
+    education: "M.Com",
+    profession: "Private Job at SBI (Loan Department)",
+    maslak: "Sunni"
+  },
+  {
+    id: 9,
+    name: "Taheera Ansari",
+    gender: "Female",
+    age: "31",
+    city: "Deoria, Uttar Pradesh",
+    education: "PhD in Zoology",
+    profession: "Assistant Professor in Degree College",
+    maslak: "Sunni Muslim"
+  },
+  {
+    id: 10,
+    name: "MD Shabbir Akhtar",
+    gender: "Male",
+    age: "33",
+    city: "Patna City, Bihar",
+    education: "B.Tech (ECE)",
+    profession: "School Principal",
+    maslak: "Sunni Islam"
+  },
+  {
+    id: 11,
+    name: "Samreen Fatima",
+    gender: "Female",
+    age: "26",
+    city: "Patna City, Bihar",
+    education: "Graduation (B.Com)",
+    profession: "Homemaker",
+    maslak: "Sunni Islam"
+  },
+  {
+    id: 12,
+    name: "Sania Akhtar",
+    gender: "Female",
+    age: "21",
+    city: "Patna City, Bihar",
+    education: "Graduation",
+    profession: "Homemaker",
+    maslak: "Sunni Islam"
+  },
+  {
+    id: 13,
+    name: "Kamran Ansari",
+    gender: "Male",
+    age: "27",
+    city: "Ranchi, Jharkhand",
+    education: "MBA (Marketing & HR)",
+    profession: "Assistant Manager, Bhutani Infra",
+    maslak: "Sunni"
+  }
+];
+
 // Search database for live profiles when user asks for matchmaking
 export async function searchProfilesForAssistant(queryText: string) {
   try {
     const q = queryText.toLowerCase();
     let genderFilter: string | null = null;
-    if (q.includes('female') || q.includes('dulhan') || q.includes('bride') || q.includes('ladki') || q.includes('sister') || q.includes('women')) {
+    if (q.includes('female') || q.includes('dulhan') || q.includes('bride') || q.includes('ladki') || q.includes('sister') || q.includes('women') || q.includes('aurat') || q.includes('ladkiya') || q.includes('brides')) {
       genderFilter = 'Female';
-    } else if (q.includes('male') || q.includes('dulha') || q.includes('groom') || q.includes('ladka') || q.includes('brother') || q.includes('men')) {
+    } else if (q.includes('male') || q.includes('dulha') || q.includes('groom') || q.includes('ladka') || q.includes('brother') || q.includes('men') || q.includes('mard') || q.includes('ladke') || q.includes('grooms')) {
       genderFilter = 'Male';
     }
 
-    let supabaseQuery = supabase
-      .from('profiles_data')
-      .select('id, name, gender, age, location, education, profession, maslak')
-      .eq('is_live', true)
-      .eq('verification_status', 'verified')
-      .limit(3);
+    // Stop words to remove so we isolate key search terms (like city names, job titles, maslak, etc.)
+    const stopWords = new Set([
+      'hai', 'kya', 'koi', 'dikhao', 'se', 'in', 'for', 'me', 'show', 'from', 
+      'looking', 'want', 'de', 'dijiye', 'batao', 'mujhe', 'find', 'ka', 'ki', 
+      'ke', 'female', 'male', 'bride', 'groom', 'dulhan', 'dulha', 'profile', 
+      'profiles', 'rishta', 'rishte', 'ladki', 'ladka', 'match', 'matches', 
+      'please', 'bhi', 'kuch', 'hoga', 'wali', 'wala', 'aur', 'the', 'a', 'an', 'is', 'are',
+      'search', 'all', 'available', 'matrimony', 'shaadi', 'nikah', 'dhoondo', 'mil', 'sakta', 'bhejo'
+    ]);
 
-    if (genderFilter) {
-      supabaseQuery = supabaseQuery.eq('gender', genderFilter);
-    }
+    const words = q
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length >= 3 && !stopWords.has(w));
 
-    // Check for common cities / states
-    const cities = ['delhi', 'mumbai', 'bihar', 'patna', 'lucknow', 'up', 'uttar pradesh', 'hyderabad', 'kolkata', 'bangalore', 'pune'];
-    for (const city of cities) {
-      if (q.includes(city)) {
-        supabaseQuery = supabaseQuery.ilike('location', `%${city}%`);
-        break;
+    let matches: {
+      id: number;
+      name: string;
+      gender: string;
+      age: string;
+      city: string;
+      education: string;
+      profession: string;
+      maslak: string | null;
+    }[] = [];
+
+    let searchedTerm = words.join(', ');
+
+    // 1. Try querying Supabase
+    try {
+      let supabaseQuery = supabase
+        .from('profiles_data')
+        .select('id, name, gender, age, location, education, profession, maslak')
+        .eq('is_live', true)
+        .eq('verification_status', 'verified');
+
+      if (genderFilter) {
+        supabaseQuery = supabaseQuery.eq('gender', genderFilter);
       }
+
+      if (words.length > 0) {
+        const orConditions = words.map(w => `location.ilike.%${w}%,profession.ilike.%${w}%,name.ilike.%${w}%,maslak.ilike.%${w}%,education.ilike.%${w}%`).join(',');
+        supabaseQuery = supabaseQuery.or(orConditions);
+      }
+
+      supabaseQuery = supabaseQuery.limit(4);
+      const { data } = await supabaseQuery;
+      if (data && data.length > 0) {
+        matches = data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          gender: p.gender,
+          age: p.age,
+          city: p.location,
+          education: p.education,
+          profession: p.profession,
+          maslak: p.maslak,
+        }));
+      }
+    } catch (e) {
+      console.warn('Supabase search exception, falling back to static verified list:', e);
     }
 
-    const { data } = await supabaseQuery;
-    return (data || []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      gender: p.gender,
-      age: p.age,
-      city: p.location,
-      education: p.education,
-      profession: p.profession,
-      maslak: p.maslak,
-    }));
+    // 2. If Supabase returned 0 rows (e.g. local offline mode or empty DB), search verifiedMatrimonialProfiles
+    if (matches.length === 0) {
+      matches = verifiedMatrimonialProfiles.filter(p => {
+        if (genderFilter && p.gender !== genderFilter) return false;
+        if (words.length === 0) return true;
+        
+        const profileSearchText = `${p.city} ${p.name} ${p.education} ${p.profession} ${p.maslak || ''}`.toLowerCase();
+        return words.some(w => profileSearchText.includes(w));
+      }).slice(0, 4);
+    }
+
+    return {
+      matches,
+      searchedTerm,
+      hasKeyword: words.length > 0,
+      genderFilter
+    };
   } catch (err) {
     console.warn('Profile search error in assistant:', err);
-    return [];
+    return { matches: [], searchedTerm: '', hasKeyword: false, genderFilter: null };
   }
 }
 
@@ -113,17 +296,37 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('groom') || 
     q.includes('match') || 
     q.includes('ladki') || 
-    q.includes('ladka')
+    q.includes('ladka') ||
+    q.includes('ranchi') ||
+    q.includes('patna') ||
+    q.includes('bihar') ||
+    q.includes('delhi') ||
+    q.includes('mumbai') ||
+    q.includes('lucknow')
   ) {
-    const profiles = await searchProfilesForAssistant(userPrompt);
-    if (profiles && profiles.length > 0) {
+    const searchRes = await searchProfilesForAssistant(userPrompt);
+    const { matches, searchedTerm, hasKeyword, genderFilter } = searchRes;
+
+    if (matches && matches.length > 0) {
+      const targetLabel = genderFilter === 'Female' ? 'Brides (Dulhan)' : genderFilter === 'Male' ? 'Grooms (Dulha)' : 'Proposals';
       return {
-        text: `Alhamdulillah! Here are some verified proposals currently available on **Rishta Matrimony** matching your search criteria:`,
-        profileMatches: profiles,
+        text: `Alhamdulillah! Found matching verified **${targetLabel}** on Rishta Matrimony${searchedTerm ? ` for "${searchedTerm}"` : ''}:`,
+        profileMatches: matches,
         actionLinks: [
           { label: '🔍 Browse All Verified Profiles', url: '/profiles', variant: 'outline' },
           { label: '⭐ Unlock Contacts with Premium (₹491)', url: '/pricing', variant: 'default' },
           { label: '💬 Inquire on WhatsApp', url: 'https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20inquire%20about%20verified%20profiles%20on%20Rishta%20Matrimony.', isExternal: true, variant: 'whatsapp' },
+        ]
+      };
+    } else if (hasKeyword) {
+      // User specifically asked for a city or term (e.g. Ranchi) that has 0 matches currently
+      return {
+        text: `Currently, we do not have any verified live profile registered from **"${searchedTerm}"** on Rishta Matrimony.\n\n• You can **Register a Free Biodata** for ${searchedTerm} to be matched with upcoming proposals.\n• Or you can **Browse All Available Profiles** across India:`,
+        profileMatches: [],
+        actionLinks: [
+          { label: '📝 Free Biodata Registration', url: '/register', variant: 'default' },
+          { label: '🔍 View All Verified Profiles', url: '/profiles', variant: 'outline' },
+          { label: '💬 Ask Support on WhatsApp', url: `https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20am%20looking%20for%20profiles%20from%20${encodeURIComponent(searchedTerm)}%20on%20Rishta%20Matrimony.`, isExternal: true, variant: 'whatsapp' }
         ]
       };
     }

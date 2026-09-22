@@ -279,12 +279,16 @@ export function IslamicAssistantWidget() {
                       {msg.profileMatches.map((profile) => (
                         <div
                           key={profile.id}
-                          className="p-3 rounded-xl bg-muted/40 border border-border/60 hover:border-primary/40 transition-colors flex flex-col gap-2"
+                          onClick={() => {
+                            setIsOpen(false);
+                            navigate(`/profiles?id=${profile.id}&gender=${profile.gender}`);
+                          }}
+                          className="p-3 rounded-xl bg-muted/40 border border-border/60 hover:border-primary/50 hover:bg-muted/70 transition-all cursor-pointer flex flex-col gap-2 group"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-foreground text-xs">{profile.name}</span>
+                                <span className="font-bold text-foreground text-xs group-hover:text-primary transition-colors">{profile.name}</span>
                                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                                   {profile.gender === 'Female' ? '👰 Bride' : '🤵 Groom'}
                                 </Badge>
@@ -300,14 +304,10 @@ export function IslamicAssistantWidget() {
 
                           <Button
                             size="sm"
-                            className="h-7 w-full text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg flex items-center justify-center gap-1 font-semibold"
-                            onClick={() => {
-                              setIsOpen(false);
-                              navigate(profile.gender === 'Female' ? '/profiles?gender=Female' : '/profiles?gender=Male');
-                            }}
+                            className="h-7 w-full text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg flex items-center justify-center gap-1 font-semibold pointer-events-none"
                           >
                             <span>Open Profile on Website</span>
-                            <ArrowRight className="w-3 h-3" />
+                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                           </Button>
                         </div>
                       ))}

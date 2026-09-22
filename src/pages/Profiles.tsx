@@ -7,7 +7,7 @@ import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
@@ -531,6 +531,7 @@ const Profiles = () => {
     member?.plan_type === "premium" &&
     (!member?.premium_expiry || new Date(member.premium_expiry) > new Date());
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -969,7 +970,7 @@ const Profiles = () => {
 
   // Parse URL search parameters on mount or URL change
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const paramGender = urlParams.get('gender');
     const paramAge = urlParams.get('age');
     const paramLocation = urlParams.get('location');
@@ -993,6 +994,10 @@ const Profiles = () => {
         // Set the correct gender tab
         setActiveGender(targetProfile.gender as "Male" | "Female");
         
+        // Auto-open full biodata modal
+        setSelectedBiodataProfile(targetProfile);
+        setIsBiodataOpen(true);
+        
         // Smoothly scroll to the target profile card and highlight it
         setTimeout(() => {
           const profileElement = document.getElementById(`profile-${profileId}`);
@@ -1007,7 +1012,7 @@ const Profiles = () => {
         }, 400);
       }
     }
-  }, [profiles]);
+  }, [profiles, location.search]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
