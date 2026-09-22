@@ -38,7 +38,7 @@ export function RegistrationForm() {
     if (currentStep === 1) {
       isValid = await form.trigger([
         'email', 'fullName', 'gender', 'dateOfBirth', 
-        'height', 'caste', 'complexion', 'maritalStatus', 'maslak'
+        'height', 'complexion', 'maritalStatus', 'maslak'
       ]);
     } else if (currentStep === 2) {
       isValid = await form.trigger([
@@ -159,8 +159,8 @@ export function RegistrationForm() {
     
     try {
       // Validate photos exist
-      if (!data.photos || data.photos.length < 2) {
-        throw new Error('Please upload at least 2 photos before submitting');
+      if (!data.photos || data.photos.length < 1) {
+        throw new Error('Please upload at least 1 recent photo before submitting');
       }
 
       // Upload photos and get full URLs with progress tracking

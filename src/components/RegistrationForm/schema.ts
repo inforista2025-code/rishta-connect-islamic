@@ -2,40 +2,40 @@ import { z } from 'zod';
 
 // Step 1 Schema
 export const step1Schema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  fullName: z.string().min(3, { message: "Full name must be at least 3 characters" }),
-  gender: z.enum(['Male', 'Female'], { required_error: "Please select your gender" }),
+  email: z.string().email({ message: "Please enter a valid email address (e.g. name@gmail.com)" }),
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
+  gender: z.enum(['Male', 'Female'], { required_error: "Please select gender" }),
   dateOfBirth: z.date({ required_error: "Please select your date of birth" }),
-  height: z.string().min(2, { message: "Please enter your height" }),
-  caste: z.string().min(2, { message: "Please enter your caste" }),
-  complexion: z.string().min(2, { message: "Please enter your complexion" }),
-  maritalStatus: z.enum(['Single', 'Divorced', 'Widowed'], { required_error: "Please select marital status" }),
-  maslak: z.string().min(2, { message: "Please enter your maslak" }),
+  height: z.string().min(1, { message: "Please select or enter height" }),
+  caste: z.string().optional().default(""),
+  complexion: z.string().min(1, { message: "Please select complexion" }),
+  maritalStatus: z.enum(['Single', 'Divorced', 'Widowed', 'Khula'], { required_error: "Please select marital status" }),
+  maslak: z.string().min(2, { message: "Please select or enter your maslak/sect" }),
 });
 
 // Step 2 Schema
 export const step2Schema = z.object({
-  residenceLocation: z.string().min(3, { message: "Please enter your city and state" }),
-  educationDetails: z.string().min(3, { message: "Please provide your education details" }),
-  occupationDetails: z.string().min(3, { message: "Please provide your occupation details" }),
-  familyDetails: z.string().min(10, { message: "Please provide detailed family information" }),
+  residenceLocation: z.string().min(2, { message: "Please enter your city and state" }),
+  educationDetails: z.string().min(2, { message: "Please provide education details" }),
+  occupationDetails: z.string().min(2, { message: "Please provide occupation / profession details" }),
+  familyDetails: z.string().min(5, { message: "Please provide brief family details (Parents, Siblings)" }),
   whatsappNumber: z.string()
-    .min(10, { message: "Please enter a valid WhatsApp number" })
+    .min(10, { message: "Please enter a valid 10-digit WhatsApp number" })
     .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, {
-      message: "Please enter a valid phone number"
+      message: "Please enter a valid contact number"
     }),
 });
 
 // Step 3 Schema
 export const step3Schema = z.object({
-  preferredAgeRange: z.string().min(3, { message: "Please enter preferred age range" }),
-  preferredLocation: z.string().min(3, { message: "Please enter preferred location" }),
-  partnerPreferences: z.string().min(10, { message: "Please provide partner preferences" }),
-  islamicEducation: z.string().optional(),
-  otherInfo: z.string().optional(),
+  preferredAgeRange: z.string().min(2, { message: "Please enter preferred age range (e.g., 22-26)" }),
+  preferredLocation: z.string().min(2, { message: "Please enter preferred location (e.g., Mumbai, Bihar, or Any)" }),
+  partnerPreferences: z.string().min(5, { message: "Please describe your expectations for a partner" }),
+  islamicEducation: z.string().optional().default(""),
+  otherInfo: z.string().optional().default(""),
   photos: z.custom<File[]>()
-    .refine((files) => files && files.length >= 2, {
-      message: "Please upload at least 2 photos"
+    .refine((files) => files && files.length >= 1, {
+      message: "Please upload at least 1 recent photo (2-3 recommended)"
     })
     .refine((files) => files && files.length <= 3, {
       message: "Maximum 3 photos allowed"
@@ -60,9 +60,9 @@ export const step3Schema = z.object({
       (file) => !file || file.type === 'application/pdf',
       { message: "Biodata must be a PDF file" }
     ),
-  referral: z.string().optional(),
+  referral: z.string().optional().default(""),
   agreeToDeclaration: z.boolean().refine((val) => val === true, {
-    message: "You must agree to the declaration to proceed"
+    message: "You must agree to the Islamic declaration to proceed"
   }),
 });
 
