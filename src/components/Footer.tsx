@@ -153,6 +153,11 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                       Terms of Service
                     </Link>
                   </li>
+                  <li>
+                    <Link to="/auth" className="hover:text-pink-200 text-pink-300/60 text-[11px] transition-colors">
+                      Admin Portal
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
