@@ -33,20 +33,20 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
 
   return (
     <footer className="bg-gradient-to-b from-[#2A0F1A] via-[#1F0A13] to-[#16060D] text-pink-100/90 border-t border-pink-900/40">
-      <div className="container max-w-7xl mx-auto px-4 py-12 md:py-16">
+      <div className="container max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-14">
         {minimal ? (
-          <div className="flex flex-col items-center text-center gap-6 max-w-md mx-auto">
+          <div className="flex flex-col items-center text-center gap-4 max-w-md mx-auto">
             <div>
-              <div className="text-xl font-serif text-pink-300/90 mb-1">
+              <div className="text-xl font-serif text-pink-300/90 mb-0.5">
                 ﷽
               </div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Rishta Matrimony</h3>
-              <p className="text-xs text-pink-200/70 mt-1">
+              <h3 className="text-lg font-bold text-white tracking-tight">Rishta Matrimony</h3>
+              <p className="text-xs text-pink-200/70 mt-0.5">
                 Connecting Muslim hearts with authentic Islamic values
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-pink-200/80">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs text-pink-200/80">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">
                 Privacy Policy
               </Link>
@@ -60,94 +60,92 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
               </Link>
             </div>
 
-            <div className="text-xs text-pink-300/50">
+            <div className="text-[11px] text-pink-300/50">
               <p>© {currentYear} Rishta Matrimony. All rights reserved.</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               
-              {/* Column 1: Brand & Islamic Mission */}
-              <div className="space-y-4">
-                <div className="text-xl font-serif text-pink-300/90">
-                  ﷽
-                </div>
-                <div>
-                  <h3 className="text-xl font-extrabold text-white tracking-tight">
+              {/* Column 1: Brand & Islamic Mission (Full width on mobile, 1 col on desktop) */}
+              <div className="col-span-2 lg:col-span-1 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-serif text-pink-300/90">﷽</span>
+                  <h3 className="text-lg font-extrabold text-white tracking-tight">
                     Rishta Matrimony
                   </h3>
-                  <p className="text-xs text-pink-300 font-medium mt-0.5">
-                    Halal Islamic Matchmaking Platform
-                  </p>
                 </div>
-                <p className="text-xs text-pink-200/70 leading-relaxed">
-                  Dedicated to helping practicing Muslims find righteous life partners according to the Quran & Sunnah with complete dignity and privacy.
+                <p className="text-xs text-pink-300 font-medium">
+                  Halal Islamic Matchmaking Platform
                 </p>
-                <div className="pt-1 text-xs text-pink-200/90 font-serif italic">
+                <p className="text-xs text-pink-200/70 leading-relaxed max-w-md lg:max-w-none">
+                  Helping practicing Muslims find righteous life partners according to Quran & Sunnah with complete privacy.
+                </p>
+                <div className="pt-0.5 text-xs text-pink-300/90 font-serif italic">
                   مسلم دلوں کو اسلامی اقدار کے ساتھ جوڑنا
                 </div>
               </div>
 
               {/* Column 2: Quick Rishta Services */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2.5">
+              <div className="col-span-1 space-y-2.5">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2">
                   Matrimonial
                 </h4>
-                <ul className="space-y-2 text-xs text-pink-200/70">
+                <ul className="space-y-1.5 text-xs text-pink-200/75">
                   <li>
                     <Link to="/profiles" className="hover:text-pink-300 transition-colors">
-                      Browse All Profiles
+                      All Profiles
                     </Link>
                   </li>
                   <li>
                     <Link to="/profiles?gender=Female" className="hover:text-pink-300 transition-colors">
-                      Verified Brides (Dulhan)
+                      Brides (Dulhan)
                     </Link>
                   </li>
                   <li>
                     <Link to="/profiles?gender=Male" className="hover:text-pink-300 transition-colors">
-                      Verified Grooms (Dulha)
+                      Grooms (Dulha)
                     </Link>
                   </li>
                   <li>
                     <Link to="/register" className="hover:text-white transition-colors font-medium text-pink-300">
-                      Free Biodata Registration
+                      Free Registration
                     </Link>
                   </li>
                   <li>
                     <Link to="/pricing" className="hover:text-pink-300 transition-colors">
-                      Premium Membership Plans
+                      Membership Plans
                     </Link>
                   </li>
                 </ul>
               </div>
 
               {/* Column 3: Member Portal & Resources */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2.5">
-                  Portal & Insights
+              <div className="col-span-1 space-y-2.5">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2">
+                  Portal & Links
                 </h4>
-                <ul className="space-y-2 text-xs text-pink-200/70">
+                <ul className="space-y-1.5 text-xs text-pink-200/75">
                   <li>
-                    <Link to="/member/login" className="hover:text-white transition-colors flex items-center gap-1.5 font-medium text-pink-200">
-                      <LogIn className="w-3.5 h-3.5 text-primary" />
-                      <span>Member Portal Login</span>
+                    <Link to="/member/login" className="hover:text-white transition-colors flex items-center gap-1 font-medium text-pink-200">
+                      <LogIn className="w-3 h-3 text-primary shrink-0" />
+                      <span>Member Login</span>
                     </Link>
                   </li>
                   <li>
                     <Link to="/about-us" className="hover:text-pink-300 transition-colors">
-                      About Our Mission
+                      About Mission
                     </Link>
                   </li>
                   <li>
                     <Link to="/blog" className="hover:text-pink-300 transition-colors">
-                      Islamic Marriage Guidance
+                      Marriage Guide
                     </Link>
                   </li>
                   <li>
                     <Link to="/privacy-policy" className="hover:text-pink-300 transition-colors">
-                      Photo & Contact Privacy
+                      Privacy Policy
                     </Link>
                   </li>
                   <li>
@@ -155,29 +153,24 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                       Terms of Service
                     </Link>
                   </li>
-                  <li>
-                    <Link to="/auth" className="hover:text-pink-200 text-pink-300/40 text-[11px] transition-colors">
-                      Admin Portal
-                    </Link>
-                  </li>
                 </ul>
               </div>
 
               {/* Column 4: Contact & Official Communities */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2.5">
-                  Help & Channels
+              <div className="col-span-2 lg:col-span-1 space-y-3 pt-2 lg:pt-0 border-t border-pink-900/30 lg:border-t-0">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white border-l-2 border-primary pl-2">
+                  Contact & Community
                 </h4>
                 
                 {/* Contact Links */}
-                <div className="space-y-2 text-xs text-pink-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 text-xs text-pink-100">
                   <a 
                     href="https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20have%20an%20inquiry%20regarding%20Rishta%20Matrimony."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
-                    <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>WhatsApp: +91 9128719875</span>
                   </a>
                   
@@ -185,13 +178,13 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                     href="mailto:info.rista2025@gmail.com"
                     className="flex items-center gap-2 hover:text-white transition-colors"
                   >
-                    <Mail className="w-4 h-4 text-primary shrink-0" />
-                    <span>info.rista2025@gmail.com</span>
+                    <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="truncate">info.rista2025@gmail.com</span>
                   </a>
                 </div>
 
                 {/* Social Community Buttons */}
-                <div className="space-y-2 pt-1">
+                <div className="space-y-1.5 pt-0.5">
                   <p className="text-[11px] text-pink-300/80 uppercase tracking-wider font-semibold">Join Official Community:</p>
                   <div className="flex gap-2">
                     {socialLinks.map((social, index) => (
@@ -200,10 +193,10 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`w-9 h-9 rounded-xl bg-pink-950/60 border border-pink-900/50 flex items-center justify-center text-pink-200 hover:text-white ${social.bgHover} transition-all duration-300 shadow-xs`}
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-pink-950/60 border border-pink-900/50 flex items-center justify-center text-pink-200 hover:text-white ${social.bgHover} transition-all duration-300 shadow-xs`}
                         title={social.name}
                       >
-                        <social.icon className="w-4 h-4" />
+                        <social.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </a>
                     ))}
                   </div>
@@ -213,19 +206,19 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
             </div>
 
             {/* Bottom Bar: Trust & Copyright */}
-            <div className="border-t border-pink-900/30 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-pink-200/70">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
-                <span className="flex items-center gap-1.5 text-pink-200/80">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>100% Verified Islamic Profiles</span>
+            <div className="border-t border-pink-900/30 mt-6 sm:mt-10 pt-5 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-pink-200/70">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-[11px] sm:text-xs">
+                <span className="flex items-center gap-1 text-pink-200/80">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>100% Verified Profiles</span>
                 </span>
-                <span className="flex items-center gap-1.5 text-pink-200/80">
-                  <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="flex items-center gap-1 text-pink-200/80">
+                  <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
                   <span>Complete Photo Privacy</span>
                 </span>
               </div>
 
-              <div className="text-center sm:text-right text-pink-300/50">
+              <div className="text-center sm:text-right text-[11px] text-pink-300/50">
                 <p>© {currentYear} Rishta Matrimony. All rights reserved.</p>
               </div>
             </div>
