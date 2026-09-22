@@ -201,13 +201,13 @@ export async function searchProfilesForAssistant(queryText: string) {
     let genderFilter: string | null = null;
     if (
       q.includes('female') || q.includes('dulhan') || q.includes('bride') || 
-      q.includes('ladki') || q.includes('sister') || q.includes('women') || 
+      q.includes('ladki') || q.includes('larki') || q.includes('sister') || q.includes('women') || 
       q.includes('aurat') || q.includes('ladkiya') || q.includes('brides')
     ) {
       genderFilter = 'Female';
     } else if (
       q.includes('male') || q.includes('dulha') || q.includes('groom') || 
-      q.includes('ladka') || q.includes('brother') || q.includes('men') || 
+      q.includes('ladka') || q.includes('larka') || q.includes('brother') || q.includes('men') || 
       q.includes('mard') || q.includes('ladke') || q.includes('grooms')
     ) {
       genderFilter = 'Male';
@@ -305,11 +305,44 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   profileMatches?: any[];
 }> {
   const rawQ = userPrompt.trim();
-  const q = rawQ.toLowerCase();
+  
+  // Normalize variations in Hinglish / Hindi spelling
+  const q = rawQ.toLowerCase()
+    .replace(/kaese/g, 'kaise')
+    .replace(/kese/g, 'kaise')
+    .replace(/kaisey/g, 'kaise')
+    .replace(/kaisa/g, 'kaise')
+    .replace(/larki/g, 'ladki')
+    .replace(/larka/g, 'ladka')
+    .replace(/shadi/g, 'shaadi')
+    .replace(/walden/g, 'walidain')
+    .replace(/duha/g, 'dulha')
+    .replace(/mahr/g, 'mehr');
 
   // ==========================================
   // 1. CASUAL CHAT & HUMAN-LIKE INTERACTIONS
   // ==========================================
+
+  // How are you / Hal chal / "Aap kaise hain" / "Aap kaese hain"
+  if (
+    q.includes('kaise ho') || 
+    q.includes('kaise hain') || 
+    q.includes('kaisi ho') || 
+    q.includes('kaisi hain') || 
+    q.includes('kya hal') || 
+    q.includes('kya haal') || 
+    q.includes('how are you') || 
+    q.includes('how r u') || 
+    q.includes('kya chal raha') ||
+    q.includes('sab theek') ||
+    q.includes('khairiyat') ||
+    q === 'kaise ho' ||
+    q === 'kaise hain'
+  ) {
+    return {
+      text: `Alhamdulillah, main bilkul theek aur khairiyat se hoon! Allah Ta'ala ka lakh lakh shukr hai 🌸🤲\n\nAap sunayein, aapka kya haal hai aur aapki tabiyat kaisi hai? Umeed hai aap aur aapki family sab khairiyat se honge 😊\n\nBataiye, aaj main aapki kya madad kar sakta hoon?\n• Kya aap apne ya kisi family member ke liye **rishta dhoondh rahe hain**?\n• Ya aapke mind me shadi aur rishton ko lekar **koi sawaal ya confusion** hai?\n• Kisi specific **profile ya city** (jaise Ranchi, Patna, Mumbai, Delhi, etc.) ke bare me jan-na chahte hain?\n• Ya shadi se juda koi **Islamic masla** (jaise Istikhara ka tareeqa, Mehr ke ahkaam, Walidain ko manana) discuss karna chahte hain?\n\n💬 *Aap bejhijhak batayein, main har maamle me aapki poori rehnumai karunga! ✨*`,
+    };
+  }
 
   // Greetings & Salam
   if (
@@ -323,21 +356,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q === 'hey'
   ) {
     return {
-      text: `Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh! 🌸✨\n\nMarhaban! Main Rishta Matrimony ka AI Matchmaking & Islamic Assistant hoon 🤵👰\n\nAap se guftagu karke bahut khushi hui! Aap kaise hain? Aaj main aapki matrimonial search ya deeni sawaalat me kya madad kar sakta hoon? 😊\n\n💬 *Aap kis city ya maslak ke rishton ke bare me jan-na chahte hain?*`,
-    };
-  }
-
-  // How are you / Hal chal
-  if (
-    q.includes('kaise ho') || 
-    q.includes('kaisi ho') || 
-    q.includes('kya hal') || 
-    q.includes('how are you') || 
-    q.includes('kya chal raha') ||
-    q.includes('sab theek')
-  ) {
-    return {
-      text: `Alhamdulillah, main bilkul theek hoon! Allah ka lakh lakh shukr hai 🤲🌸\n\nAap sunayein, aapki sehat aur deen ka kya haal hai? Umeed hai aap khairiyat se honge 😊\n\nAgar aap kisi specific city ke rishte dhoondh rahe hain, biodata banana chahte hain, ya shadi ke talluq se koi Islamic masla poochna chahte hain, to bejhijhak batayein!\n\n💬 *Aap kis tarah ke profile ya guidance ki talash me hain?*`,
+      text: `Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh! 🌸✨\n\nMarhaban! Main Rishta Matrimony ka AI Matchmaking & Islamic Assistant hoon 🤵👰\n\nAap se guftagu karke bahut khushi hui! Aap kaise hain? Aaj main aapki matrimonial search ya deeni sawaalat me kya madad kar sakta hoon? 😊\n\n💬 *Aap kis city ya maslak ke rishton ke bare me jan-na chahte hain, ya koi specific masla discuss karna chahte hain?*`,
     };
   }
 
@@ -351,7 +370,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('what can you do')
   ) {
     return {
-      text: `Assalamu Alaikum! Main **Rishta Matrimony Matchmaker AI** hoon 🤖💍\n\nMera maqsad Musalman bhai-behno ko Quran aur Sahih Sunnah ke mutabiq ek nek aur deendaar humsafar talash karne me madad karna hai.\n\n### Main aapke liye kya kar sakta hoon:\n• 🔍 **Verified Rishte Dhoondhna:** Aapke city, age aur maslak ke mutabiq profile shortlist karna.\n• 📖 **Islamic Guidance:** Istikhara ka tareeqa, Mehr ke ahkaam, aur walidain ki raza par authentic references dena.\n• 🛡️ **Privacy & Matchmaking:** 100% Halal aur safe platform par help karna.\n\n💬 *Aap apne liye ya kisi family member ke liye rishta talash kar rahe hain?*`,
+      text: `Assalamu Alaikum! Main **Rishta Matrimony Matchmaker AI** hoon 🤖💍\n\nMera maqsad Musalman bhai-behno ko Quran aur Sahih Sunnah ke mutabiq ek nek aur deendaar humsafar talash karne me madad karna hai.\n\n### Main aapke liye kya kar sakta hoon:\n• 🔍 **Verified Rishte Dhoondhna:** Aapke city, age aur maslak ke mutabiq profile shortlist karna.\n• 📖 **Islamic Guidance:** Istikhara ka tareeqa, Mehr ke ahkaam, aur walidain ki raza par authentic references dena.\n• 🛡️ **Privacy & Matchmaking:** 100% Halal aur safe platform par personal guidance dena.\n\n💬 *Aap apne liye ya kisi family member ke liye rishta talash kar rahe hain?*`,
     };
   }
 
@@ -501,7 +520,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('delay') || 
     q.includes('rishta nahi aa raha') || 
     q.includes('dua for marriage') || 
-    q.includes('dua for spouse') ||
+    q.includes('dua for spouse') || 
     q.includes('shadi ki dua') ||
     q.includes('wazifa')
   ) {
@@ -516,7 +535,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('chat') || 
     q.includes('meeting') || 
     q.includes('mil sakte') || 
-    q.includes('dekh sakte') ||
+    q.includes('dekh sakte') || 
     q.includes('video call')
   ) {
     return {
@@ -591,9 +610,9 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('pricing') || 
     q.includes('premium') || 
     q.includes('491') || 
-    q.includes('plan') ||
-    q.includes('charges') ||
-    q.includes('fees') ||
+    q.includes('plan') || 
+    q.includes('charges') || 
+    q.includes('fees') || 
     q.includes('paise')
   ) {
     return {
@@ -614,7 +633,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   // ==========================================
   // 6. MEHR (DOWER) QUESTIONS
   // ==========================================
-  if (q.includes('mehr') || q.includes('mahr') || q.includes('dower') || q.includes('haq mehr')) {
+  if (q.includes('mehr') || q.includes('dower') || q.includes('haq mehr')) {
     const ref = authenticIslamicReferences.mehr;
     return {
       text: `### 💍 Mehr (Dower) ke Shar'ee Ahkaam:\n\n**Quranic Hukum:**\n> *"Aur auraton ko unke Mehr khushi se ada karo."*\n> **[${ref.quranRef}]**\n\n**Hadith Sharif:**\n> Nabi Kareem ﷺ ne ek sahabi se farmaya: *"${ref.hadithText}"*\n> **[${ref.hadithRef}]**\n\n**Zaroori Baatein:**\n• Mehr biwi ka zaati haq hai, koi doosra isme hissa nahi le sakta.\n• Sunnah ye hai ki Mehr me aitedal (moderation) rakha jaye taaki shadi aasan ho.\n• Dono khandano ko aapas ki razamandi se izzat ke sath Mehr tay karna chahiye 🌸\n\n💬 *Kya aap Mehr-e-Fatimi ya aaj ke daur me munasib Mehr ki shar'ee miqdaar ke bare me aur jan-na chahte hain?*`,
@@ -630,7 +649,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('spouse') || 
     q.includes('kufu') || 
     q.includes('partner') || 
-    q.includes('humsafar') ||
+    q.includes('humsafar') || 
     q.includes('kaisa jeevansathi')
   ) {
     const ref = authenticIslamicReferences.spouseSelection;
@@ -647,11 +666,11 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('create profile') || 
     q.includes('biodata') || 
     q.includes('join') || 
-    q.includes('account') ||
+    q.includes('account') || 
     q.includes('kaise banaye')
   ) {
     return {
-      text: `### 📝 Rishta Matrimony par Free Biodata Registration:\nAap apna ya apne bache/bhai/behan ka matrimonial biodata **100% Free** create kar sakte hain ✨:\n\n1. **Zati Maloomat:** Naam, Umar, Shahr (Location), Qad (Height)\n2. **Taleem aur Rozgar:** Degree, Profession, Family background\n3. **Deeni Tafseelat:** Maslak, Namaz, Deeni Taleem\n4. **Partner Ki Ummedein:** Age preference, City preference, Photo upload\n\nHar profile verification ke baad hi live ki jaati hai taaki sabhi rishte 100% genuine hon 🛡️\n\n💬 *Kya aap chahenge ki main biodata fill karne ka direct link ya form me madad karoon?*`,
+      text: `### 📝 Rishta Matrimony par Free Biodata Registration:\nAap apna ya apne bache/bhai/behan ka matrimonial biodata **100% Free** create kar sakte hain ✨:\n\n1. **Zati Maloomat:** Naam, Umar, Shahr (Location), Qad (Height)\n2. **Taleem aur Rozgar:** Degree, Profession, Family background\n3. **Deeni Tafseelat:** Maslak, Namaz, Deeni Taleem\n4. **Partner Ki Ummedein:** Age preference, City preference, Photo upload\n\nHar profile verification ke baad hi live ki jaati hai taaki sabhi rishte 100% genuine hon 🛡️\n\n💬 *Kya aap chahenge ki main biodata fill karne ka direct process bataoon?*`,
     };
   }
 
@@ -698,6 +717,6 @@ GUIDELINES:
   // 10. CONTEXTUAL INTELLIGENT AI CATCH-ALL
   // ==========================================
   return {
-    text: `Assalamu Alaikum! 🌸✨\n\nAapne poocha: **"${rawQ}"**\n\nMain aapki is maamle me poori tarah madad karne ke liye hazir hoon! Chahe aapko:\n• 👰🤵 Kisi specific shahr ya maslak ke **verified rishte** talash karne hon\n• 📖 Shadi, nikah, ya deen ke talluq se **Quran aur Sahih Hadith** ki roshni me rehnumai chahiye ho\n• 🛡️ Contact number aur unblurred photos ke liye **₹491 Premium Plan** ki jaankari leni ho\n• 📝 Apna **Free Matrimonial Biodata** register karna ho\n\n💬 *Aap mujhse is bare me kya detail jan-na chahte hain? Mujhe batayein, main step-by-step aapki madad karunga 😊🤲*`,
+    text: `Assalamu Alaikum! 🌸✨\n\nMain aapki baat samajh gaya. Rishta Matrimony AI par main aapki matrimonial search aur Islamic guidance dono me poori tarah madad karne ke liye hazir hoon 😊\n\nBataiye:\n• Kya aap kisi specific city (jaise Ranchi, Patna, Mumbai, Delhi, Lucknow, etc.) ke **verified rishte** dekhna chahte hain?\n• Ya aapke mind me shadi, nikah, istikhara ya rishton se juda **koi deeni sawaal** hai?\n• Ya aap apna **Free Matrimonial Biodata** register karne ke bare me janna chahte hain?\n\n💬 *Aap mujhse bejhijhak thoda aur detail me poochein, main poori madad karunga! 🤲*`,
   };
 }
