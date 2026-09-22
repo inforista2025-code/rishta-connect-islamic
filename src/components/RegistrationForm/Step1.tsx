@@ -91,46 +91,47 @@ export function Step1({ form }: Step1Props) {
         </div>
       </div>
 
-      {/* Gender Selection Cards */}
+      {/* Gender Selection */}
       <FormField
         control={form.control}
         name="gender"
         render={({ field }) => (
           <FormItem className="space-y-2">
-            <FormLabel className="text-sm font-bold text-foreground">
-              Looking match for (Gender) *
+            <FormLabel className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <User className="w-4 h-4 text-primary" />
+              <span>Gender *</span>
             </FormLabel>
             <FormControl>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => field.onChange("Female")}
-                  className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 text-center transition-all duration-200 cursor-pointer ${
+                  className={`p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer ${
                     field.value === "Female"
                       ? "border-primary bg-primary/10 ring-2 ring-primary/20 shadow-sm"
                       : "border-border hover:border-primary/40 bg-card"
                   }`}
                 >
-                  <span className="text-3xl">👰</span>
-                  <div>
-                    <p className="font-bold text-sm sm:text-base text-foreground">Bride (Dulhan)</p>
-                    <p className="text-[11px] text-muted-foreground">Female Candidate</p>
+                  <span className="text-2xl sm:text-3xl">👰</span>
+                  <div className="text-left">
+                    <p className="font-bold text-sm sm:text-base text-foreground">Female (Bride)</p>
+                    <p className="text-[11px] text-muted-foreground">Dulhan Profile</p>
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => field.onChange("Male")}
-                  className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 text-center transition-all duration-200 cursor-pointer ${
+                  className={`p-3.5 sm:p-4 rounded-2xl border-2 flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer ${
                     field.value === "Male"
                       ? "border-primary bg-primary/10 ring-2 ring-primary/20 shadow-sm"
                       : "border-border hover:border-primary/40 bg-card"
                   }`}
                 >
-                  <span className="text-3xl">🤵</span>
-                  <div>
-                    <p className="font-bold text-sm sm:text-base text-foreground">Groom (Dulha)</p>
-                    <p className="text-[11px] text-muted-foreground">Male Candidate</p>
+                  <span className="text-2xl sm:text-3xl">🤵</span>
+                  <div className="text-left">
+                    <p className="font-bold text-sm sm:text-base text-foreground">Male (Groom)</p>
+                    <p className="text-[11px] text-muted-foreground">Dulha Profile</p>
                   </div>
                 </button>
               </div>
