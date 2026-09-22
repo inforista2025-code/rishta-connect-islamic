@@ -199,200 +199,155 @@ View full profile here:`;
     setShowShareModal(false);
   }, [getShareText, getProfileUrl]);
 
+  const profileCode = `RM-${profile.gender === "Female" ? "BR" : "GR"}-${profile.id}`;
+
   return (
     <div ref={setNodeRef} style={style} className="animate-fade-in" id={`profile-${profile.id}`}>
       {isPremium && (
         <div className="flex justify-start mb-[-1px]">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white" style={{ backgroundColor: '#6C4DF6' }}>
-            ⭐ Featured
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-t-lg text-xs font-bold text-white shadow-sm" style={{ backgroundColor: '#6C4DF6' }}>
+            ⭐ Premium Featured
           </span>
         </div>
       )}
       <Card 
-        className={`hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${isPremium ? 'border-[#6C4DF6]' : ''}`}
+        className={`hover:shadow-xl transition-all duration-300 ease-in-out border rounded-2xl overflow-hidden bg-card ${isPremium ? 'border-[#6C4DF6]' : 'border-border/80'}`}
         style={isPremium ? { 
-          boxShadow: '0 0 10px rgba(108,77,246,0.3)',
-          backgroundColor: '#F7F5FF'
+          boxShadow: '0 0 12px rgba(108,77,246,0.25)',
+          backgroundColor: '#FCFBFF'
         } : undefined}
       >
-        <ProfileCardPhoto
-          photoUrls={profile.photoUrls}
-          name={profile.name}
-          viewerIsPremium={viewerIsPremium}
-        />
-        <CardHeader className="bg-primary/5 border-b">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isAdmin && (
-                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                  <GripVertical className="w-5 h-5 text-muted-foreground" />
-                </div>
-              )}
-              <User className="w-5 h-5 text-primary" />
-              <span>{profile.name}</span>
-              {isPremium && (
-                <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#6C4DF6' }}>
-                  ⭐ Premium Verified
+        <div onClick={() => onViewBiodata(profile)} className="cursor-pointer">
+          <ProfileCardPhoto
+            photoUrls={profile.photoUrls}
+            name={profile.name}
+            viewerIsPremium={viewerIsPremium}
+          />
+        </div>
+
+        <CardHeader className="bg-primary/5 pb-3 pt-4 border-b">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>🛡️ Verified Profile</span>
                 </span>
-              )}
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground border">
+                  ID: #{profileCode}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                    <GripVertical className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                )}
+                <h3 
+                  onClick={() => onViewBiodata(profile)} 
+                  className="font-bold text-xl text-foreground hover:text-primary transition-colors cursor-pointer truncate"
+                >
+                  {profile.name}
+                </h3>
+                <Badge variant="secondary" className="text-xs font-semibold shrink-0">
+                  {profile.gender === "Female" ? "👰 Bride" : "🤵 Groom"}
+                </Badge>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{profile.gender}</Badge>
-              {isAdmin && (
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleEditClick}
-                    className="h-8 w-8 p-0 hover:bg-primary/10"
-                  >
-                    <Pencil className="w-4 h-4 text-primary" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleDeleteClick}
-                    className="h-8 w-8 p-0 hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardTitle>
+
+            {isAdmin && (
+              <div className="flex gap-1 shrink-0">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleEditClick}
+                  className="h-8 w-8 p-0 hover:bg-primary/10"
+                >
+                  <Pencil className="w-4 h-4 text-primary" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDeleteClick}
+                  className="h-8 w-8 p-0 hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         
-        <CardContent className="pt-6 space-y-4">
-          {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">🎂</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Age / DOB</p>
-                <p className="text-sm text-muted-foreground">{profile.age} yrs / {profile.dob}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-2">
-              <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Location</p>
-                <p className="text-sm text-muted-foreground">{profile.location}</p>
+        <CardContent className="p-5 space-y-4">
+          {/* Quick Snapshot Badges (Compact Chips) */}
+          <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">🎂</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Age / Height</p>
+                <p className="font-semibold text-foreground truncate">{profile.age} yrs • {profile.height}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">📏</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Height</p>
-                <p className="text-sm text-muted-foreground">{profile.height}</p>
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">📍</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Location</p>
+                <p className="font-semibold text-foreground truncate">{profile.location}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">🌟</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Complexion</p>
-                <p className="text-sm text-muted-foreground">{profile.complexion}</p>
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">🎓</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Education</p>
+                <p className="font-semibold text-foreground truncate">{profile.education}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">💼</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Profession</p>
+                <p className="font-semibold text-foreground truncate">{profile.profession}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">💒</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Status</p>
+                <p className="font-semibold text-foreground truncate">{profile.maritalStatus}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-muted/40 p-2.5 rounded-xl border border-border/60">
+              <span className="text-base">🕌</span>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Maslak / Sect</p>
+                <p className="font-semibold text-foreground truncate">{profile.maslak || profile.caste || "Muslim"}</p>
               </div>
             </div>
           </div>
 
-          {/* Education & Profession */}
-          <div className="space-y-3 pt-2 border-t">
-            <div className="flex items-start gap-2">
-              <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Education</p>
-                <p className="text-sm text-muted-foreground">{profile.education}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Briefcase className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Profession</p>
-                <p className="text-sm text-muted-foreground">{profile.profession}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Marital Status */}
-          <div className="pt-2 border-t">
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">💒</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">Marital Status</p>
-                <p className="text-sm text-muted-foreground">{profile.maritalStatus}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Caste */}
-          {profile.caste && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🏷️</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Caste</p>
-                  <p className="text-sm text-muted-foreground">{profile.caste}</p>
-                </div>
-              </div>
+          {/* Quick Partner Preference Teaser */}
+          {profile.preferredPartner && (
+            <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 text-xs">
+              <p className="font-semibold text-foreground flex items-center gap-1.5 mb-1">
+                <span>💑</span> Partner Preference:
+              </p>
+              <p className="text-muted-foreground line-clamp-2 leading-relaxed">
+                {profile.preferredPartner}
+              </p>
             </div>
           )}
 
-          {/* Maslak */}
-          {profile.maslak && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🕌</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Maslak</p>
-                  <p className="text-sm text-muted-foreground">{profile.maslak}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Islamic Knowledge */}
-          {profile.islamicKnowledge && (
-            <div className="pt-2 border-t">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">📚</span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Islamic Knowledge</p>
-                  <p className="text-sm text-muted-foreground">{profile.islamicKnowledge}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Family Info */}
-          <div className="pt-2 border-t">
-            <div className="flex items-start gap-2">
-              <Users className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-foreground mb-1">Family</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">{profile.family}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Preferences */}
-          <div className="pt-2 border-t bg-muted/30 -mx-6 px-6 py-4 rounded-b-lg">
-            <p className="text-sm font-semibold text-foreground mb-2">📜 Partner Preferences:</p>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">{profile.preferredPartner}</p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">📍 {profile.preferredLocation}</Badge>
-              <Badge variant="outline">🎂 {profile.preferredAge}</Badge>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          {/* Action Buttons Row */}
+          <div className="flex flex-col sm:flex-row gap-2 pt-1">
             <Button 
-              className="flex-1 text-xs sm:text-sm font-semibold gap-1.5 h-11" 
-              size="lg" 
+              className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm" 
+              size="default" 
               onClick={() => onViewBiodata(profile)}
             >
               <Eye className="w-4 h-4" />
@@ -401,12 +356,12 @@ View full profile here:`;
             <div className="flex gap-2 flex-1">
               <Button 
                 variant="whatsapp"
-                className="flex-1 text-xs sm:text-sm font-semibold gap-1.5 h-11" 
-                size="lg" 
+                className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm" 
+                size="default" 
                 asChild
               >
                 <a 
-                  href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20inquire%20about%20Profile%20ID%3A%20%23RM-${profile.gender === 'Female' ? 'BR' : 'GR'}-${profile.id}%20(${encodeURIComponent(profile.name)})%20from%20Rishta%20Matrimony.%20Kindly%20share%20details.%20JazakAllahu%20Khair.`}
+                  href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20inquire%20about%20Profile%20ID%3A%20%23${profileCode}%20(${encodeURIComponent(profile.name)})%20from%20Rishta%20Matrimony.%20Kindly%20share%20details.%20JazakAllahu%20Khair.`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -416,17 +371,17 @@ View full profile here:`;
               </Button>
               <Button 
                 type="button"
-                className="flex-shrink-0 px-3 h-11" 
-                size="lg"
+                className="px-3 h-11 shrink-0" 
+                size="default"
                 variant="outline"
                 onClick={handleShare}
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)', borderColor: 'hsl(var(--primary) / 0.3)' }}
                 title="Share Profile"
               >
                 <Share2 className="w-4 h-4 text-primary" />
               </Button>
             </div>
           </div>
+
           <MemberProfileActions profileId={profile.id} compact />
         </CardContent>
       </Card>

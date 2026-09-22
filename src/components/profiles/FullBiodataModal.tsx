@@ -137,12 +137,15 @@ ${profile.family}
             Islamic Matrimonial Biodata
           </p>
 
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-3">
-            <ShieldCheck className="w-4 h-4 text-amber-300" />
-            <span className="text-xs sm:text-sm font-semibold tracking-wide">
-              Profile ID: #{profileCode}
-            </span>
-            <Badge variant="secondary" className="bg-white text-primary text-xs font-bold ml-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/30 backdrop-blur-md px-3.5 py-1 rounded-full border border-emerald-300/40 text-emerald-100 text-xs font-semibold">
+              <ShieldCheck className="w-4 h-4 text-amber-300" />
+              <span>🛡️ 100% Verified Profile</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/20 text-white text-xs font-semibold">
+              <span>Profile ID: #{profileCode}</span>
+            </div>
+            <Badge variant="secondary" className="bg-white text-primary text-xs font-bold">
               {profile.gender === "Female" ? "👰 Bride" : "🤵 Groom"}
             </Badge>
           </div>
