@@ -1,4 +1,4 @@
-import { MessageCircle, Users, Mail, Phone, Send, ShieldCheck, Heart, Lock, LogIn } from "lucide-react";
+import { MessageCircle, Users, Mail, Phone, Send, ShieldCheck, Heart, Lock, LogIn, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer({ minimal = false }: { minimal?: boolean }) {
@@ -22,6 +22,12 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
       icon: Send,
       url: "https://t.me/Rishtamatrimony",
       bgHover: "hover:bg-sky-500",
+    },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      url: "https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==",
+      bgHover: "hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-600 hover:to-purple-600",
     },
   ];
 
