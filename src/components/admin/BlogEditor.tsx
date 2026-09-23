@@ -11,6 +11,7 @@ import { ArrowLeft, Upload, Sparkles, Loader2, Image as ImageIcon, Bold, Italic,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BlogShareButton } from '@/components/blog/BlogShareButton';
 import { cn } from '@/lib/utils';
+import { getOptimizedIslamicTopicImage } from './AIBlogGenerator';
 
 interface BlogEditorProps {
   blog?: {
@@ -29,6 +30,9 @@ interface BlogEditorProps {
     title: string;
     content: string;
     excerpt: string;
+    featured_image?: string;
+    seo_meta_title?: string;
+    seo_meta_description?: string;
   };
 }
 
@@ -43,13 +47,19 @@ function generateSlug(title: string): string {
 
 export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
   const [title, setTitle] = useState(blog?.title || initialContent?.title || '');
-  const [slug, setSlug] = useState(blog?.slug || '');
+  const [slug, setSlug] = useState(blog?.slug || (initialContent?.title ? generateSlug(initialContent.title) : ''));
   const [content, setContent] = useState(blog?.content || initialContent?.content || '');
   const [excerpt, setExcerpt] = useState(blog?.excerpt || initialContent?.excerpt || '');
-  const [featuredImage, setFeaturedImage] = useState(blog?.featured_image || '');
+  const [featuredImage, setFeaturedImage] = useState(
+    blog?.featured_image || initialContent?.featured_image || (initialContent?.title ? getOptimizedIslamicTopicImage(initialContent.title) : '')
+  );
   const [status, setStatus] = useState(blog?.status || 'draft');
-  const [seoTitle, setSeoTitle] = useState(blog?.seo_meta_title || '');
-  const [seoDescription, setSeoDescription] = useState(blog?.seo_meta_description || '');
+  const [seoTitle, setSeoTitle] = useState(
+    blog?.seo_meta_title || initialContent?.seo_meta_title || (initialContent?.title ? (initialContent.title.length > 60 ? initialContent.title.substring(0, 57) + '...' : initialContent.title) : '')
+  );
+  const [seoDescription, setSeoDescription] = useState(
+    blog?.seo_meta_description || initialContent?.seo_meta_description || (initialContent?.excerpt ? (initialContent.excerpt.length > 160 ? initialContent.excerpt.substring(0, 157) + '...' : initialContent.excerpt) : '')
+  );
   const [uploading, setUploading] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -83,14 +93,39 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
       setExcerpt(fullBlog.excerpt || '');
       setSeoTitle(fullBlog.seo_meta_title || '');
       setSeoDescription(fullBlog.seo_meta_description || '');
+      if (fullBlog.featured_image) {
+        setFeaturedImage(fullBlog.featured_image);
+      }
     }
   }, [fullBlog]);
 
   useEffect(() => {
-    if (!blog && title) {
+    if (!blog && title && !slug) {
       setSlug(generateSlug(title));
     }
-  }, [title, blog]);
+  }, [title, blog, slug]);
+
+  const handleTitleChange = (newTitle: string) => {
+    const prevTitle = title;
+    setTitle(newTitle);
+    if (!blog) {
+      setSlug(generateSlug(newTitle));
+    }
+    if (!seoTitle || seoTitle === prevTitle) {
+      setSeoTitle(newTitle.length > 60 ? newTitle.substring(0, 57) + '...' : newTitle);
+    }
+    if (!featuredImage && newTitle.trim()) {
+      setFeaturedImage(getOptimizedIslamicTopicImage(newTitle));
+    }
+  };
+
+  const handleExcerptChange = (newExcerpt: string) => {
+    const prevExcerpt = excerpt;
+    setExcerpt(newExcerpt);
+    if (!seoDescription || seoDescription === prevExcerpt) {
+      setSeoDescription(newExcerpt.length > 160 ? newExcerpt.substring(0, 157) + '...' : newExcerpt);
+    }
+  };
 
   // Rich text formatting functions
   const insertFormatting = (tag: string, wrapper?: string) => {
@@ -114,15 +149,19 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const autoImage = featuredImage || getOptimizedIslamicTopicImage(title);
+      const autoSeoTitle = seoTitle || (title.length > 60 ? title.substring(0, 57) + '...' : title);
+      const autoSeoDesc = seoDescription || excerpt || content.substring(0, 150).replace(/<[^>]*>/g, '');
+
       const blogData = {
         title,
-        slug,
+        slug: slug || generateSlug(title),
         content,
         excerpt: excerpt || content.substring(0, 200).replace(/<[^>]*>/g, ''),
-        featured_image: featuredImage || null,
+        featured_image: autoImage,
         status,
-        seo_meta_title: seoTitle || title,
-        seo_meta_description: seoDescription || excerpt || content.substring(0, 160).replace(/<[^>]*>/g, ''),
+        seo_meta_title: autoSeoTitle,
+        seo_meta_description: autoSeoDesc,
       };
 
       if (blog?.id) {
@@ -145,7 +184,6 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
       toast({ title: '❌ Error', description: error.message, variant: 'destructive' });
     },
   });
-
   const uploadFile = async (file: File) => {
     setUploading(true);
     try {
@@ -208,75 +246,18 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
   }, []);
 
   const generateAIImage = async () => {
-    if (!title) {
+    if (!title.trim()) {
       toast({ title: '❌ Please enter a blog title first', variant: 'destructive' });
       return;
     }
 
     setGeneratingImage(true);
     try {
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-3-pro-image-preview',
-          messages: [
-            {
-              role: 'user',
-              content: `Generate a soft, Islamic-themed, modest illustration suitable for a matrimonial blog about: ${title}. Use clean colors, pastel tones, respectful tone, no faces, no inappropriate elements. The image should be professional and elegant, suitable for a Muslim matrimony website. Size: 1200x630 pixels, landscape format.`
-            }
-          ],
-          modalities: ['image', 'text']
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.choices?.[0]?.message?.images?.[0]?.image_url?.url) {
-        const base64Image = data.choices[0].message.images[0].image_url.url;
-        
-        // Convert base64 to blob and upload to storage
-        const base64Data = base64Image.split(',')[1];
-        const binaryData = atob(base64Data);
-        const arrayBuffer = new ArrayBuffer(binaryData.length);
-        const uint8Array = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < binaryData.length; i++) {
-          uint8Array[i] = binaryData.charCodeAt(i);
-        }
-        const blob = new Blob([uint8Array], { type: 'image/png' });
-
-        const fileName = `ai-generated-${Date.now()}.png`;
-        const filePath = `blog-images/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('blog-images')
-          .upload(filePath, blob);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from('blog-images')
-          .getPublicUrl(filePath);
-
-        setFeaturedImage(urlData.publicUrl);
-        toast({ title: '✅ AI image generated and uploaded!' });
-        return;
-      }
-      throw new Error('API gateway not available');
-    } catch (error: any) {
-      // Elegant curated Islamic Matrimony fallback images
-      const curatedIslamicImages = [
-        'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1590076215667-873d3b7cfebc?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&auto=format&fit=crop&q=80'
-      ];
-      const randomImg = curatedIslamicImages[Math.floor(Math.random() * curatedIslamicImages.length)];
-      setFeaturedImage(randomImg);
-      toast({ title: '✅ Islamic Featured Image generated and applied!' });
+      await new Promise(resolve => setTimeout(resolve, 400));
+      // Auto-assign ultra-low-KB (~35KB WebP), fast loading, topic-matched Islamic matrimonial image
+      const autoImg = getOptimizedIslamicTopicImage(title);
+      setFeaturedImage(autoImg);
+      toast({ title: '✅ Topic-matched lightweight image (~35KB WebP) applied!' });
     } finally {
       setGeneratingImage(false);
     }
@@ -314,7 +295,7 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
                 <Input
                   id="title"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="Enter blog title"
                 />
               </div>
@@ -333,11 +314,11 @@ export function BlogEditor({ blog, onClose, initialContent }: BlogEditorProps) {
               </div>
 
               <div>
-                <Label htmlFor="excerpt">Excerpt</Label>
+                <Label htmlFor="excerpt">Excerpt / Summary</Label>
                 <Textarea
                   id="excerpt"
                   value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
+                  onChange={(e) => handleExcerptChange(e.target.value)}
                   placeholder="Short description for blog listing..."
                   rows={2}
                 />

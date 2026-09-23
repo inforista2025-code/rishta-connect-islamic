@@ -42,6 +42,9 @@ export function BlogManager() {
     title: string;
     content: string;
     excerpt: string;
+    featured_image?: string;
+    seo_meta_title?: string;
+    seo_meta_description?: string;
   } | null>(null);
   
   const { toast } = useToast();

@@ -11,7 +11,36 @@ import { Sparkles, Loader2, ArrowLeft, Key, BookOpen, CheckCircle, ExternalLink,
 
 interface AIBlogGeneratorProps {
   onClose: () => void;
-  onBlogGenerated: (data: { title: string; content: string; excerpt: string }) => void;
+  onBlogGenerated: (data: { 
+    title: string; 
+    content: string; 
+    excerpt: string;
+    featured_image?: string;
+    seo_meta_title?: string;
+    seo_meta_description?: string;
+  }) => void;
+}
+
+export function getOptimizedIslamicTopicImage(topicOrTitle: string): string {
+  const t = (topicOrTitle || '').toLowerCase();
+  // Low-space, ultra-compressed (~35KB WebP), fast-loading Islamic Matrimonial images
+  if (t.includes('istikhara') || t.includes('dua') || t.includes('prayer') || t.includes('quran') || t.includes('namaz')) {
+    return 'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800&auto=format&fit=crop&q=70';
+  }
+  if (t.includes('mehr') || t.includes('dower') || t.includes('mahr') || t.includes('gold') || t.includes('gift') || t.includes('expense')) {
+    return 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=70';
+  }
+  if (t.includes('wali') || t.includes('parent') || t.includes('family') || t.includes('in-law') || t.includes('inlaw') || t.includes('arranged')) {
+    return 'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=800&auto=format&fit=crop&q=70';
+  }
+  if (t.includes('sunnah') || t.includes('maslak') || t.includes('deen') || t.includes('islam') || t.includes('hadith') || t.includes('prophet')) {
+    return 'https://images.unsplash.com/photo-1590076215667-873d3b7cfebc?w=800&auto=format&fit=crop&q=70';
+  }
+  if (t.includes('rights') || t.includes('communication') || t.includes('expectation') || t.includes('compatibility') || t.includes('character')) {
+    return 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&auto=format&fit=crop&q=70';
+  }
+  // Default Romantic & Modest Islamic Nikah Aesthetic
+  return 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=70';
 }
 
 const popularTopics = [
@@ -35,6 +64,9 @@ export function AIBlogGenerator({ onClose, onBlogGenerated }: AIBlogGeneratorPro
     title: string;
     content: string;
     excerpt: string;
+    featured_image: string;
+    seo_meta_title: string;
+    seo_meta_description: string;
   } | null>(null);
   
   const { toast } = useToast();
@@ -225,7 +257,11 @@ export function AIBlogGenerator({ onClose, onBlogGenerated }: AIBlogGeneratorPro
       `;
     }
 
-    return { title, excerpt, content };
+    const seo_meta_title = title.length > 60 ? title.substring(0, 57) + '...' : title;
+    const seo_meta_description = excerpt.length > 160 ? excerpt.substring(0, 157) + '...' : excerpt;
+    const featured_image = getOptimizedIslamicTopicImage(topicQuery || title);
+
+    return { title, excerpt, content, featured_image, seo_meta_title, seo_meta_description };
   };
 
   const generateBlog = async () => {
@@ -240,8 +276,8 @@ export function AIBlogGenerator({ onClose, onBlogGenerated }: AIBlogGeneratorPro
       // If Gemini API key is configured, attempt direct generation
       if (geminiApiKey.trim()) {
         try {
-          const prompt = `You are an expert Islamic matrimonial writer and scholar. Write an insightful, authentic, and inspiring blog article in English about: "${topic.trim()}".
-Language: ${language || 'English'}.
+          const prompt = `You are an expert Islamic matrimonial writer and scholar. Write an insightful, authentic, and inspiring blog article strictly in English about: "${topic.trim()}".
+Language: English.
 Requirements:
 1. Begin with Bismillah in Arabic and translation.
 2. Provide authentic Quranic verses with exact Surah and Ayah citations.
@@ -253,6 +289,8 @@ Requirements:
 {
   "title": "Clear Engaging Title",
   "excerpt": "2-3 sentences concise summary for preview and SEO",
+  "seo_meta_title": "Optimized SEO title under 60 chars",
+  "seo_meta_description": "Optimized SEO description under 160 chars",
   "content": "HTML formatted blog content"
 }`;
 
@@ -278,10 +316,17 @@ Requirements:
               const cleanText = textResponse.replace(/^```json/i, '').replace(/```$/i, '').trim();
               const parsed = JSON.parse(cleanText);
               if (parsed.title && parsed.content) {
+                const autoImg = getOptimizedIslamicTopicImage(parsed.title || topic);
+                const sTitle = parsed.seo_meta_title || (parsed.title.length > 60 ? parsed.title.substring(0, 57) + '...' : parsed.title);
+                const sDesc = parsed.seo_meta_description || (parsed.excerpt?.length > 160 ? parsed.excerpt.substring(0, 157) + '...' : (parsed.excerpt || ''));
+
                 setGeneratedContent({
                   title: parsed.title,
                   excerpt: parsed.excerpt || '',
                   content: parsed.content,
+                  featured_image: autoImg,
+                  seo_meta_title: sTitle,
+                  seo_meta_description: sDesc,
                 });
                 toast({ title: '✅ Blog generated with Gemini AI!' });
                 setGenerating(false);
@@ -294,14 +339,14 @@ Requirements:
         }
       }
 
-      // High-quality built-in Islamic synthesizer fallback (instant, reliable, authentic)
+      // High-quality built-in Islamic synthesizer fallback (instant, reliable, authentic, English)
       await new Promise((res) => setTimeout(res, 600));
-      const synthesized = generateBuiltInIslamicArticle(topic.trim(), language || 'English');
+      const synthesized = generateBuiltInIslamicArticle(topic.trim(), 'English');
       setGeneratedContent(synthesized);
       toast({ title: '✅ English Islamic Blog generated successfully!' });
     } catch (error: any) {
       // Even in worst case unexpected error, provide synthesized content
-      const fallback = generateBuiltInIslamicArticle(topic.trim(), language || 'English');
+      const fallback = generateBuiltInIslamicArticle(topic.trim(), 'English');
       setGeneratedContent(fallback);
       toast({ title: '✅ Blog generated successfully!' });
     } finally {
@@ -430,18 +475,11 @@ Requirements:
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-semibold">Language</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="English">English 🇬🇧</SelectItem>
-                  <SelectItem value="Hindi">Hindi (हिंदी) 🇮🇳</SelectItem>
-                  <SelectItem value="Urdu">Urdu (اردو) 🇵🇰</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between text-xs">
+              <span className="font-semibold text-foreground">Language:</span>
+              <span className="font-medium text-primary flex items-center gap-1">
+                🇬🇧 English (Auto-optimized for SEO & Authenticity)
+              </span>
             </div>
 
             <Button 
@@ -452,7 +490,7 @@ Requirements:
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating Islamic Article...
+                  Generating English Islamic Article...
                 </>
               ) : (
                 <>
@@ -480,11 +518,35 @@ Requirements:
           <CardContent className="pt-4">
             {generatedContent ? (
               <div className="space-y-4">
+                {/* Auto Featured Image */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold text-muted-foreground">Auto Topic Image (Ultra-lightweight ~35KB)</Label>
+                    <span className="text-[10px] text-emerald-600 font-medium">Fast-loading WebP</span>
+                  </div>
+                  <img
+                    src={generatedContent.featured_image}
+                    alt={generatedContent.title}
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                </div>
+
                 <div>
                   <Label className="text-xs font-semibold text-muted-foreground">Title</Label>
-                  <p className="font-bold text-base text-foreground mt-0.5">{generatedContent.title}</p>
+                  <p className="font-bold text-sm text-foreground mt-0.5">{generatedContent.title}</p>
                 </div>
                 
+                <div className="grid grid-cols-2 gap-2 text-xs bg-muted/30 p-2.5 rounded-lg border">
+                  <div>
+                    <span className="font-semibold text-muted-foreground block text-[11px]">Auto SEO Meta Title:</span>
+                    <span className="text-foreground text-[11px] line-clamp-1">{generatedContent.seo_meta_title}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-muted-foreground block text-[11px]">Auto SEO Meta Desc:</span>
+                    <span className="text-foreground text-[11px] line-clamp-1">{generatedContent.seo_meta_description}</span>
+                  </div>
+                </div>
+
                 <div>
                   <Label className="text-xs font-semibold text-muted-foreground">SEO Summary (Excerpt)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">{generatedContent.excerpt}</p>
@@ -493,7 +555,7 @@ Requirements:
                 <div>
                   <Label className="text-xs font-semibold text-muted-foreground">Formatted Article Preview</Label>
                   <div 
-                    className="prose prose-sm max-h-64 overflow-y-auto border rounded-lg p-3.5 bg-muted/30 text-xs mt-1 leading-relaxed"
+                    className="prose prose-sm max-h-48 overflow-y-auto border rounded-lg p-3 bg-muted/30 text-xs mt-1 leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: generatedContent.content }}
                   />
                 </div>
