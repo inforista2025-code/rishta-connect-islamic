@@ -32,8 +32,8 @@ export const ProfileCardPhoto = memo(({ photoUrls, name, viewerIsPremium, verifi
         draggable={false}
         className={
           viewerIsPremium
-            ? "w-full h-full object-cover object-[center_25%]"
-            : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(7px)] md:[filter:blur(9px)]"
+            ? "w-full h-full object-cover object-[center_25%] transition-transform duration-500 ease-out group-hover:scale-105"
+            : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(7px)] md:[filter:blur(9px)] transition-transform duration-500 ease-out"
         }
       />
       {!viewerIsPremium && (

@@ -314,9 +314,11 @@ export function RegistrationForm() {
               })}
               className="space-y-6"
             >
-              {currentStep === 1 && <Step1 form={form} />}
-              {currentStep === 2 && <Step2 form={form} />}
-              {currentStep === 3 && <Step3 form={form} />}
+              <div key={currentStep} className="animate-in fade-in-50 duration-300">
+                {currentStep === 1 && <Step1 form={form} />}
+                {currentStep === 2 && <Step2 form={form} />}
+                {currentStep === 3 && <Step3 form={form} />}
+              </div>
 
               <div className="flex gap-4 pt-6">
                 {currentStep > 1 && (

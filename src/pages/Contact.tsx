@@ -124,9 +124,9 @@ export default function Contact() {
         {/* 1. Quick Direct Contact Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* WhatsApp Direct */}
-          <Card className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md bg-card flex flex-col justify-between">
+          <Card className="border-2 border-primary/20 hover:border-primary hover:-translate-y-1.5 transition-all duration-300 ease-out shadow-sm hover:shadow-xl bg-card flex flex-col justify-between">
             <CardHeader className="pb-3">
-              <div className="w-12 h-12 rounded-full bg-[#25D366]/10 flex items-center justify-center mb-3 text-[#25D366]">
+              <div className="w-12 h-12 rounded-full bg-[#25D366]/10 flex items-center justify-center mb-3 text-[#25D366] transition-transform duration-300 group-hover:scale-110">
                 <MessageCircle className="w-6 h-6" />
               </div>
               <CardTitle className="text-xl font-bold text-foreground">WhatsApp Support</CardTitle>
@@ -139,7 +139,7 @@ export default function Contact() {
               <Button
                 variant="whatsapp"
                 size="lg"
-                className="w-full h-11 rounded-full shadow-sm"
+                className="w-full h-11 rounded-full shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200"
                 onClick={() => window.open("https://wa.me/919128719875", "_blank")}
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat on WhatsApp
@@ -148,9 +148,9 @@ export default function Contact() {
           </Card>
 
           {/* Email Support */}
-          <Card className="border border-border hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md bg-card flex flex-col justify-between">
+          <Card className="border border-border hover:border-primary/50 hover:-translate-y-1.5 transition-all duration-300 ease-out shadow-sm hover:shadow-xl bg-card flex flex-col justify-between">
             <CardHeader className="pb-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 text-primary">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 text-primary transition-transform duration-300 group-hover:scale-110">
                 <Mail className="w-6 h-6" />
               </div>
               <CardTitle className="text-xl font-bold text-foreground">Email Support</CardTitle>
@@ -163,7 +163,7 @@ export default function Contact() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full h-11 rounded-full border-primary/30 hover:bg-primary/5 text-primary"
+                className="w-full h-11 rounded-full border-primary/30 hover:bg-primary/10 active:scale-[0.98] text-primary transition-all duration-200"
                 onClick={() => window.open("mailto:info.rista2025@gmail.com", "_blank")}
               >
                 <Mail className="w-4 h-4 mr-2" /> Send an Email
@@ -172,7 +172,7 @@ export default function Contact() {
           </Card>
 
           {/* Working Hours */}
-          <Card className="border border-border shadow-sm bg-muted/30 flex flex-col justify-between">
+          <Card className="border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out bg-muted/30 flex flex-col justify-between">
             <CardHeader className="pb-3">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-3 text-amber-600 dark:text-amber-400">
                 <Clock className="w-6 h-6" />
@@ -181,7 +181,7 @@ export default function Contact() {
               <CardDescription className="text-sm">Our team is active during working hours to assist families.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-2">
-              <div className="bg-background border rounded-lg p-3 text-xs space-y-1.5">
+              <div className="bg-background border rounded-lg p-3 text-xs space-y-1.5 shadow-2xs">
                 <div className="flex justify-between font-medium">
                   <span className="text-foreground">Monday – Friday:</span>
                   <span className="text-primary font-semibold">9:00 AM – 8:00 PM IST</span>
@@ -213,7 +213,7 @@ export default function Contact() {
             {communityChannels.map((channel, i) => (
               <div
                 key={i}
-                className="bg-background border border-border/70 rounded-xl p-5 text-center flex flex-col justify-between hover:shadow-md hover:border-primary/30 transition-all duration-300"
+                className="group bg-background border border-border/70 rounded-xl p-5 text-center flex flex-col justify-between hover:shadow-xl hover:-translate-y-1.5 hover:border-primary/40 transition-all duration-300 ease-out"
               >
                 <div>
                   <div className="flex justify-center mb-3">
@@ -221,14 +221,14 @@ export default function Contact() {
                       {channel.tag}
                     </span>
                   </div>
-                  <div className={`w-13 h-13 w-12 h-12 mx-auto mb-3 ${channel.iconBg} rounded-full flex items-center justify-center shadow-inner`}>
+                  <div className={`w-12 h-12 mx-auto mb-3 ${channel.iconBg} rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out`}>
                     <channel.icon className={`w-6 h-6 ${channel.iconColor}`} />
                   </div>
-                  <h3 className="font-bold text-foreground text-base mb-1">{channel.name}</h3>
+                  <h3 className="font-bold text-foreground text-base mb-1 group-hover:text-primary transition-colors duration-200">{channel.name}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed mb-4">{channel.description}</p>
                 </div>
                 <Button
-                  className={`w-full h-10 rounded-full text-xs font-semibold ${channel.btnClass}`}
+                  className={`w-full h-10 rounded-full text-xs font-semibold shadow-xs hover:shadow-md active:scale-[0.98] transition-all duration-200 ${channel.btnClass}`}
                   onClick={() => window.open(channel.url, "_blank")}
                 >
                   <UserPlus className="w-3.5 h-3.5 mr-1.5" />

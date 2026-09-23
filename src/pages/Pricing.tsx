@@ -165,7 +165,7 @@ export default function Pricing() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           
           {/* Free Plan Card */}
-          <Card className="border border-border/80 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl bg-card flex flex-col justify-between">
+          <Card className="border border-border/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-card flex flex-col justify-between">
             <div>
               <CardHeader className="text-center pb-4 pt-6">
                 <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-semibold px-3 py-1">
@@ -185,7 +185,7 @@ export default function Pricing() {
               <CardContent className="space-y-4 pt-2">
                 <div className="space-y-3">
                   {freePlanFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div key={index} className="flex items-start gap-3 p-1.5 rounded-lg transition-colors hover:bg-muted/40">
                       {feature.status === "included" ? (
                         <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                           <Check className="w-3.5 h-3.5" />
@@ -212,7 +212,7 @@ export default function Pricing() {
                 onClick={() => navigate("/register")}
                 variant="outline"
                 size="lg" 
-                className="w-full h-11 border-primary/40 hover:bg-primary/5 text-primary font-bold text-xs sm:text-sm rounded-xl transition-all duration-200 gap-2 cursor-pointer"
+                className="w-full h-11 border-primary/40 hover:bg-primary/10 active:scale-[0.98] text-primary font-bold text-xs sm:text-sm rounded-xl transition-all duration-200 gap-2 cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Start Free Registration</span>
@@ -221,7 +221,7 @@ export default function Pricing() {
           </Card>
 
           {/* Premium Plan Card */}
-          <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl bg-gradient-to-b from-primary/5 via-card to-card relative overflow-hidden flex flex-col justify-between">
+          <Card className="border-2 border-primary shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-gradient-to-b from-primary/5 via-card to-card relative overflow-hidden flex flex-col justify-between">
             <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[11px] font-bold px-4 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-amber-300" />
               <span>Recommended</span>
@@ -229,7 +229,7 @@ export default function Pricing() {
 
             <div>
               <CardHeader className="text-center pb-4 pt-6">
-                <Badge className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-primary text-primary-foreground">
+                <Badge className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-primary text-primary-foreground shadow-xs">
                   ⭐ Full Contact & Photos
                 </Badge>
                 <CardTitle className="text-2xl sm:text-3xl font-extrabold text-foreground">
@@ -248,7 +248,7 @@ export default function Pricing() {
                   {premiumPlanFeatures.map((feature, index) => (
                     <div 
                       key={index} 
-                      className={`flex items-start gap-3 p-2 rounded-xl transition-colors ${feature.highlight ? "bg-primary/10 border border-primary/20" : ""}`}
+                      className={`flex items-start gap-3 p-2 rounded-xl transition-all duration-200 hover:translate-x-0.5 ${feature.highlight ? "bg-primary/10 border border-primary/20 shadow-xs" : "hover:bg-muted/40"}`}
                     >
                       <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                         <Check className="w-3.5 h-3.5" />
@@ -274,7 +274,7 @@ export default function Pricing() {
               <Button 
                 onClick={handleWhatsAppUpgrade}
                 size="lg" 
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all duration-200 gap-2 cursor-pointer"
+                className="w-full h-11 bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 gap-2 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-300" />
                 <span>Upgrade via WhatsApp (₹491)</span>

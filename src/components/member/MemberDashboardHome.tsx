@@ -614,8 +614,8 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, save
 
 function StatTile({ icon, bg, label, value }: any) {
   return (
-    <div className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm">
-      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0", bg)}>{icon}</div>
+    <div className="bg-white dark:bg-card rounded-xl p-3 flex items-center gap-3 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-2xs", bg)}>{icon}</div>
       <div className="min-w-0">
         <div className="text-[11px] text-muted-foreground leading-tight">{label}</div>
         <div className="font-semibold text-sm truncate">{value}</div>
@@ -626,32 +626,34 @@ function StatTile({ icon, bg, label, value }: any) {
 
 function RecommendedCard({ p, match, onView, onSave, saved }: any) {
   return (
-    <div className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition flex flex-col">
+    <div className="group border rounded-xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
       <button
         type="button"
         onClick={onView}
-        className="relative block w-full text-left focus:outline-none focus:ring-2 focus:ring-primary"
+        className="relative block w-full text-left focus:outline-none focus:ring-2 focus:ring-primary overflow-hidden"
         aria-label={`View ${p.name}'s profile`}
       >
-        <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
+        <div className="group-hover:scale-105 transition-transform duration-500 ease-out">
+          <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
+        </div>
         <span className="absolute bottom-2 left-2">
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px]">{match}% Match</Badge>
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px] shadow-xs">{match}% Match</Badge>
         </span>
       </button>
-      <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none">
-        <div className="font-semibold text-sm truncate">{p.name}</div>
+      <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none flex-1">
+        <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.age || "—"} · {p.location || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
       </button>
       <div className="flex gap-1.5 p-2.5 pt-0">
-        <Button size="sm" className="h-9 text-xs px-2 flex-1" onClick={onView}>
+        <Button size="sm" className="h-9 text-xs px-2 flex-1 active:scale-[0.98] transition-transform duration-150" onClick={onView}>
           <Heart className="w-3.5 h-3.5 mr-1" /> Interest
         </Button>
         <Button
           size="sm"
           variant="outline"
-          className="h-9 w-9 p-0 shrink-0"
+          className="h-9 w-9 p-0 shrink-0 active:scale-[0.95] transition-all duration-150"
           onClick={(e) => { e.stopPropagation(); onSave(); }}
           aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
         >

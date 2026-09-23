@@ -218,7 +218,7 @@ View full profile here:`;
         </div>
       )}
       <Card 
-        className={`hover:shadow-xl transition-all duration-300 ease-in-out border rounded-2xl overflow-hidden bg-card ${isPremium ? 'border-[#6C4DF6]' : 'border-border/80'}`}
+        className={`group hover:-translate-y-1.5 hover:shadow-2xl active:scale-[0.99] transition-all duration-300 ease-out border rounded-2xl overflow-hidden bg-card ${isPremium ? 'border-[#6C4DF6]' : 'border-border/80'}`}
         style={isPremium ? { 
           boxShadow: '0 0 12px rgba(108,77,246,0.25)',
           backgroundColor: '#FCFBFF'
