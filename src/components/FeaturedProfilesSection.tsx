@@ -253,9 +253,9 @@ export function FeaturedProfilesSection() {
       <div className="container mx-auto px-5 sm:px-6">
         <div className="flex items-end justify-between gap-4 mb-7 md:mb-9">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Meet Some of Our Members</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Featured Matrimonial Profiles</h2>
             <p className="text-sm md:text-base text-muted-foreground mt-1.5">
-              Genuine, admin-verified profiles from our community
+              Genuine, admin-verified profiles looking for a righteous spouse
             </p>
           </div>
           <button
