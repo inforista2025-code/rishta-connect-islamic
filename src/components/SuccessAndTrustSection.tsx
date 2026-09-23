@@ -72,23 +72,25 @@ export function SuccessAndTrustSection() {
             {successStories.map((story, index) => (
               <article
                 key={index}
-                className="min-w-full md:min-w-0 snap-center bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col"
+                className="group min-w-full md:min-w-0 snap-center bg-card border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col"
               >
-                <img
-                  src={story.image}
-                  alt={`${story.names} — success story from ${story.location}`}
-                  className="w-full h-44 md:h-52 object-cover object-top"
-                  loading="lazy"
-                  width={640}
-                  height={512}
-                />
+                <div className="overflow-hidden">
+                  <img
+                    src={story.image}
+                    alt={`${story.names} — success story from ${story.location}`}
+                    className="w-full h-44 md:h-52 object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+                    loading="lazy"
+                    width={640}
+                    height={512}
+                  />
+                </div>
                 <div className="p-5 flex flex-col flex-1">
-                  <Quote className="w-5 h-5 text-primary/50 mb-2" />
+                  <Quote className="w-5 h-5 text-primary/50 mb-2 group-hover:text-primary transition-colors duration-200" />
                   <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                     {story.quote}
                   </p>
                   <div className="mt-4 pt-4 border-t border-border">
-                    <p className="font-semibold text-foreground text-sm">{story.names}</p>
+                    <p className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors duration-200">{story.names}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {story.location} • {story.date}
                     </p>

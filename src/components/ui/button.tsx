@@ -5,20 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-all duration-200 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-button",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-button transform hover:scale-105",
-        whatsapp: "bg-green-500 text-white hover:bg-green-600 shadow-button transform hover:scale-105",
-        community: "bg-accent text-accent-foreground hover:bg-accent/80 shadow-button transform hover:scale-105",
-        elegant: "bg-gradient-to-r from-primary/80 to-accent/80 text-foreground hover:from-primary hover:to-accent shadow-button backdrop-blur-sm",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-button hover:shadow-md active:scale-[0.97]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm active:scale-[0.97]",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground active:scale-[0.97]",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.97]",
+        ghost: "hover:bg-accent hover:text-accent-foreground active:scale-[0.97]",
+        link: "text-primary underline-offset-4 hover:underline active:scale-100",
+        hero: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-button transform hover:scale-[1.03] active:scale-95",
+        whatsapp: "bg-green-500 text-white hover:bg-green-600 shadow-button transform hover:scale-[1.03] active:scale-95",
+        community: "bg-accent text-accent-foreground hover:bg-accent/80 shadow-button transform hover:scale-[1.03] active:scale-95",
+        elegant: "bg-gradient-to-r from-primary/80 to-accent/80 text-foreground hover:from-primary hover:to-accent shadow-button backdrop-blur-sm transform hover:scale-[1.02] active:scale-95",
       },
       size: {
         default: "h-12 px-6 py-3 text-base",

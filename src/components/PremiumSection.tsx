@@ -52,13 +52,13 @@ export function PremiumSection() {
 
             {/* Right: pricing + CTA */}
             <div className="md:col-span-2 md:pl-6 md:border-l md:border-border">
-              <div className="bg-card border border-border rounded-xl p-6 text-center shadow-sm">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">Premium Plan</p>
+              <div className="bg-card border border-gold/30 rounded-2xl p-6 text-center shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Premium Plan</p>
                 <p className="mt-2 text-4xl md:text-5xl font-bold text-primary">₹491</p>
                 <p className="text-sm text-muted-foreground">for 2 months</p>
                 <Button
                   onClick={() => navigate("/pricing")}
-                  className="mt-5 w-full h-12 rounded-full"
+                  className="mt-5 w-full h-12 rounded-full shadow-md"
                   size="lg"
                 >
                   <Crown className="w-5 h-5" />

@@ -266,11 +266,11 @@ export function FeaturedProfilesSection() {
           </button>
         </div>
 
-        {/* 4-Profile Grid (Exactly Original Style) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {/* 4-Profile Grid (Smooth Transition & Micro-Interactions) */}
+        <div key={startIndex} className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in duration-500">
           {!displayedProfiles &&
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-border bg-card p-4">
+              <div key={i} className="rounded-xl border border-border bg-card p-4 animate-pulse">
                 <Skeleton className="w-full aspect-square rounded-lg mb-3" />
                 <Skeleton className="h-4 w-2/3 mb-2" />
                 <Skeleton className="h-3 w-1/2" />
@@ -283,7 +283,7 @@ export function FeaturedProfilesSection() {
               <article
                 key={p.id}
                 onClick={() => open(p.id, p.gender)}
-                className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden shadow-card hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in"
+                className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden shadow-card hover:shadow-xl hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 ease-out"
               >
                 <div className="relative aspect-square bg-muted overflow-hidden">
                   {photo ? (
@@ -295,33 +295,33 @@ export function FeaturedProfilesSection() {
                       draggable={false}
                       className={
                         viewerIsPremium
-                          ? "w-full h-full object-cover object-[center_25%]"
-                          : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(6px)]"
+                          ? "w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-500 ease-out"
+                          : "w-full h-full object-cover object-[center_25%] scale-110 select-none pointer-events-none [filter:blur(6px)] group-hover:scale-115 transition-transform duration-500 ease-out"
                       }
                     />
                   ) : (
-                    <div className="w-full h-full grid place-items-center text-muted-foreground text-xs text-center p-2">
+                    <div className="w-full h-full grid place-items-center text-muted-foreground text-xs text-center p-2 group-hover:scale-105 transition-transform duration-300">
                       <span className="text-2xl mb-1">{p.gender === "Female" ? "👰" : "🤵"}</span>
                       <span>{p.gender === "Female" ? "Bride Profile" : "Groom Profile"}</span>
                     </div>
                   )}
                   {!viewerIsPremium && photo && (
                     <>
-                      <div className="absolute inset-0 bg-foreground/10" />
-                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                      <div className="absolute inset-0 bg-foreground/10 group-hover:bg-foreground/5 transition-colors duration-300" />
+                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-xs">
                         <Lock className="w-3 h-3" /> Premium Unlock
                       </span>
                     </>
                   )}
                   {p.verification_status?.toLowerCase() === "verified" && (
-                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-sage px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-sage px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-xs">
                       <BadgeCheck className="w-3 h-3" /> Verified
                     </span>
                   )}
                 </div>
 
                 <div className="p-3 md:p-4">
-                  <h3 className="font-semibold text-foreground text-sm md:text-base leading-tight truncate">
+                  <h3 className="font-semibold text-foreground text-sm md:text-base leading-tight truncate group-hover:text-primary transition-colors duration-200">
                     {p.name?.trim()}
                     {p.age ? <span className="text-muted-foreground font-normal">, {p.age}</span> : null}
                   </h3>
@@ -347,7 +347,7 @@ export function FeaturedProfilesSection() {
                   </ul>
                   <Button
                     size="sm"
-                    className="w-full mt-3 rounded-full"
+                    className="w-full mt-3 rounded-full shadow-xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       open(p.id, p.gender);

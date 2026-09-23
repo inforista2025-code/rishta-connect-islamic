@@ -47,21 +47,21 @@ export function HowToJoinSection() {
           {steps.map((step) => (
             <Card
               key={step.number}
-              className="text-center border shadow-sm hover:shadow-md transition-shadow duration-300"
+              className="group text-center border rounded-2xl shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-pointer"
+              onClick={() => step.clickable && navigate(step.link || '/')}
             >
               <CardContent className="p-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform duration-200">
                     {step.number}
                   </div>
                   <div
-                    className={`w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center ${step.clickable ? 'cursor-pointer hover:bg-primary/20 transition-colors' : ''}`}
-                    onClick={() => step.clickable && navigate(step.link || '/')}
+                    className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
                   >
-                    <step.icon className="w-6 h-6 text-primary" />
+                    <step.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors duration-200" />
                   </div>
                 </div>
-                <h3 className="font-semibold text-foreground text-lg mb-2">
+                <h3 className="font-semibold text-foreground text-lg mb-2 group-hover:text-primary transition-colors duration-200">
                   {step.title}
                 </h3>
                 <p className="text-sm text-muted-foreground">{step.description}</p>

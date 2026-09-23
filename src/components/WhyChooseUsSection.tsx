@@ -41,12 +41,12 @@ export function WhyChooseUsSection() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-card border border-border rounded-xl p-5 md:p-6 text-center shadow-sm hover:shadow-md transition-shadow"
+                className="group bg-card border border-border rounded-2xl p-5 md:p-6 text-center shadow-xs hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 ease-out"
               >
-                <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 md:mb-4 rounded-full bg-primary/10 ring-1 ring-primary/15 flex items-center justify-center">
+                <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 md:mb-4 rounded-full bg-primary/10 ring-1 ring-primary/15 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/15 transition-all duration-300">
                   <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground text-sm md:text-base mb-1 leading-tight">
+                <h3 className="font-semibold text-foreground text-sm md:text-base mb-1 leading-tight group-hover:text-primary transition-colors duration-200">
                   {feature.title}
                 </h3>
                 <p className="text-xs md:text-sm text-muted-foreground leading-snug">

@@ -27,17 +27,17 @@ export function FAQSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
           {/* Left Column */}
-          <Accordion type="single" collapsible className="space-y-2">
+          <Accordion type="single" collapsible className="space-y-2.5">
             {leftFaqs.map((faq) => (
               <AccordionItem
                 key={faq.id}
                 value={faq.id}
-                className="bg-card border rounded-lg px-4 shadow-sm"
+                className="bg-card border rounded-xl px-4.5 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-200"
               >
-                <AccordionTrigger className="text-left text-sm font-semibold text-foreground py-4 hover:no-underline">
+                <AccordionTrigger className="text-left text-sm font-semibold text-foreground py-4 hover:no-underline hover:text-primary transition-colors">
                   Q{faq.id}. {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
+                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed animate-accordion-down">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -45,17 +45,17 @@ export function FAQSection() {
           </Accordion>
 
           {/* Right Column */}
-          <Accordion type="single" collapsible className="space-y-2">
+          <Accordion type="single" collapsible className="space-y-2.5">
             {rightFaqs.map((faq) => (
               <AccordionItem
                 key={faq.id}
                 value={faq.id}
-                className="bg-card border rounded-lg px-4 shadow-sm"
+                className="bg-card border rounded-xl px-4.5 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-200"
               >
-                <AccordionTrigger className="text-left text-sm font-semibold text-foreground py-4 hover:no-underline">
+                <AccordionTrigger className="text-left text-sm font-semibold text-foreground py-4 hover:no-underline hover:text-primary transition-colors">
                   Q{faq.id}. {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
+                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed animate-accordion-down">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

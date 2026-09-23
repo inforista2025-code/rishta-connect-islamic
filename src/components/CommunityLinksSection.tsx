@@ -64,13 +64,13 @@ export function CommunityLinksSection() {
             {communityLinks.map((link, index) => (
               <div
                 key={index}
-                className="bg-card border border-border rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="group bg-card border border-border rounded-2xl p-6 text-center shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between"
               >
                 <div>
-                  <div className={`w-14 h-14 mx-auto mb-3 ${link.iconBg} rounded-full flex items-center justify-center`}>
+                  <div className={`w-14 h-14 mx-auto mb-3 ${link.iconBg} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xs`}>
                     <link.icon className={`w-7 h-7 ${link.iconColor}`} />
                   </div>
-                  <h3 className="font-semibold text-foreground text-base mb-1">{link.name}</h3>
+                  <h3 className="font-semibold text-foreground text-base mb-1 group-hover:text-primary transition-colors duration-200">{link.name}</h3>
                   <p className="text-xs md:text-sm text-muted-foreground mb-4">{link.description}</p>
                 </div>
                 <Button
