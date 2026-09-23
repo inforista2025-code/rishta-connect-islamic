@@ -1093,10 +1093,32 @@ const Profiles = () => {
           }
         }
 
-        // Maslak filter
+        // Maslak filter (Clean categorized matching)
         if (maslakFilter !== "all" && maslakFilter.trim()) {
-          if (!profile.maslak || !profile.maslak.toLowerCase().includes(maslakFilter.toLowerCase())) {
-            return false;
+          if (!profile.maslak) return false;
+          const pMaslak = profile.maslak.toLowerCase();
+          const filter = maslakFilter.toLowerCase();
+
+          if (filter.includes("sunni")) {
+            const isMatch = pMaslak.includes("sunni") || pMaslak.includes("hanafi") || pMaslak.includes("ahle sunnat") || pMaslak === "muslim";
+            if (!isMatch) return false;
+          } else if (filter.includes("salafi") || filter.includes("hadees") || filter.includes("hadith")) {
+            const isMatch = pMaslak.includes("salafi") || pMaslak.includes("hadees") || pMaslak.includes("hadith");
+            if (!isMatch) return false;
+          } else if (filter.includes("deoband")) {
+            const isMatch = pMaslak.includes("deoband") || pMaslak.includes("tabligh");
+            if (!isMatch) return false;
+          } else if (filter.includes("barelv")) {
+            const isMatch = pMaslak.includes("barelv") || pMaslak.includes("razvi");
+            if (!isMatch) return false;
+          } else if (filter.includes("shafi") || filter.includes("maliki") || filter.includes("hanbali")) {
+            const isMatch = pMaslak.includes("shafi") || pMaslak.includes("maliki") || pMaslak.includes("hanbali");
+            if (!isMatch) return false;
+          } else if (filter.includes("practicing") || filter.includes("general")) {
+            const isMatch = pMaslak.includes("muslim") || pMaslak.includes("practicing") || pMaslak.includes("any");
+            if (!isMatch) return false;
+          } else {
+            if (!pMaslak.includes(filter)) return false;
           }
         }
 
@@ -1123,6 +1145,16 @@ const Profiles = () => {
     [profiles, activeGender, searchTerm, locationFilter, maslakFilter, ageFilter]
   );
 
+  // Clean, non-repeating Standard Maslak Options
+  const standardMaslakOptions = useMemo(() => [
+    "Sunni",
+    "Salafi (Ahle Hadees)",
+    "Deobandi",
+    "Barelvi",
+    "Shafi'i / Maliki / Hanbali",
+    "Practicing Muslim (General)",
+  ], []);
+
   // Extract dynamic filter options from profiles
   const availableLocations = useMemo(() => {
     const locSet = new Set<string>();
@@ -1136,16 +1168,6 @@ const Profiles = () => {
       }
     });
     return Array.from(locSet).sort();
-  }, [profiles]);
-
-  const availableMaslaks = useMemo(() => {
-    const masSet = new Set<string>();
-    profiles.forEach(p => {
-      if (p.maslak && p.maslak !== "N/A") {
-        masSet.add(p.maslak.trim());
-      }
-    });
-    return Array.from(masSet).sort();
   }, [profiles]);
 
   const femaleCount = useMemo(() => profiles.filter(p => p.gender === "Female").length, [profiles]);
@@ -1605,7 +1627,7 @@ const Profiles = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">🕌 All Maslaks</SelectItem>
-                    {availableMaslaks.map((m) => (
+                    {standardMaslakOptions.map((m) => (
                       <SelectItem key={m} value={m}>
                         {m}
                       </SelectItem>

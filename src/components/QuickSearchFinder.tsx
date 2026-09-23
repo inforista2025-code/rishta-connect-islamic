@@ -114,10 +114,11 @@ export function QuickSearchFinder() {
             <SelectContent>
               <SelectItem value="all">All Maslak (सभी)</SelectItem>
               <SelectItem value="Sunni">Sunni</SelectItem>
-              <SelectItem value="Hanafi">Hanafi</SelectItem>
+              <SelectItem value="Salafi (Ahle Hadees)">Salafi (Ahle Hadees)</SelectItem>
               <SelectItem value="Deobandi">Deobandi</SelectItem>
               <SelectItem value="Barelvi">Barelvi</SelectItem>
-              <SelectItem value="Salafi">Salafi / Ahle Hadees</SelectItem>
+              <SelectItem value="Shafi'i / Maliki / Hanbali">Shafi'i / Maliki / Hanbali</SelectItem>
+              <SelectItem value="Practicing Muslim">Practicing Muslim</SelectItem>
             </SelectContent>
           </Select>
         </div>
