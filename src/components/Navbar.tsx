@@ -137,7 +137,7 @@ export function Navbar() {
               </Button>
             )}
 
-            {/* Member Login / Dashboard */}
+            {/* Profile Login / Dashboard */}
             {!member && !user && (
               <Button
                 variant="outline"
@@ -145,7 +145,7 @@ export function Navbar() {
                 onClick={() => navigate("/member/login")}
                 className="ml-2"
               >
-                Member Login
+                Profile Login
               </Button>
             )}
             {member && (
@@ -231,7 +231,7 @@ export function Navbar() {
                   onClick={() => { navigate("/member/login"); setIsOpen(false); }}
                   className="justify-start px-4 py-3 h-auto text-sm font-medium"
                 >
-                  Member Login
+                  Profile Login
                 </Button>
               )}
               {member && (

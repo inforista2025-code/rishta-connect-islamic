@@ -157,10 +157,10 @@ export default function MemberLogin() {
                 ﷽
               </div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                Member Portal Login
+                Profile Login
               </h1>
-              <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-                Secure password-free access to your verified rishta profile & dashboard.
+              <p className="text-xs text-muted-foreground mt-1.5 max-w-sm mx-auto leading-relaxed">
+                Already registered your biodata? Enter your WhatsApp number to manage your profile & proposals.
               </p>
             </div>
 

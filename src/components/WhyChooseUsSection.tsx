@@ -14,7 +14,7 @@ export function WhyChooseUsSection() {
     },
     {
       icon: UserCheck,
-      title: "Secure Member Login",
+      title: "Secure Profile Login",
       description: "Login with your WhatsApp number via OTP — no password needed",
     },
     {

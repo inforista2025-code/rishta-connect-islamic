@@ -130,7 +130,7 @@ export function Footer({ minimal = false }: { minimal?: boolean }) {
                   <li>
                     <Link to="/member/login" className="hover:text-white transition-colors flex items-center gap-1 font-medium text-pink-200">
                       <LogIn className="w-3 h-3 text-primary shrink-0" />
-                      <span>Member Login</span>
+                      <span>Profile Login</span>
                     </Link>
                   </li>
                   <li>
