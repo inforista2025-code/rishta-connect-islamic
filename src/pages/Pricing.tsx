@@ -72,6 +72,11 @@ export default function Pricing() {
 
   const premiumPlanFeatures = [
     {
+      title: "👑 1st Page Top Priority & ⭐ Premium Featured Tag",
+      description: "Your profile is pinned at the top on Page 1 with a shining ⭐ Premium Featured tag so 5x more families view your biodata first.",
+      highlight: true
+    },
+    {
       title: "Clear Original Photos Unlocked",
       description: "View high-resolution profile photos in full 100% clarity with zero blur.",
       highlight: true
@@ -92,13 +97,8 @@ export default function Pricing() {
       highlight: true
     },
     {
-      title: "⭐ Verified Premium Badge",
-      description: "Gold verified badge on your profile builds instant trust and credibility.",
-      highlight: false
-    },
-    {
-      title: "Top Search & Recommendation Ranking",
-      description: "Your profile appears at the top of Browse lists so more families contact you first.",
+      title: "⭐ Verified Premium Badge & Royal Border",
+      description: "Gold verified badge on your profile builds instant trust, credibility and high response rate.",
       highlight: false
     },
     {
@@ -121,6 +121,10 @@ export default function Pricing() {
   };
 
   const faqs = [
+    {
+      question: "What is the benefit of the '⭐ Premium Featured' tag & 1st Page Priority?",
+      answer: "When your profile is upgraded to Premium, it is automatically pinned at the top of Page 1 on the Profiles listing with an exclusive '⭐ Premium Featured' badge. This gives your biodata maximum exposure and gets you 5x faster responses from suitable families."
+    },
     {
       question: "How do I upgrade to the Premium Plan?",
       answer: "Click on 'Upgrade via WhatsApp' to message our support team. You can pay securely via Google Pay, PhonePe, Paytm, or UPI QR code. Your premium benefits will be activated within 15 minutes of payment confirmation."
