@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateAge } from "@/lib/ageCalculator";
 import {
   DndContext,
   closestCenter,
@@ -822,7 +823,7 @@ const Profiles = () => {
       preferredAge: "20–25",
       order: 1
     }
-  ];
+  ].map(p => ({ ...p, age: calculateAge(p.dob, p.age) }));
 
   // Check authentication and admin status
   useEffect(() => {
@@ -876,7 +877,7 @@ const Profiles = () => {
             id: p.id,
             name: p.name,
             gender: p.gender,
-            age: p.age,
+            age: calculateAge(p.dob, p.age),
             dob: p.dob,
             location: p.location,
             height: p.height,
@@ -937,7 +938,7 @@ const Profiles = () => {
               id: p.id,
               name: p.name,
               gender: p.gender,
-              age: p.age,
+              age: calculateAge(p.dob, p.age),
               dob: p.dob,
               location: p.location,
               height: p.height,

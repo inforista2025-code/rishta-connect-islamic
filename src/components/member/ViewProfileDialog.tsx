@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "./ProfilePhoto";
 import { useToast } from "@/hooks/use-toast";
 import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
+import { calculateAge } from "@/lib/ageCalculator";
 
 export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: boolean; onOpenChange: (v: boolean) => void; targetId: number | null }) {
   const { call } = useMemberApi();
@@ -33,6 +34,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   const isPremium = data?.viewer_is_premium;
   const p = data?.profile;
   const isSelf = data?.is_self;
+  const profileAge = p ? calculateAge(p.dob || p.date_of_birth, p.age) : "";
 
   const doSave = async () => {
     if (!targetId) return;
@@ -85,7 +87,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                 {p.name}
                 {p.is_premium && <Badge className="bg-purple-600"><Crown className="w-3 h-3 mr-1" />Premium</Badge>}
               </DialogTitle>
-              <DialogDescription>{p.age} yrs · {p.location}</DialogDescription>
+              <DialogDescription>{profileAge} yrs · {p.location}</DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">

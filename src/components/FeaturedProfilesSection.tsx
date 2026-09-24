@@ -5,12 +5,14 @@ import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BadgeCheck, MapPin, GraduationCap, Briefcase, Lock, ArrowRight } from "lucide-react";
+import { calculateAge } from "@/lib/ageCalculator";
 
 interface FeaturedProfile {
   id: number;
   name: string;
   gender?: string | null;
   age: string | null;
+  dob?: string | null;
   location: string | null;
   education: string | null;
   profession: string | null;
@@ -192,7 +194,7 @@ export function FeaturedProfilesSection() {
       try {
         const { data } = await supabase
           .from("profiles_data")
-          .select("id, name, gender, age, location, education, profession, photo_urls, verification_status")
+          .select("id, name, gender, age, dob, location, education, profession, photo_urls, verification_status")
           .eq("is_live", true)
           .eq("verification_status", "verified");
 
@@ -200,7 +202,10 @@ export function FeaturedProfilesSection() {
 
         let listToUse: FeaturedProfile[] = [];
         if (data && data.length > 0) {
-          listToUse = data as FeaturedProfile[];
+          listToUse = (data as any[]).map((p) => ({
+            ...p,
+            age: calculateAge(p.dob, p.age),
+          })) as FeaturedProfile[];
         } else {
           listToUse = FALLBACK_PROFILES;
         }

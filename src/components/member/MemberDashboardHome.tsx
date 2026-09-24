@@ -23,6 +23,7 @@ import { ProfilePhoto } from "./ProfilePhoto";
 import { ProfilePictureDialog } from "./ProfilePictureDialog";
 import { ViewProfileDialog } from "./ViewProfileDialog";
 import { cn } from "@/lib/utils";
+import { calculateAge } from "@/lib/ageCalculator";
 
 type SectionKey =
   | "dashboard" | "profile" | "recommended" | "saved"
@@ -642,7 +643,7 @@ function RecommendedCard({ p, match, onView, onSave, saved }: any) {
       </button>
       <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none flex-1">
         <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{p.age || "—"} · {p.location || "—"}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{calculateAge(p.dob || p.date_of_birth, p.age)} yrs · {p.location || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
       </button>
@@ -779,7 +780,7 @@ function InterestsSection({ title, rows, emptyMsg, onView, loading, error, onRet
             <ProfilePhoto src={r.profile.photo_urls?.[0]} alt={r.profile.name} blurred={r.profile.photo_blurred} size="md" rounded="full" />
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm truncate">{r.profile.name}</div>
-              <div className="text-xs text-muted-foreground truncate">{r.profile.age} · {r.profile.location}</div>
+              <div className="text-xs text-muted-foreground truncate">{calculateAge(r.profile.dob || r.profile.date_of_birth, r.profile.age)} yrs · {r.profile.location}</div>
             </div>
             <Badge variant="secondary" className="text-[10px]">{r.status}</Badge>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />

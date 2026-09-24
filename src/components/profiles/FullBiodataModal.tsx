@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { calculateAge, formatDisplayDob } from "@/lib/ageCalculator";
 
 interface ProfileData {
   id: number;
@@ -55,6 +56,8 @@ export function FullBiodataModal({ profile, open, onOpenChange }: FullBiodataMod
   const [copied, setCopied] = useState(false);
 
   const profileCode = profile ? `RM-${profile.gender === "Female" ? "BR" : "GR"}-${profile.id}` : "";
+  const displayAge = profile ? calculateAge(profile.dob, profile.age) : "";
+  const displayDob = profile ? formatDisplayDob(profile.dob) : "";
 
   const getFullBiodataText = () => {
     if (!profile) return "";
@@ -65,8 +68,8 @@ Profile ID: #${profileCode}
 📋 PERSONAL DETAILS:
 • Full Name: ${profile.name}
 • Gender: ${profile.gender === "Female" ? "Bride 👰" : "Groom 🤵"}
-• Age: ${profile.age} years
-• Date of Birth: ${profile.dob}
+• Age: ${displayAge} years
+• Date of Birth: ${displayDob}
 • Height: ${profile.height}
 • Complexion: ${profile.complexion}
 • Location: ${profile.location}
@@ -104,7 +107,7 @@ ${profile.family}
 
   const handleWhatsAppInquire = () => {
     if (!profile) return;
-    const text = `Assalamu Alaikum, I am inquiring about Profile ID: #${profileCode} (${profile.name}, ${profile.age} yrs, ${profile.location}) from Rishta Matrimony. Kindly share full contact and guardian details. JazakAllahu Khair.`;
+    const text = `Assalamu Alaikum, I am inquiring about Profile ID: #${profileCode} (${profile.name}, ${displayAge} yrs, ${profile.location}) from Rishta Matrimony. Kindly share full contact and guardian details. JazakAllahu Khair.`;
     window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -156,7 +159,7 @@ ${profile.family}
                   {profile.name}
                 </DialogTitle>
                 <p className="text-xs sm:text-sm text-emerald-100 mt-1">
-                  {profile.age || "N/A"} Yrs • {profile.maritalStatus || "Single"} • {profile.location || "N/A"}
+                  {displayAge ? `${displayAge} Yrs` : "N/A"} • {profile.maritalStatus || "Single"} • {profile.location || "N/A"}
                 </p>
               </div>
             </DialogHeader>
@@ -170,7 +173,7 @@ ${profile.family}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Age / DOB</p>
-                  <p className="font-semibold text-foreground mt-0.5">{profile.age} yrs / {profile.dob}</p>
+                  <p className="font-semibold text-foreground mt-0.5">{displayAge} yrs / {displayDob}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Height</p>
