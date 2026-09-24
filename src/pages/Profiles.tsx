@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Lock, Heart, Sparkles, Search, SlidersHorizontal, UserX, RotateCcw, ArrowRight, UserPlus } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertical, ShieldCheck, LogIn, LogOut, Pencil, Trash2, Undo2, Plus, Share2, Copy, MessageCircle, Send, X, Eye, Lock, Heart, Sparkles, Search, SlidersHorizontal, UserX, RotateCcw, ArrowRight, UserPlus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
 import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
@@ -1175,11 +1175,39 @@ const Profiles = () => {
   const maleCount = useMemo(() => profiles.filter(p => p.gender === "Male").length, [profiles]);
   const isAnyFilterActive = locationFilter !== "all" || ageFilter !== "all" || maslakFilter !== "all" || searchTerm.trim() !== "";
 
+  // Pagination Logic (12 profiles per page)
+  const PROFILES_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to Page 1 when any filter or gender changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeGender, searchTerm, locationFilter, ageFilter, maslakFilter]);
+
+  const totalPages = Math.ceil(filteredProfiles.length / PROFILES_PER_PAGE) || 1;
+
+  const paginatedProfiles = useMemo(() => {
+    const start = (currentPage - 1) * PROFILES_PER_PAGE;
+    return filteredProfiles.slice(start, start + PROFILES_PER_PAGE);
+  }, [filteredProfiles, currentPage]);
+
+  const handlePageChange = useCallback((page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+    const targetElement = document.getElementById("profiles-grid-section");
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 400, behavior: "smooth" });
+    }
+  }, [currentPage, totalPages]);
+
   const handleResetFilters = useCallback(() => {
     setLocationFilter("all");
     setAgeFilter("all");
     setMaslakFilter("all");
     setSearchTerm("");
+    setCurrentPage(1);
   }, []);
 
   const handleEdit = useCallback((profile: Profile) => {
@@ -1711,10 +1739,17 @@ const Profiles = () => {
           </div>
 
           {/* Results Summary Bar */}
-          <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground px-1">
+          <div id="profiles-grid-section" className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs sm:text-sm text-muted-foreground px-1 pt-1">
             <p>
-              Showing <span className="font-bold text-foreground">{filteredProfiles.length}</span> verified {activeGender === "Female" ? "Bride" : "Groom"} {filteredProfiles.length === 1 ? "profile" : "profiles"}
+              Showing <span className="font-bold text-foreground">
+                {filteredProfiles.length === 0 ? 0 : (currentPage - 1) * PROFILES_PER_PAGE + 1}–{Math.min(currentPage * PROFILES_PER_PAGE, filteredProfiles.length)}
+              </span> of <span className="font-bold text-foreground">{filteredProfiles.length}</span> verified {activeGender === "Female" ? "Bride" : "Groom"} {filteredProfiles.length === 1 ? "profile" : "profiles"}
             </p>
+            {totalPages > 1 && (
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full w-fit">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
           </div>
         </div>
 
@@ -1744,31 +1779,96 @@ const Profiles = () => {
             )}
           </div>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={isAdmin ? filteredProfiles.map(p => p.id) : []}
-              strategy={verticalListSortingStrategy}
-              disabled={!isAdmin}
+          <>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto transition-all duration-300">
-                {filteredProfiles.map((profile) => (
-                  <SortableProfileCard
-                    key={profile.id}
-                    profile={profile}
-                    isAdmin={isAdmin}
-                    viewerIsPremium={!!viewerIsPremium}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onViewBiodata={handleViewBiodata}
-                  />
-                ))}
+              <SortableContext
+                items={isAdmin ? paginatedProfiles.map(p => p.id) : []}
+                strategy={verticalListSortingStrategy}
+                disabled={!isAdmin}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto transition-all duration-300">
+                  {paginatedProfiles.map((profile) => (
+                    <SortableProfileCard
+                      key={profile.id}
+                      profile={profile}
+                      isAdmin={isAdmin}
+                      viewerIsPremium={!!viewerIsPremium}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onViewBiodata={handleViewBiodata}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-border/80 rounded-2xl p-4 sm:p-5 shadow-xs max-w-7xl mx-auto">
+                <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+                  Showing <span className="font-bold text-foreground">{(currentPage - 1) * PROFILES_PER_PAGE + 1}–{Math.min(currentPage * PROFILES_PER_PAGE, filteredProfiles.length)}</span> of <span className="font-bold text-foreground">{filteredProfiles.length}</span> profiles
+                </div>
+
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        // Show first, last, current, and surrounding pages
+                        return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                      })
+                      .map((page, idx, arr) => {
+                        const prevPage = arr[idx - 1];
+                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                        return (
+                          <div key={page} className="flex items-center">
+                            {showEllipsis && <span className="px-1.5 text-xs text-muted-foreground font-bold select-none">...</span>}
+                            <Button
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handlePageChange(page)}
+                              className={`h-10 w-10 p-0 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                currentPage === page 
+                                  ? "shadow-sm ring-2 ring-primary/20 scale-105" 
+                                  : "hover:bg-muted"
+                              }`}
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </SortableContext>
-          </DndContext>
+            )}
+          </>
         )}
 
         {/* Premium Islamic Bottom Registration Banner - Compact */}
