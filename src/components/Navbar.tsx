@@ -15,6 +15,7 @@ const publicNavLinks = [
   { name: "Pricing", path: "/pricing" },
   { name: "Register", path: "/register" },
   { name: "Contact", path: "/contact" },
+  { name: "Profile Login", path: "/member/login" },
 ];
 
 // When a member is signed in, hide "Register" (they already have an account)
@@ -137,17 +138,6 @@ export function Navbar() {
               </Button>
             )}
 
-            {/* Profile Login / Dashboard */}
-            {!member && !user && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/member/login")}
-                className="ml-2"
-              >
-                Profile Login
-              </Button>
-            )}
             {member && (
               <>
                 <Button
@@ -221,17 +211,6 @@ export function Navbar() {
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
-                </Button>
-              )}
-
-              {/* Member - Mobile */}
-              {!member && !user && (
-                <Button
-                  variant="outline"
-                  onClick={() => { navigate("/member/login"); setIsOpen(false); }}
-                  className="justify-start px-4 py-3 h-auto text-sm font-medium"
-                >
-                  Profile Login
                 </Button>
               )}
               {member && (
