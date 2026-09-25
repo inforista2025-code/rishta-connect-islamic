@@ -1,16 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Crown, Unlock, Phone, Eye, Heart, Image as ImageIcon, Check } from "lucide-react";
+import { Crown, Sparkles, Phone, Eye, Heart, Image as ImageIcon, Check } from "lucide-react";
 
 export function PremiumSection() {
   const navigate = useNavigate();
 
   const features = [
-    { icon: Unlock, title: "Unlimited Access", desc: "Browse all verified profiles without limits or admin intervention." },
-    { icon: ImageIcon, title: "Original Clear Photos", desc: "See full, unblurred photos on every profile." },
-    { icon: Phone, title: "Direct Contact Access", desc: "Call or message any profile directly — no admin waiting." },
-    { icon: Heart, title: "Unlimited Interests & Saved Profiles", desc: "Send interest and shortlist without limits." },
-    { icon: Eye, title: "See Who Viewed Your Profile", desc: "Know who's interested in you." },
+    { 
+      title: "👑 1st Page Top Priority & ⭐ Premium Featured Tag", 
+      desc: "Your profile is pinned at the top on Page 1 with a shining badge for 5x faster responses." 
+    },
+    { 
+      title: "Clear Original Photos Unlocked", 
+      desc: "View high-resolution profile photos in full 100% clarity with zero blur." 
+    },
+    { 
+      title: "Direct WhatsApp & Contact Access", 
+      desc: "Get verified phone and WhatsApp numbers instantly to talk directly to families." 
+    },
+    { 
+      title: "Unlimited Send Interests", 
+      desc: "Send marriage proposals and express interest without any monthly limits." 
+    },
+    { 
+      title: "See 'Who Viewed My Profile'", 
+      desc: "Full visibility of all families and members who checked out your biodata." 
+    },
   ];
 
   return (
@@ -32,17 +47,17 @@ export function PremiumSection() {
                 Unlock Full Profiles & Get Serious Matches Faster!
               </h3>
               <p className="text-sm md:text-base text-muted-foreground mt-2">
-                Go Premium to view original photos, contact details, and send unlimited interests.
+                Go Premium to unlock original photos, direct WhatsApp contacts, and get 1st page top priority.
               </p>
 
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-6 space-y-3.5">
                 {features.map((f, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="w-6 h-6 shrink-0 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
                       <Check className="w-3.5 h-3.5 text-primary" />
                     </span>
                     <div>
-                      <p className="text-sm md:text-base font-semibold text-foreground">{f.title}</p>
+                      <p className="text-sm md:text-base font-bold text-foreground">{f.title}</p>
                       <p className="text-xs md:text-sm text-muted-foreground">{f.desc}</p>
                     </div>
                   </li>
