@@ -19,8 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Save, X, Upload, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Save, X, Upload, Trash2, RefreshCw, ZoomIn, Eye } from 'lucide-react';
 import { compressImage } from '@/lib/imageCompression';
+import { AdminPhotoPreviewModal } from './AdminPhotoPreviewModal';
 
 interface ProfileRecord {
   id: number;
@@ -109,7 +110,7 @@ export function RegistrationDetailModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -434,22 +435,32 @@ export function RegistrationDetailModal({
               <Label className="text-base font-semibold">Photos</Label>
               <div className="flex gap-3 mt-2 flex-wrap">
                 {(formData.photo_urls || []).map((url, index) => (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group rounded-lg overflow-hidden border">
                     <img
                       src={url}
                       alt={`Photo ${index + 1}`}
-                      className="w-24 h-24 rounded-lg object-cover border cursor-pointer"
-                      onClick={() => setPreviewPhoto(url)}
+                      className="w-24 h-24 object-cover cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => setPreviewIndex(index)}
                     />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 p-1">
                       <Button
                         type="button"
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-white hover:bg-white/20"
+                        className="h-7 w-7 text-white hover:bg-white/30"
+                        onClick={() => setPreviewIndex(index)}
+                        title="Zoom / View Photo"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-white hover:bg-white/30"
                         onClick={() => triggerReplace(index)}
                         disabled={uploading}
-                        title="Replace"
+                        title="Replace Photo"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                       </Button>
@@ -457,9 +468,9 @@ export function RegistrationDetailModal({
                         type="button"
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-white hover:bg-red-500/50"
+                        className="h-7 w-7 text-white hover:bg-red-500/60"
                         onClick={() => handleRemovePhoto(index)}
-                        title="Remove"
+                        title="Remove Photo"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -823,20 +834,14 @@ export function RegistrationDetailModal({
     </Dialog>
 
       {/* Photo Preview Lightbox */}
-      <Dialog open={!!previewPhoto} onOpenChange={() => setPreviewPhoto(null)}>
-        <DialogContent className="max-w-3xl p-2 bg-black/90 border-none">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Photo Preview</DialogTitle>
-          </DialogHeader>
-          {previewPhoto && (
-            <img
-              src={previewPhoto}
-              alt="Full preview"
-              className="w-full h-auto max-h-[85vh] object-contain rounded"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <AdminPhotoPreviewModal
+        isOpen={previewIndex !== null}
+        photos={formData.photo_urls || []}
+        initialIndex={previewIndex ?? 0}
+        title={formData.name ? `${formData.name}'s Photo` : 'Profile Photo'}
+        subtitle={formData.gender ? `${formData.gender} • ${formData.location || ''}` : ''}
+        onClose={() => setPreviewIndex(null)}
+      />
     </>
   );
 }

@@ -13,8 +13,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star, Plus, Globe, GlobeLock, Trash2 } from 'lucide-react';
+import { Loader2, Eye, Copy, CheckCircle, XCircle, Search, Star, Plus, Globe, GlobeLock, Trash2, ZoomIn, Image as ImageIcon } from 'lucide-react';
 import { RegistrationDetailModal } from './RegistrationDetailModal';
+import { AdminPhotoPreviewModal } from './AdminPhotoPreviewModal';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -73,6 +74,19 @@ export function RegistrationsManager() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<{
+    isOpen: boolean;
+    photos: string[];
+    initialIndex: number;
+    title: string;
+    subtitle: string;
+  }>({
+    isOpen: false,
+    photos: [],
+    initialIndex: 0,
+    title: '',
+    subtitle: '',
+  });
   const { toast } = useToast();
 
   const fetchProfiles = async () => {
@@ -384,15 +398,37 @@ ${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
               {filteredProfiles.map((profile) => (
                 <TableRow key={profile.id}>
                   <TableCell>
-                    {profile.photo_urls && profile.photo_urls[0] ? (
-                      <img
-                        src={profile.photo_urls[0]}
-                        alt={profile.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
+                    {profile.photo_urls && profile.photo_urls.length > 0 ? (
+                      <div
+                        className="relative group cursor-pointer w-12 h-12 inline-block select-none"
+                        onClick={() =>
+                          setPhotoPreview({
+                            isOpen: true,
+                            photos: profile.photo_urls || [],
+                            initialIndex: 0,
+                            title: `${profile.name} (${profile.gender})`,
+                            subtitle: `${profile.age ? profile.age + ' yrs' : ''} ${profile.location ? '• ' + profile.location : ''} ${profile.profession ? '• ' + profile.profession : ''}`,
+                          })
+                        }
+                        title="Click to view & zoom full photos"
+                      >
+                        <img
+                          src={profile.photo_urls[0]}
+                          alt={profile.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all shadow-sm group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                          <ZoomIn className="w-5 h-5" />
+                        </div>
+                        {profile.photo_urls.length > 1 && (
+                          <span className="absolute -bottom-1 -right-1 bg-primary text-[10px] font-bold text-white px-1.5 py-0.2 rounded-full shadow border border-background">
+                            +{profile.photo_urls.length - 1}
+                          </span>
+                        )}
+                      </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                        N/A
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-[10px] text-center font-medium border border-dashed">
+                        No Photo
                       </div>
                     )}
                   </TableCell>
@@ -560,6 +596,16 @@ ${profile.other_info ? `📝 Additional Info:\n${profile.other_info}` : ''}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Photo Preview Lightbox / Modal */}
+      <AdminPhotoPreviewModal
+        isOpen={photoPreview.isOpen}
+        photos={photoPreview.photos}
+        initialIndex={photoPreview.initialIndex}
+        title={photoPreview.title}
+        subtitle={photoPreview.subtitle}
+        onClose={() => setPhotoPreview((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
