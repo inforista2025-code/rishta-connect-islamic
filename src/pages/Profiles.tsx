@@ -1020,11 +1020,7 @@ const Profiles = () => {
         const targetPage = targetIndex >= 0 ? Math.floor(targetIndex / PROFILES_PER_PAGE) + 1 : 1;
         setCurrentPage(targetPage);
 
-        // 4. Instantly open Full Biodata Modal for direct profile links
-        setSelectedBiodataProfile(targetProfile);
-        setIsBiodataOpen(true);
-        
-        // 5. Smoothly scroll to the target profile card on that page and highlight it
+        // 4. Smoothly scroll to the target profile card on that page and highlight it
         setTimeout(() => {
           const profileElement = document.getElementById(`profile-${targetProfile.id}`);
           if (profileElement) {
@@ -1035,7 +1031,7 @@ const Profiles = () => {
               profileElement.classList.remove('ring-4', 'ring-primary', 'ring-offset-4');
             }, 4000);
           }
-        }, 500);
+        }, 400);
       }
     }
   }, [profiles, location.search]);
