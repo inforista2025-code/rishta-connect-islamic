@@ -977,7 +977,7 @@ const Profiles = () => {
     const paramLocation = urlParams.get('location');
     const paramMaslak = urlParams.get('maslak');
     const paramSearch = urlParams.get('search');
-    const profileId = urlParams.get('id');
+    const rawProfileId = urlParams.get('id');
 
     if (paramGender === "Male" || paramGender === "Female") {
       setActiveGender(paramGender);
@@ -987,26 +987,55 @@ const Profiles = () => {
     if (paramMaslak) setMaslakFilter(paramMaslak);
     if (paramSearch) setSearchTerm(paramSearch);
     
-    if (profileId && profiles.length > 0) {
-      // Find the profile to get its gender
-      const targetProfile = profiles.find(p => p.id === parseInt(profileId));
+    if (rawProfileId && profiles.length > 0) {
+      let numericId = parseInt(rawProfileId);
+      if (isNaN(numericId)) {
+        const match = rawProfileId.match(/\d+/);
+        if (match) numericId = parseInt(match[0]);
+      }
+
+      // Find target profile
+      const targetProfile = profiles.find(p => p.id === numericId);
       
       if (targetProfile) {
-        // Set the correct gender tab
+        // 1. Switch to the correct gender tab
         setActiveGender(targetProfile.gender as "Male" | "Female");
+
+        // 2. Clear conflicting filters so target profile is guaranteed to be in the list
+        setLocationFilter("all");
+        setAgeFilter("all");
+        setMaslakFilter("all");
+        setSearchTerm("");
         
-        // Smoothly scroll to the target profile card and highlight it
+        // 3. Calculate the exact page number the target profile is on
+        const genderProfiles = profiles
+          .filter(p => p.gender === targetProfile.gender)
+          .sort((a, b) => {
+            const aIsPremium = a.planType === 'premium' && (!a.premiumExpiry || new Date(a.premiumExpiry) > new Date()) ? 1 : 0;
+            const bIsPremium = b.planType === 'premium' && (!b.premiumExpiry || new Date(b.premiumExpiry) > new Date()) ? 1 : 0;
+            if (bIsPremium !== aIsPremium) return bIsPremium - aIsPremium;
+            return b.order - a.order;
+          });
+        const targetIndex = genderProfiles.findIndex(p => p.id === targetProfile.id);
+        const targetPage = targetIndex >= 0 ? Math.floor(targetIndex / PROFILES_PER_PAGE) + 1 : 1;
+        setCurrentPage(targetPage);
+
+        // 4. Instantly open Full Biodata Modal for direct profile links
+        setSelectedBiodataProfile(targetProfile);
+        setIsBiodataOpen(true);
+        
+        // 5. Smoothly scroll to the target profile card on that page and highlight it
         setTimeout(() => {
-          const profileElement = document.getElementById(`profile-${profileId}`);
+          const profileElement = document.getElementById(`profile-${targetProfile.id}`);
           if (profileElement) {
             profileElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add a prominent highlight ring effect
+            // Prominent highlight ring effect
             profileElement.classList.add('ring-4', 'ring-primary', 'ring-offset-4', 'transition-all', 'duration-500');
             setTimeout(() => {
               profileElement.classList.remove('ring-4', 'ring-primary', 'ring-offset-4');
-            }, 3500);
+            }, 4000);
           }
-        }, 400);
+        }, 500);
       }
     }
   }, [profiles, location.search]);
@@ -1179,10 +1208,13 @@ const Profiles = () => {
   const PROFILES_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset to Page 1 when any filter or gender changes
+  // Reset to Page 1 when any filter or gender changes (except when URL has a direct ?id= parameter)
   useEffect(() => {
-    setCurrentPage(1);
-  }, [activeGender, searchTerm, locationFilter, ageFilter, maslakFilter]);
+    const urlParams = new URLSearchParams(location.search);
+    if (!urlParams.get('id')) {
+      setCurrentPage(1);
+    }
+  }, [activeGender, searchTerm, locationFilter, ageFilter, maslakFilter, location.search]);
 
   const totalPages = Math.ceil(filteredProfiles.length / PROFILES_PER_PAGE) || 1;
 
