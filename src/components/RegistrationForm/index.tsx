@@ -159,8 +159,8 @@ export function RegistrationForm() {
     
     try {
       // Validate photos exist
-      if (!data.photos || data.photos.length < 1) {
-        throw new Error('Please upload at least 1 recent photo before submitting');
+      if (!data.photos || data.photos.length < 2) {
+        throw new Error('Kam se kam 2 photos upload karna zaroori hai (Please upload at least 2 photos before submitting)');
       }
 
       // Upload photos and get full URLs with progress tracking

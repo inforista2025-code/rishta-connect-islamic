@@ -179,14 +179,28 @@ export function Step3({ form }: Step3Props) {
 
       {/* Photo Upload Section */}
       <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20 space-y-4">
-        <div>
-          <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-primary" />
-            <span>Candidate Photo Upload (1 to 3 Photos) *</span>
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Upload clear, recent portraits. Blurry, group, or heavily filtered photos will delay verification.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-primary" />
+              <span>Candidate Photo Upload (Minimum 2 Photos Required) *</span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Please upload at least 2 clear, recent photos (maximum 3 allowed). Blurry, group, or filtered photos are not accepted.
+            </p>
+          </div>
+          <div className="shrink-0">
+            {photos.length < 2 ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                ⚠️ Upload {2 - photos.length} more photo{2 - photos.length > 1 ? 's' : ''}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                <Check className="w-3.5 h-3.5" />
+                {photos.length} Photos Added
+              </span>
+            )}
+          </div>
         </div>
 
         <FormField
@@ -210,7 +224,7 @@ export function Step3({ form }: Step3Props) {
                         <Upload className="w-9 h-9 mx-auto mb-2 text-primary" />
                         <p className="text-sm font-bold text-foreground">Click or Drag to Upload Photos</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {photos.length}/3 photos selected • JPG, PNG, WEBP (Max 10MB each)
+                          {photos.length}/3 photos selected • <span className="font-semibold text-primary">Minimum 2 photos mandatory</span> (Max 10MB each)
                         </p>
                       </label>
                     </div>
@@ -225,11 +239,9 @@ export function Step3({ form }: Step3Props) {
                             alt={`Preview ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
-                          {index === 0 && (
-                            <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                              ⭐ Main Card Photo
-                            </span>
-                          )}
+                          <span className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                            {index === 0 ? "⭐ Photo 1 (Main)" : `📸 Photo ${index + 1}`}
+                          </span>
                           <button
                             type="button"
                             onClick={() => removePhoto(index)}

@@ -34,8 +34,8 @@ export const step3Schema = z.object({
   islamicEducation: z.string().optional().default(""),
   otherInfo: z.string().optional().default(""),
   photos: z.custom<File[]>()
-    .refine((files) => files && files.length >= 1, {
-      message: "Please upload at least 1 recent photo (2-3 recommended)"
+    .refine((files) => files && files.length >= 2, {
+      message: "Kam se kam 2 photos upload karna zaroori hai (Please upload at least 2 photos)"
     })
     .refine((files) => files && files.length <= 3, {
       message: "Maximum 3 photos allowed"
