@@ -31,7 +31,7 @@ export function Step3({ form }: Step3Props) {
       if (currentPhotos.length + files.length > 3) {
         toast({
           title: "Maximum 3 photos allowed",
-          description: "Aap zyada se zyada 3 photos upload kar sakte hain.",
+          description: "You can upload a maximum of 3 photos.",
           variant: "destructive",
         });
       }
