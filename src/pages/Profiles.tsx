@@ -1766,17 +1766,77 @@ const Profiles = () => {
             )}
           </div>
 
-          {/* Results Summary Bar */}
-          <div id="profiles-grid-section" className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs sm:text-sm text-muted-foreground px-1 pt-1">
-            <p>
-              Showing <span className="font-bold text-foreground">
-                {filteredProfiles.length === 0 ? 0 : (currentPage - 1) * PROFILES_PER_PAGE + 1}–{Math.min(currentPage * PROFILES_PER_PAGE, filteredProfiles.length)}
-              </span> of <span className="font-bold text-foreground">{filteredProfiles.length}</span> verified {activeGender === "Female" ? "Bride" : "Groom"} {filteredProfiles.length === 1 ? "profile" : "profiles"}
-            </p>
+          {/* Results Summary Bar & Top Pagination */}
+          <div id="profiles-grid-section" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-muted-foreground px-1 pt-1 pb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p>
+                Showing <span className="font-bold text-foreground">
+                  {filteredProfiles.length === 0 ? 0 : (currentPage - 1) * PROFILES_PER_PAGE + 1}–{Math.min(currentPage * PROFILES_PER_PAGE, filteredProfiles.length)}
+                </span> of <span className="font-bold text-foreground">{filteredProfiles.length}</span> verified {activeGender === "Female" ? "Bride" : "Groom"} {filteredProfiles.length === 1 ? "profile" : "profiles"}
+              </p>
+              {totalPages > 1 && (
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full w-fit">
+                  Page {currentPage} of {totalPages}
+                </span>
+              )}
+            </div>
+
+            {/* Top Pagination Controls */}
             {totalPages > 1 && (
-              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full w-fit">
-                Page {currentPage} of {totalPages}
-              </span>
+              <div className="flex items-center gap-1.5 sm:gap-2 self-center sm:self-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40"
+                  title="Previous Page"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Prev</span>
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                    })
+                    .map((page, idx, arr) => {
+                      const prevPage = arr[idx - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+
+                      return (
+                        <div key={page} className="flex items-center">
+                          {showEllipsis && <span className="px-1 text-xs text-muted-foreground font-bold select-none">...</span>}
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className={`h-8 w-8 p-0 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              currentPage === page 
+                                ? "shadow-xs ring-2 ring-primary/20 scale-105" 
+                                : "hover:bg-muted"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-40"
+                  title="Next Page"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
