@@ -577,7 +577,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('video call')
   ) {
     return {
-      text: `### 🛡️ Shadi se pehle Baat karne aur Dekhne ke Islami Qawaneen:\n\n1. **Chehra aur Haliyah Dekhna:** Shadi ke maqsad se ek doosre ko dekhna Sunnah se sabit hai taaki dil me itminan paida ho (Sahih Muslim 1424).\n2. **Khalwat (Akelepan) se Bachna:** Tanhaai ya akele me milna jaiz nahi hai. Jab bhi baat ho ya mulaqat ho, wali ya family member ki maujoodgi/ilm me honi chahiye.\n3. **Sanjeeda Guftagu:** Guftagu sirf shadi ki zaroori baaton (deen, lifestyle, expectation, career) tak mehdood honi chahiye.\n\nRishta Matrimony is baat ko ensure karta hai ki direct communication family aur wali ke through ho 🌸\n\n💬 *Kya aap kisi candidate se baat karne ke tareeqe par guidance chahte hain?*`,
+      text: `### 🛡️ Shadi se pehle Baat karne aur Dekhne ke Islami Qawaneen:\n\n1. **Chehra aur Haliyah Dekhna:** Shadi ke maqsad se ek doosre ko dekhna Sunnah se sabit hai taaki dil me itminan paida ho (Sahih Muslim 1424).\n2. **Khalwat (Akelepan) se Bachna:** Tanhaai ya akele me milna jaiz nahi hai. Jab bhi baat ho ya mulaqat ho, wali ya family member ki maujoodgi/ilm me honi chahiye.\n3. **Sanjeeda Guftagu:** Guftagu sirf shadi ki zaroori baaton (deen, lifestyle, expectation, career) tak mehdood honi chahiye.\n\nRishta Matrimony is baat ko ensure karta hai ki direct communication family aur wali ke through ho 🌸\n\n💬 *Kya aap kisi rishte / family se baat karne ke tareeqe par guidance chahte hain?*`,
     };
   }
 
@@ -614,7 +614,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('paise')
   ) {
     return {
-      text: `### 🛡️ Privacy & Contact Number Protection:\nIslam me parda aur behno ki hifazat ke madd-e-nazar, candidate ke verified phone numbers aur unblurred photos sirf verified Premium members ke liye unlock hote hain ✨\n\n### ⭐ Premium Membership Plan (Sirf ₹491 - 2 Months Access):\n• 📞 **Direct WhatsApp Numbers:** Sabhi verified candidates aur unke walidain ke contact numbers.\n• 🖼️ **Unblurred Full Photos:** Sabhi profiles ki HD photos dekhne ki access.\n• 🤝 **1-on-1 Matchmaking Assistance:** Hamari support team se WhatsApp par personal help.\n• ♾️ **Unlimited Profile Views:** Poore India aur Abroad ke proposals bina kisi rok-tok ke dekhein.\n\n💬 *Kya aap plan upgrade karne ke steps ya payment mode (UPI/Card) ke bare me poochna chahte hain?*`,
+      text: `### 🛡️ Privacy & Contact Number Protection:\nIslam me parda aur behno ki hifazat ke madd-e-nazar, verified phone numbers aur unblurred photos unlock karne ke liye 2 aasan options hain ✨\n\n1. 🎯 **Single Profile Unlock (Sirf ₹48):** Kisi 1 pasandeeda profile ke complete details, unblurred photos aur guardian contact WhatsApp par lein.\n2. ⭐ **Premium Membership Plan (Sirf ₹491 - 2 Months Access):** Unlimited profiles, direct contacts, HD photos aur personal matchmaking support.\n\n💬 *Kya aap plan upgrade karne ke steps ya payment mode (UPI/Card) ke bare me poochna chahte hain?*`,
     };
   }
 

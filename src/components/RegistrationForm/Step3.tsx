@@ -183,7 +183,7 @@ export function Step3({ form }: Step3Props) {
           <div>
             <h3 className="font-bold text-base text-foreground flex items-center gap-2">
               <ImageIcon className="w-5 h-5 text-primary" />
-              <span>Candidate Photo Upload (Minimum 2 Photos Required) *</span>
+              <span>Profile Photo Upload (Minimum 2 Photos Required) *</span>
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Please upload at least 2 clear, recent photos (maximum 3 allowed). Blurry, group, or filtered photos are not accepted.

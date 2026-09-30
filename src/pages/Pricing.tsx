@@ -115,18 +115,18 @@ export default function Pricing() {
 
   const singleProfileFeatures = [
     {
-      title: "1 Candidate's Full Biodata",
+      title: "1 Verified Proposal's Full Biodata",
       description: "Complete verified personal, family, education, and religious details of any 1 selected profile.",
       status: "included"
     },
     {
-      title: "Direct Guardian & Candidate WhatsApp/Phone",
+      title: "Direct Family & Guardian WhatsApp/Phone",
       description: "Get verified mobile numbers directly to contact families with complete trust.",
       status: "included"
     },
     {
       title: "Clear Original Unblurred Photos",
-      description: "High-resolution full clarity photos of the candidate sent directly to your WhatsApp.",
+      description: "High-resolution full clarity photos sent directly to your WhatsApp.",
       status: "included"
     },
     {
@@ -158,7 +158,7 @@ export default function Pricing() {
   const faqs = [
     {
       question: "How does the 'Single Profile Unlock (₹48)' option work?",
-      answer: "If you are interested in only 1 specific profile and don't want a full membership, you can unlock that profile for just ₹48. Our team will verify and send you the candidate's complete biodata, verified guardian/personal contact numbers, and clear unblurred photos directly on WhatsApp."
+      answer: "If you are interested in only 1 specific profile and don't want a full membership, you can unlock that profile for just ₹48. Our team will verify and send you the complete biodata, verified family/guardian contact numbers, and clear unblurred photos directly on WhatsApp."
     },
     {
       question: "What is the difference between Single Profile Unlock (₹48) and Premium Plan (₹491)?",
@@ -174,7 +174,7 @@ export default function Pricing() {
     },
     {
       question: "Is photo privacy respected on Rishta Matrimony?",
-      answer: "Yes, absolutely. We strictly adhere to Islamic privacy guidelines. Contact numbers and photos are shared only with serious, verified candidates and families seeking marriage."
+      answer: "Yes, absolutely. We strictly adhere to Islamic privacy guidelines. Contact numbers and photos are shared only with serious, verified families seeking marriage."
     },
     {
       question: "Can I register for free first and decide later?",
@@ -273,7 +273,7 @@ export default function Pricing() {
             <div>
               <CardHeader className="text-center pb-4 pt-6">
                 <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                  🎯 Single Candidate
+                  🎯 Single Proposal
                 </Badge>
                 <CardTitle className="text-2xl font-extrabold text-foreground">
                   Single Profile Unlock
@@ -282,7 +282,7 @@ export default function Pricing() {
                   ₹48 <span className="text-sm font-normal text-muted-foreground">/ 1 Profile</span>
                 </div>
                 <CardDescription className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-                  Unlock contact numbers & unblurred HD photos of any 1 specific candidate.
+                  Unlock contact numbers & unblurred HD photos of any 1 specific proposal.
                 </CardDescription>
               </CardHeader>
 

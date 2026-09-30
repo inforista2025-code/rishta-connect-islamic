@@ -45,7 +45,7 @@ export function Step2({ form }: Step2Props) {
                 <Input placeholder="e.g., Mumbai, Maharashtra / Ranchi, Jharkhand" {...field} className="h-11" />
               </FormControl>
               <FormDescription className="text-[11px]">
-                City & state where candidate currently resides.
+                City & state of current residence.
               </FormDescription>
               <FormMessage />
             </FormItem>
