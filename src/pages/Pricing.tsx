@@ -115,7 +115,7 @@ export default function Pricing() {
 
   const singleProfileFeatures = [
     {
-      title: "1 Verified Proposal's Full Biodata",
+      title: "1 Verified Profile's Full Biodata",
       description: "Complete verified personal, family, education, and religious details of any 1 selected profile.",
       status: "included"
     },
@@ -136,7 +136,7 @@ export default function Pricing() {
     },
     {
       title: "Pay As You Go (Budget Friendly)",
-      description: "No monthly commitment. Pay only ₹48 whenever you find a suitable proposal.",
+      description: "No monthly commitment. Pay only ₹48 whenever you find a suitable profile.",
       status: "included"
     }
   ];
@@ -178,7 +178,7 @@ export default function Pricing() {
     },
     {
       question: "Can I register for free first and decide later?",
-      answer: "Yes! Registration is 100% free. You can browse all proposals, create your biodata, and choose between the Single Profile Unlock (₹48) or Full Premium Plan (₹491) whenever you find a suitable match."
+      answer: "Yes! Registration is 100% free. You can browse all profiles, create your biodata, and choose between the Single Profile Unlock (₹48) or Full Premium Plan (₹491) whenever you find a suitable match."
     }
   ];
 
@@ -273,7 +273,7 @@ export default function Pricing() {
             <div>
               <CardHeader className="text-center pb-4 pt-6">
                 <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                  🎯 Single Proposal
+                  🎯 Single Profile
                 </Badge>
                 <CardTitle className="text-2xl font-extrabold text-foreground">
                   Single Profile Unlock
@@ -282,7 +282,7 @@ export default function Pricing() {
                   ₹48 <span className="text-sm font-normal text-muted-foreground">/ 1 Profile</span>
                 </div>
                 <CardDescription className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-                  Unlock contact numbers & unblurred HD photos of any 1 specific proposal.
+                  Unlock contact numbers & unblurred HD photos of any 1 specific profile.
                 </CardDescription>
               </CardHeader>
 
