@@ -113,6 +113,41 @@ export default function Pricing() {
     }
   ];
 
+  const singleProfileFeatures = [
+    {
+      title: "1 Candidate's Full Biodata",
+      description: "Complete verified personal, family, education, and religious details of any 1 selected profile.",
+      status: "included"
+    },
+    {
+      title: "Direct Guardian & Candidate WhatsApp/Phone",
+      description: "Get verified mobile numbers directly to contact families with complete trust.",
+      status: "included"
+    },
+    {
+      title: "Clear Original Unblurred Photos",
+      description: "High-resolution full clarity photos of the candidate sent directly to your WhatsApp.",
+      status: "included"
+    },
+    {
+      title: "Instant WhatsApp Delivery",
+      description: "Receive full profile details instantly on WhatsApp upon payment confirmation.",
+      status: "included"
+    },
+    {
+      title: "Pay As You Go (Budget Friendly)",
+      description: "No monthly commitment. Pay only ₹48 whenever you find a suitable proposal.",
+      status: "included"
+    }
+  ];
+
+  const handleSingleProfileUnlock = () => {
+    window.open(
+      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20unlock%20a%20Single%20Profile%20(Rs.%2048).%20Kindly%20share%20the%20payment%20details.%20JazakAllahu%20Khair.",
+      "_blank"
+    );
+  };
+
   const handleWhatsAppUpgrade = () => {
     window.open(
       "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20(Rs.%20491%20for%202%20Months).%20Kindly%20share%20payment%20details.%20JazakAllahu%20Khair.",
@@ -122,24 +157,28 @@ export default function Pricing() {
 
   const faqs = [
     {
+      question: "How does the 'Single Profile Unlock (₹48)' option work?",
+      answer: "If you are interested in only 1 specific profile and don't want a full membership, you can unlock that profile for just ₹48. Our team will verify and send you the candidate's complete biodata, verified guardian/personal contact numbers, and clear unblurred photos directly on WhatsApp."
+    },
+    {
+      question: "What is the difference between Single Profile Unlock (₹48) and Premium Plan (₹491)?",
+      answer: "The ₹48 option gives you complete details and contact for 1 selected profile only. The ₹491 Premium Plan gives you 2-month unlimited access to all profiles across the website, direct contacts, unblurred photos, 1-on-1 matchmaking support, and pins your own profile to Page 1 with a ⭐ Premium Featured badge."
+    },
+    {
       question: "What is the benefit of the '⭐ Premium Featured' tag & 1st Page Priority?",
       answer: "When your profile is upgraded to Premium, it is automatically pinned at the top of Page 1 on the Profiles listing with an exclusive '⭐ Premium Featured' badge. This gives your biodata maximum exposure and gets you 5x faster responses from suitable families."
     },
     {
-      question: "How do I upgrade to the Premium Plan?",
-      answer: "Click on 'Upgrade via WhatsApp' to message our support team. You can pay securely via Google Pay, PhonePe, Paytm, or UPI QR code. Your premium benefits will be activated within 15 minutes of payment confirmation."
+      question: "How do I make the payment for ₹48 or ₹491?",
+      answer: "Click on the WhatsApp button to message our team. You can pay securely via Google Pay, PhonePe, Paytm, or any UPI QR code. Your profile details or Premium benefits will be activated within 10-15 minutes of payment confirmation."
     },
     {
-      question: "Is photo privacy respected in the Free and Premium plans?",
-      answer: "Yes, absolutely. We strictly adhere to Islamic privacy standards. Photos are shown only to verified, serious candidates seeking marriage."
+      question: "Is photo privacy respected on Rishta Matrimony?",
+      answer: "Yes, absolutely. We strictly adhere to Islamic privacy guidelines. Contact numbers and photos are shared only with serious, verified candidates and families seeking marriage."
     },
     {
-      question: "Can I register for free first and upgrade later?",
-      answer: "Yes! Registration is 100% free. You can browse profiles, create your biodata, and upgrade to the Premium plan whenever you wish to view contact numbers or clear photos."
-    },
-    {
-      question: "What happens after 2 months of Premium Plan?",
-      answer: "Your account will simply revert to the Free Plan. There are no automatic deductions or hidden charges. You can renew only if you wish."
+      question: "Can I register for free first and decide later?",
+      answer: "Yes! Registration is 100% free. You can browse all proposals, create your biodata, and choose between the Single Profile Unlock (₹48) or Full Premium Plan (₹491) whenever you find a suitable match."
     }
   ];
 
@@ -165,8 +204,8 @@ export default function Pricing() {
       </div>
 
       {/* Pricing Cards Container */}
-      <div className="container max-w-6xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+      <div className="container max-w-7xl mx-auto px-4 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           
           {/* Free Plan Card */}
           <Card className="border border-border/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-card flex flex-col justify-between">
@@ -175,21 +214,21 @@ export default function Pricing() {
                 <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-semibold px-3 py-1">
                   Basic Matchmaking
                 </Badge>
-                <CardTitle className="text-2xl sm:text-3xl font-extrabold text-foreground">
+                <CardTitle className="text-2xl font-extrabold text-foreground">
                   Free Registration
                 </CardTitle>
                 <div className="text-3xl font-bold text-foreground mt-2">
                   ₹0 <span className="text-sm font-normal text-muted-foreground">/ Forever</span>
                 </div>
-                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                <CardDescription className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
                   Begin your matrimonial search with complete sincerity and ease.
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4 pt-2">
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {freePlanFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3 p-1.5 rounded-lg transition-colors hover:bg-muted/40">
+                    <div key={index} className="flex items-start gap-2.5 p-1 rounded-lg transition-colors hover:bg-muted/40">
                       {feature.status === "included" ? (
                         <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                           <Check className="w-3.5 h-3.5" />
@@ -200,10 +239,10 @@ export default function Pricing() {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className={`font-semibold text-xs sm:text-sm ${feature.status === "included" ? "text-foreground" : "text-muted-foreground"}`}>
+                        <p className={`font-semibold text-xs ${feature.status === "included" ? "text-foreground" : "text-muted-foreground"}`}>
                           {feature.title}
                         </p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
                   ))}
@@ -211,7 +250,7 @@ export default function Pricing() {
               </CardContent>
             </div>
 
-            <div className="p-6 pt-0">
+            <div className="p-5 pt-0">
               <Button 
                 onClick={() => navigate("/register")}
                 variant="outline"
@@ -224,49 +263,41 @@ export default function Pricing() {
             </div>
           </Card>
 
-          {/* Premium Plan Card */}
-          <Card className="border-2 border-primary shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-gradient-to-b from-primary/5 via-card to-card relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[11px] font-bold px-4 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-300" />
-              <span>Recommended</span>
+          {/* Single Profile Unlock Card */}
+          <Card className="border-2 border-emerald-500/50 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-gradient-to-b from-emerald-500/5 via-card to-card flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
+              <Zap className="w-3 h-3 text-amber-300" />
+              <span>Pay Per Profile</span>
             </div>
 
             <div>
               <CardHeader className="text-center pb-4 pt-6">
-                <Badge className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-primary text-primary-foreground shadow-xs">
-                  ⭐ Full Contact & Photos
+                <Badge variant="secondary" className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                  🎯 Single Candidate
                 </Badge>
-                <CardTitle className="text-2xl sm:text-3xl font-extrabold text-foreground">
-                  Premium Rishta Plan
+                <CardTitle className="text-2xl font-extrabold text-foreground">
+                  Single Profile Unlock
                 </CardTitle>
-                <div className="text-3xl sm:text-4xl font-extrabold text-primary mt-2">
-                  ₹491 <span className="text-sm font-semibold text-muted-foreground">/ 2 Months</span>
+                <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
+                  ₹48 <span className="text-sm font-normal text-muted-foreground">/ 1 Profile</span>
                 </div>
-                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-                  Direct contacts, unblurred photos & dedicated matchmaking support.
+                <CardDescription className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+                  Unlock contact numbers & unblurred HD photos of any 1 specific candidate.
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4 pt-2">
-                <div className="space-y-3">
-                  {premiumPlanFeatures.map((feature, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-start gap-3 p-2 rounded-xl transition-all duration-200 hover:translate-x-0.5 ${feature.highlight ? "bg-primary/10 border border-primary/20 shadow-xs" : "hover:bg-muted/40"}`}
-                    >
-                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <div className="space-y-2.5">
+                  {singleProfileFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-2.5 p-1 rounded-lg transition-colors hover:bg-muted/40">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                         <Check className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-xs sm:text-sm text-foreground flex items-center gap-1.5">
-                          <span>{feature.title}</span>
-                          {feature.highlight && (
-                            <span className="text-[10px] uppercase font-extrabold bg-primary/20 text-primary px-1.5 py-0.2 rounded">
-                              Unlocked
-                            </span>
-                          )}
+                        <p className="font-bold text-xs text-foreground">
+                          {feature.title}
                         </p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>
                   ))}
@@ -274,14 +305,77 @@ export default function Pricing() {
               </CardContent>
             </div>
 
-            <div className="p-6 pt-0">
+            <div className="p-5 pt-0">
+              <Button 
+                onClick={handleSingleProfileUnlock}
+                variant="outline"
+                size="lg" 
+                className="w-full h-11 border-emerald-600 hover:bg-emerald-600 hover:text-white active:scale-[0.98] text-emerald-700 dark:text-emerald-300 font-bold text-xs sm:text-sm rounded-xl transition-all duration-200 gap-2 cursor-pointer shadow-sm"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-500 group-hover:text-white" />
+                <span>Unlock Single Profile (₹48)</span>
+              </Button>
+            </div>
+          </Card>
+
+          {/* Premium Plan Card */}
+          <Card className="border-2 border-primary shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 ease-out rounded-3xl bg-gradient-to-b from-primary/10 via-card to-card relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[11px] font-bold px-4 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-300" />
+              <span>Best Value</span>
+            </div>
+
+            <div>
+              <CardHeader className="text-center pb-4 pt-6">
+                <Badge className="w-fit mx-auto mb-2 text-xs font-bold px-3 py-1 bg-primary text-primary-foreground shadow-xs">
+                  ⭐ Unlimited Contacts & Photos
+                </Badge>
+                <CardTitle className="text-2xl font-extrabold text-foreground">
+                  Premium Rishta Plan
+                </CardTitle>
+                <div className="text-3xl font-extrabold text-primary mt-2">
+                  ₹491 <span className="text-sm font-semibold text-muted-foreground">/ 2 Months</span>
+                </div>
+                <CardDescription className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+                  Unlimited contacts, unblurred photos & 1st page priority for 2 months.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-2.5">
+                  {premiumPlanFeatures.map((feature, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-start gap-2.5 p-1.5 rounded-xl transition-all duration-200 ${feature.highlight ? "bg-primary/10 border border-primary/20 shadow-xs" : "hover:bg-muted/40"}`}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                        <Check className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                          <span>{feature.title}</span>
+                          {feature.highlight && (
+                            <span className="text-[9px] uppercase font-extrabold bg-primary/20 text-primary px-1.5 py-0.2 rounded">
+                              Unlocked
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{feature.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </div>
+
+            <div className="p-5 pt-0">
               <Button 
                 onClick={handleWhatsAppUpgrade}
                 size="lg" 
                 className="w-full h-11 bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 gap-2 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-300" />
-                <span>Upgrade via WhatsApp (₹491)</span>
+                <span>Get Full Premium (₹491)</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

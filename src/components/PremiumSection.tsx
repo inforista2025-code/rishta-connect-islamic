@@ -77,11 +77,16 @@ export function PremiumSection() {
                   size="lg"
                 >
                   <Crown className="w-5 h-5" />
-                  View Pricing Plans
+                  View Pricing Plans (From ₹48)
                 </Button>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Cancel anytime • Instant access after payment
-                </p>
+                <div className="mt-3.5 pt-3 border-t border-dashed border-border/80 flex flex-col gap-1">
+                  <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    ⚡ Single Profile Unlock also available for just ₹48
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Instant access on WhatsApp after payment confirmation
+                  </p>
+                </div>
               </div>
             </div>
           </div>

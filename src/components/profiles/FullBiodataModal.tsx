@@ -16,6 +16,9 @@ import {
   HeartHandshake, 
   Sparkles, 
   ShieldCheck,
+  Lock,
+  Crown,
+  Zap,
   X 
 } from "lucide-react";
 import { useState } from "react";
@@ -105,10 +108,20 @@ ${profile.family}
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleWhatsAppInquire = () => {
+  const handleUnlockSingleProfile = () => {
     if (!profile) return;
-    const text = `Assalamu Alaikum, I am inquiring about Profile ID: #${profileCode} (${profile.name}, ${displayAge} yrs, ${profile.location}) from Rishta Matrimony. Kindly share full contact and guardian details. JazakAllahu Khair.`;
+    const text = `Assalamu Alaikum, I would like to unlock the complete verified details, contact numbers, and clear photos for Profile ID: #${profileCode} (${profile.name}, ${displayAge} yrs, ${profile.location}) under the Single Profile Unlock Option (Rs. 48). Kindly share payment details. JazakAllahu Khair.`;
     window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleUpgradePremium = () => {
+    if (!profile) return;
+    const text = `Assalamu Alaikum, I am inquiring about Profile ID: #${profileCode} (${profile.name}) and would like to upgrade to the Premium Rishta Plan (Rs. 491 for 2 Months) for unlimited profile access. Kindly share payment details. JazakAllahu Khair.`;
+    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const handleWhatsAppInquire = () => {
+    handleUnlockSingleProfile();
   };
 
   const handleWhatsAppShare = () => {
@@ -283,6 +296,77 @@ ${profile.family}
                 <Badge variant="outline" className="bg-background">
                   🎂 Preferred Age: {profile.preferredAge}
                 </Badge>
+              </div>
+            </div>
+
+            {/* Section 6: Unlock Contact & Full Photos Card */}
+            <div className="bg-gradient-to-br from-emerald-950/20 via-card to-primary/10 rounded-2xl p-4 sm:p-5 border-2 border-emerald-500/30 space-y-3.5 shadow-sm">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm sm:text-base text-foreground">
+                      Unlock Verified Contact & Full HD Photos
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground">
+                      Choose your preferred option to connect with {profile.name}'s family
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                  🛡️ Verified Proposal
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option 1: Single Profile (₹48) */}
+                <div className="bg-card border border-emerald-500/40 rounded-xl p-3.5 space-y-2.5 flex flex-col justify-between hover:border-emerald-500 transition-colors shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        Option 1: Single Profile
+                      </span>
+                      <span className="text-base font-extrabold text-foreground">₹48</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      Unlock this profile's verified guardian contact, personal WhatsApp & unblurred photos.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleUnlockSingleProfile}
+                    size="sm"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 h-9 rounded-lg shadow-xs cursor-pointer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Unlock This Profile (₹48)</span>
+                  </Button>
+                </div>
+
+                {/* Option 2: Full Premium (₹491) */}
+                <div className="bg-card border border-primary/40 rounded-xl p-3.5 space-y-2.5 flex flex-col justify-between hover:border-primary transition-colors shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+                        Option 2: Premium Plan
+                      </span>
+                      <span className="text-base font-extrabold text-primary">₹491 <span className="text-[10px] font-normal text-muted-foreground">/ 2 Mo</span></span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      Unlimited access to all profiles, direct contacts, unblurred photos & 1st page priority.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleUpgradePremium}
+                    size="sm"
+                    variant="default"
+                    className="w-full text-xs font-bold gap-1.5 h-9 rounded-lg shadow-xs cursor-pointer"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>Get Full Premium (₹491)</span>
+                  </Button>
+                </div>
               </div>
             </div>
 
