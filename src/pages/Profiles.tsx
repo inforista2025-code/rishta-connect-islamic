@@ -381,12 +381,12 @@ View full profile here:`;
                 asChild
               >
                 <a 
-                  href={`https://wa.me/919128719875?text=Assalamu%20Alaikum%2C%20I%20would%20like%20to%20inquire%20about%20Profile%20ID%3A%20%23${profileCode}%20(${encodeURIComponent(profile.name)})%20from%20Rishta%20Matrimony.%20I%20want%20to%20unlock%20complete%20details%20(Option%3A%20Single%20Profile%20Rs.%2048%20%2F%20Premium%20Plan%20Rs.%20491).%20Kindly%20share%20payment%20details.%20JazakAllahu%20Khair.`}
+                  href={`https://wa.me/919128719875?text=${encodeURIComponent(`Assalamu Alaikum, I would like to unlock verified contact details and clear photos for Profile ID: #${profileCode} (${profile.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp</span>
+                  <span>Unlock Contact & Photos</span>
                 </a>
               </Button>
               <Button 

@@ -110,7 +110,7 @@ ${profile.family}
 
   const handleUnlockSingleProfile = () => {
     if (!profile) return;
-    const text = `Assalamu Alaikum, I would like to unlock the complete verified details, contact numbers, and clear photos for Profile ID: #${profileCode} (${profile.name}, ${displayAge} yrs, ${profile.location}) under the Single Profile Unlock Option (Rs. 48). Kindly share payment details. JazakAllahu Khair.`;
+    const text = `Assalamu Alaikum, I would like to unlock verified contact details and clear photos for Profile ID: #${profileCode} (${profile.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`;
     window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
   };
 
