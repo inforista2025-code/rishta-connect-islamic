@@ -14,12 +14,14 @@ import { registrationSchema, step1Schema, step2Schema, step3Schema, type Registr
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { compressImage } from "@/lib/imageCompression";
 
 const TOTAL_STEPS = 3;
 
 export function RegistrationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<string>("Submitting Profile...");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const navigate = useNavigate();
 
@@ -70,24 +72,32 @@ export function RegistrationForm() {
     }
   };
 
-  const uploadFile = async (file: File, bucket: string, path: string): Promise<string> => {
-    try {
+  const uploadFileWithTimeout = async (file: File, bucket: string, path: string, timeoutMs: number = 30000): Promise<string> => {
+    const uploadPromise = async () => {
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(path, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
       if (error) {
         console.error(`Upload error for ${bucket}:`, error);
-        throw new Error(`Photo upload failed: ${error.message}`);
+        throw new Error(`Upload failed: ${error.message}`);
       }
       return data.path;
+    };
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Upload timeout: Please check your internet connection and try with smaller photos')), timeoutMs);
+    });
+
+    try {
+      return await Promise.race([uploadPromise(), timeoutPromise]);
     } catch (err: any) {
       console.error(`Upload exception for ${bucket}:`, err);
-      if (err.message?.includes('fetch')) {
-        throw new Error('Network error - please check your internet connection and try again');
+      if (err.message?.includes('fetch') || err.message?.includes('Network')) {
+        throw new Error('Network connection error while uploading photos. Please retry.');
       }
       throw err;
     }
@@ -130,7 +140,7 @@ export function RegistrationForm() {
         body: JSON.stringify(payload)
       });
     } catch (error) {
-      console.error('Google Sheet webhook error:', error);
+      console.warn('Google Sheet webhook error (non-blocking):', error);
     }
   };
 
@@ -156,57 +166,57 @@ export function RegistrationForm() {
 
   const onSubmit = async (data: RegistrationData) => {
     setIsSubmitting(true);
+    setSubmitStatus("Preparing photos...");
     
     try {
-      // Validate photos exist
+      // 1. Validate photos exist
       if (!data.photos || data.photos.length < 2) {
         throw new Error('Please upload at least 2 photos before submitting');
       }
 
-      // Upload photos and get full URLs with progress tracking
-      toast({
-        title: "Uploading Photos...",
-        description: "Please wait while we upload your photos",
-      });
-
+      // 2. Compress and upload photos
       const photoFullUrls: string[] = [];
       for (let i = 0; i < data.photos.length; i++) {
-        const file = data.photos[i];
-        // Sanitize filename - remove special characters
-        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const originalFile = data.photos[i];
+        
+        // Fast client-side image compression
+        setSubmitStatus(`Optimizing photo ${i + 1} of ${data.photos.length}...`);
+        let fileToUpload: File = originalFile;
+        try {
+          fileToUpload = await compressImage(originalFile);
+        } catch (compErr) {
+          console.warn(`Compression fallback for photo ${i + 1}:`, compErr);
+          fileToUpload = originalFile;
+        }
+
+        // Sanitize filename
+        const sanitizedName = fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const timestamp = Date.now();
         const fileName = `${timestamp}-${i}-${sanitizedName}`;
         
-        const path = await uploadFile(file, 'registration-photos', fileName);
+        setSubmitStatus(`Uploading photo ${i + 1} of ${data.photos.length}...`);
+        const path = await uploadFileWithTimeout(fileToUpload, 'registration-photos', fileName, 25000);
         
-        // Get the full public URL
+        // Get public URL
         const { data: urlData } = supabase.storage.from('registration-photos').getPublicUrl(path);
         photoFullUrls.push(urlData.publicUrl);
       }
 
-      // Upload biodata if provided
+      // 3. Upload optional biodata PDF if provided
       let biodataFullUrl: string | null = null;
       if (data.biodata) {
-        toast({
-          title: "Uploading Biodata...",
-          description: "Please wait while we upload your biodata",
-        });
-        
+        setSubmitStatus("Uploading biodata document...");
         const sanitizedName = data.biodata.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const timestamp = Date.now();
         const fileName = `${timestamp}-${sanitizedName}`;
-        const biodataPath = await uploadFile(data.biodata, 'registration-biodatas', fileName);
+        const biodataPath = await uploadFileWithTimeout(data.biodata, 'registration-biodatas', fileName, 25000);
         
         const { data: urlData } = supabase.storage.from('registration-biodatas').getPublicUrl(biodataPath);
         biodataFullUrl = urlData.publicUrl;
       }
 
-      toast({
-        title: "Saving Registration...",
-        description: "Almost done!",
-      });
-
-      // Calculate age from DOB
+      // 4. Calculate age & DOB
+      setSubmitStatus("Saving your profile biodata...");
       const today = new Date();
       const birthDate = new Date(data.dateOfBirth);
       let age = today.getFullYear() - birthDate.getFullYear();
@@ -216,7 +226,7 @@ export function RegistrationForm() {
       }
       const dobFormatted = data.dateOfBirth.toISOString().split('T')[0];
 
-      // Insert into profiles_data table
+      // 5. Insert into profiles_data table
       const { error: insertError } = await supabase
         .from('profiles_data')
         .insert({
@@ -250,16 +260,14 @@ export function RegistrationForm() {
 
       if (insertError) {
         console.error('Database insert error:', insertError);
-        throw new Error('Failed to save registration. Please try again.');
+        throw new Error('Failed to save profile. Please check details and try again.');
       }
 
-      // Send data to Google Sheet (fire and forget)
+      // 6. Background tasks (fire and forget)
       sendToGoogleSheet(data, photoFullUrls, biodataFullUrl);
-
-      // Send registration emails (fire and forget)
       sendRegistrationEmails(data);
 
-      // Show success dialog
+      // 7. Show success dialog
       setShowSuccessDialog(true);
       form.reset();
 
@@ -267,22 +275,22 @@ export function RegistrationForm() {
       console.error('Submission error:', error);
       
       let errorMessage = 'Failed to submit registration. Please try again.';
-      
-      if (error.message?.includes('Network') || error.message?.includes('fetch')) {
-        errorMessage = 'Network error - please check your internet connection and try again';
-      } else if (error.message?.includes('upload')) {
+      if (error.message?.includes('Network') || error.message?.includes('fetch') || error.message?.includes('timeout')) {
+        errorMessage = error.message;
+      } else if (error.message?.includes('upload') || error.message?.includes('Upload')) {
         errorMessage = error.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
       
       toast({
-        title: "Submission Failed",
+        title: "Submission Error",
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
+      setSubmitStatus("Submitting Profile...");
     }
   };
 
@@ -346,12 +354,12 @@ export function RegistrationForm() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1"
+                    className="flex-1 font-bold h-11 transition-all cursor-pointer shadow-md"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Submitting...
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+                        <span>{submitStatus}</span>
                       </>
                     ) : (
                       "Submit Profile"
