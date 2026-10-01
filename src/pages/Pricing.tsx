@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { UnlockPaymentModal } from "@/components/payment/UnlockPaymentModal";
 
 export default function Pricing() {
   const [isLoading, setIsLoading] = useState(true);
@@ -141,18 +142,20 @@ export default function Pricing() {
     }
   ];
 
+  const [unlockModal, setUnlockModal] = useState<{
+    open: boolean;
+    purpose: "single_profile" | "premium_plan";
+  }>({
+    open: false,
+    purpose: "single_profile",
+  });
+
   const handleSingleProfileUnlock = () => {
-    window.open(
-      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20unlock%20a%20Single%20Profile%20(Rs.%2048).%20Kindly%20share%20the%20payment%20details.%20JazakAllahu%20Khair.",
-      "_blank"
-    );
+    setUnlockModal({ open: true, purpose: "single_profile" });
   };
 
   const handleWhatsAppUpgrade = () => {
-    window.open(
-      "https://wa.me/919128719875?text=Assalamu%20Alaikum%20Team%20Rishta%20Matrimony%2C%20I%20would%20like%20to%20upgrade%20to%20the%20Premium%20Rishta%20Plan%20(Rs.%20491%20for%202%20Months).%20Kindly%20share%20payment%20details.%20JazakAllahu%20Khair.",
-      "_blank"
-    );
+    setUnlockModal({ open: true, purpose: "premium_plan" });
   };
 
   const faqs = [
@@ -416,6 +419,13 @@ export default function Pricing() {
           </p>
         </div>
       </div>
+
+      {/* Direct UPI Verification & Payment Modal */}
+      <UnlockPaymentModal
+        open={unlockModal.open}
+        onOpenChange={(open) => setUnlockModal((prev) => ({ ...prev, open }))}
+        purpose={unlockModal.purpose}
+      />
 
       <Footer />
     </div>

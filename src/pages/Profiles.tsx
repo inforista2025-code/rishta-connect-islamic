@@ -4,6 +4,7 @@ import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertica
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
 import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
+import { UnlockPaymentModal } from "@/components/payment/UnlockPaymentModal";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -92,9 +93,10 @@ interface SortableProfileCardProps {
   onEdit: (profile: Profile) => void;
   onDelete: (profile: Profile) => void;
   onViewBiodata: (profile: Profile) => void;
+  onUnlockProfile: (profile: Profile) => void;
 }
 
-const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, onDelete, onViewBiodata }: SortableProfileCardProps) => {
+const SortableProfileCard = memo(({ profile, isAdmin, viewerIsPremium, onEdit, onDelete, onViewBiodata, onUnlockProfile }: SortableProfileCardProps) => {
   const isPremium = profile.planType === 'premium' && (!profile.premiumExpiry || new Date(profile.premiumExpiry) > new Date());
   const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
@@ -376,18 +378,15 @@ View full profile here:`;
             <div className="flex gap-2 flex-1">
               <Button 
                 variant="whatsapp"
-                className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm" 
+                className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm cursor-pointer" 
                 size="default" 
-                asChild
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUnlockProfile(profile);
+                }}
               >
-                <a 
-                  href={`https://wa.me/919128719875?text=${encodeURIComponent(`Assalamu Alaikum, I would like to unlock verified contact details and clear photos for Profile ID: #${profileCode} (${profile.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Unlock Contact & Photos</span>
-                </a>
+                <MessageCircle className="w-4 h-4" />
+                <span>Unlock Contact & Photos</span>
               </Button>
               <Button 
                 type="button"
@@ -548,9 +547,28 @@ const Profiles = () => {
   const [selectedBiodataProfile, setSelectedBiodataProfile] = useState<Profile | null>(null);
   const [isBiodataOpen, setIsBiodataOpen] = useState(false);
 
+  // Unlock Payment Modal state
+  const [unlockPaymentModal, setUnlockPaymentModal] = useState<{
+    open: boolean;
+    purpose: "single_profile" | "premium_plan";
+    targetProfile: Profile | null;
+  }>({
+    open: false,
+    purpose: "single_profile",
+    targetProfile: null,
+  });
+
   const handleViewBiodata = useCallback((profile: Profile) => {
     setSelectedBiodataProfile(profile);
     setIsBiodataOpen(true);
+  }, []);
+
+  const handleOpenUnlockModal = useCallback((profile: Profile) => {
+    setUnlockPaymentModal({
+      open: true,
+      purpose: "single_profile",
+      targetProfile: profile,
+    });
   }, []);
 
   // Admin features state
@@ -1888,6 +1906,7 @@ const Profiles = () => {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onViewBiodata={handleViewBiodata}
+                      onUnlockProfile={handleOpenUnlockModal}
                     />
                   ))}
                 </div>
@@ -2371,6 +2390,25 @@ const Profiles = () => {
         profile={selectedBiodataProfile}
         open={isBiodataOpen}
         onOpenChange={setIsBiodataOpen}
+      />
+
+      {/* Direct UPI Unlock & Verification Payment Modal */}
+      <UnlockPaymentModal
+        open={unlockPaymentModal.open}
+        onOpenChange={(open) => setUnlockPaymentModal((prev) => ({ ...prev, open }))}
+        purpose={unlockPaymentModal.purpose}
+        targetProfile={
+          unlockPaymentModal.targetProfile
+            ? {
+                id: unlockPaymentModal.targetProfile.id,
+                code: `RM-BR-${unlockPaymentModal.targetProfile.id}`,
+                name: unlockPaymentModal.targetProfile.name,
+                age: unlockPaymentModal.targetProfile.age,
+                location: unlockPaymentModal.targetProfile.location,
+                gender: unlockPaymentModal.targetProfile.gender,
+              }
+            : null
+        }
       />
 
       <Footer />
