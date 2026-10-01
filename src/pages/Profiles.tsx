@@ -4,7 +4,7 @@ import { User, MapPin, GraduationCap, Briefcase, Users, AlertCircle, GripVertica
 import { MemberProfileActions } from "@/components/member/MemberProfileActions";
 import { ProfileCardPhoto } from "@/components/profiles/ProfileCardPhoto";
 import { FullBiodataModal } from "@/components/profiles/FullBiodataModal";
-import { UnlockPaymentModal } from "@/components/payment/UnlockPaymentModal";
+import { UnlockProfileModal } from "@/components/profiles/UnlockProfileModal";
 import { useMemberAuth } from "@/hooks/useMemberAuth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -378,7 +378,7 @@ View full profile here:`;
             <div className="flex gap-2 flex-1">
               <Button 
                 variant="whatsapp"
-                className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm cursor-pointer" 
+                className="flex-1 font-semibold gap-1.5 h-11 text-xs sm:text-sm shadow-sm cursor-pointer active:scale-[0.98] transition-all" 
                 size="default" 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -547,28 +547,18 @@ const Profiles = () => {
   const [selectedBiodataProfile, setSelectedBiodataProfile] = useState<Profile | null>(null);
   const [isBiodataOpen, setIsBiodataOpen] = useState(false);
 
-  // Unlock Payment Modal state
-  const [unlockPaymentModal, setUnlockPaymentModal] = useState<{
-    open: boolean;
-    purpose: "single_profile" | "premium_plan";
-    targetProfile: Profile | null;
-  }>({
-    open: false,
-    purpose: "single_profile",
-    targetProfile: null,
-  });
-
   const handleViewBiodata = useCallback((profile: Profile) => {
     setSelectedBiodataProfile(profile);
     setIsBiodataOpen(true);
   }, []);
 
-  const handleOpenUnlockModal = useCallback((profile: Profile) => {
-    setUnlockPaymentModal({
-      open: true,
-      purpose: "single_profile",
-      targetProfile: profile,
-    });
+  // Unlock Contact & Photos Modal state
+  const [selectedUnlockProfile, setSelectedUnlockProfile] = useState<Profile | null>(null);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+
+  const handleUnlockProfile = useCallback((profile: Profile) => {
+    setSelectedUnlockProfile(profile);
+    setIsUnlockModalOpen(true);
   }, []);
 
   // Admin features state
@@ -1906,7 +1896,7 @@ const Profiles = () => {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onViewBiodata={handleViewBiodata}
-                      onUnlockProfile={handleOpenUnlockModal}
+                      onUnlockProfile={handleUnlockProfile}
                     />
                   ))}
                 </div>
@@ -2392,23 +2382,11 @@ const Profiles = () => {
         onOpenChange={setIsBiodataOpen}
       />
 
-      {/* Direct UPI Unlock & Verification Payment Modal */}
-      <UnlockPaymentModal
-        open={unlockPaymentModal.open}
-        onOpenChange={(open) => setUnlockPaymentModal((prev) => ({ ...prev, open }))}
-        purpose={unlockPaymentModal.purpose}
-        targetProfile={
-          unlockPaymentModal.targetProfile
-            ? {
-                id: unlockPaymentModal.targetProfile.id,
-                code: `RM-BR-${unlockPaymentModal.targetProfile.id}`,
-                name: unlockPaymentModal.targetProfile.name,
-                age: unlockPaymentModal.targetProfile.age,
-                location: unlockPaymentModal.targetProfile.location,
-                gender: unlockPaymentModal.targetProfile.gender,
-              }
-            : null
-        }
+      {/* Unlock Contact & Photos Modal */}
+      <UnlockProfileModal
+        profile={selectedUnlockProfile}
+        isOpen={isUnlockModalOpen}
+        onClose={() => setIsUnlockModalOpen(false)}
       />
 
       <Footer />

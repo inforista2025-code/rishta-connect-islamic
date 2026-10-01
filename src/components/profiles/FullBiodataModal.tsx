@@ -24,7 +24,6 @@ import {
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateAge, formatDisplayDob } from "@/lib/ageCalculator";
-import { UnlockPaymentModal } from "@/components/payment/UnlockPaymentModal";
 
 interface ProfileData {
   id: number;
@@ -109,22 +108,16 @@ ${profile.family}
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const [unlockModal, setUnlockModal] = useState<{
-    open: boolean;
-    purpose: "single_profile" | "premium_plan";
-  }>({
-    open: false,
-    purpose: "single_profile",
-  });
-
   const handleUnlockSingleProfile = () => {
     if (!profile) return;
-    setUnlockModal({ open: true, purpose: "single_profile" });
+    const text = `Assalamu Alaikum, I would like to unlock verified contact details and clear photos for Profile ID: #${profileCode} (${profile.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`;
+    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const handleUpgradePremium = () => {
     if (!profile) return;
-    setUnlockModal({ open: true, purpose: "premium_plan" });
+    const text = `Assalamu Alaikum, I am inquiring about Profile ID: #${profileCode} (${profile.name}) and would like to upgrade to the Premium Rishta Plan (Rs. 491 for 2 Months) for unlimited profile access. Kindly share payment details. JazakAllahu Khair.`;
+    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const handleWhatsAppInquire = () => {
@@ -144,8 +137,7 @@ ${profile.family}
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[95vw] sm:w-[90vw] max-h-[88vh] overflow-y-auto p-4 sm:p-6 rounded-2xl bg-card border shadow-2xl z-[100]">
         {!profile ? (
           <div className="py-12 text-center text-muted-foreground">
@@ -426,24 +418,5 @@ ${profile.family}
         )}
       </DialogContent>
     </Dialog>
-
-    <UnlockPaymentModal
-      open={unlockModal.open}
-      onOpenChange={(open) => setUnlockModal((prev) => ({ ...prev, open }))}
-      purpose={unlockModal.purpose}
-      targetProfile={
-        profile
-          ? {
-              id: profile.id,
-              code: profileCode,
-              name: profile.name,
-              age: displayAge,
-              location: profile.location,
-              gender: profile.gender,
-            }
-          : null
-      }
-    />
-  </>
   );
 }

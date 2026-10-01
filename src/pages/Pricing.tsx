@@ -7,16 +7,17 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { useNavigate } from "react-router-dom";
+import { PremiumUpgradeModal } from "@/components/pricing/PremiumUpgradeModal";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { UnlockPaymentModal } from "@/components/payment/UnlockPaymentModal";
 
 export default function Pricing() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -142,20 +143,12 @@ export default function Pricing() {
     }
   ];
 
-  const [unlockModal, setUnlockModal] = useState<{
-    open: boolean;
-    purpose: "single_profile" | "premium_plan";
-  }>({
-    open: false,
-    purpose: "single_profile",
-  });
-
   const handleSingleProfileUnlock = () => {
-    setUnlockModal({ open: true, purpose: "single_profile" });
+    navigate("/profiles");
   };
 
   const handleWhatsAppUpgrade = () => {
-    setUnlockModal({ open: true, purpose: "premium_plan" });
+    setIsPremiumModalOpen(true);
   };
 
   const faqs = [
@@ -420,11 +413,9 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Direct UPI Verification & Payment Modal */}
-      <UnlockPaymentModal
-        open={unlockModal.open}
-        onOpenChange={(open) => setUnlockModal((prev) => ({ ...prev, open }))}
-        purpose={unlockModal.purpose}
+      <PremiumUpgradeModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
       />
 
       <Footer />
