@@ -78,7 +78,8 @@ export function RegistrationForm() {
         .from(bucket)
         .upload(path, file, {
           cacheControl: '3600',
-          upsert: true
+          upsert: false,
+          contentType: file.type || 'image/webp'
         });
 
       if (error) {
