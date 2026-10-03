@@ -350,8 +350,9 @@ export function Step3({ form }: Step3Props) {
                   <span>I Confirm and Agree to the Islamic Declaration *</span>
                 </FormLabel>
                 <div className="text-xs text-muted-foreground space-y-1.5 leading-relaxed pt-1">
-                  <p>✔ All details provided are true, accurate, and submitted for the pure purpose of Nikah.</p>
-                  <p>✔ I understand the platform will verify my details before publishing.</p>
+                  <p>✔ All details provided are true, accurate, and submitted with sincere intentions for Nikah.</p>
+                  <p>✔ I agree that Rishta Matrimony provides verified contacts, and direct family communication is to be initiated independently with adab & politeness.</p>
+                  <p>✔ I agree to maintain respectful conduct with all families and volunteer admins. I understand forced communication, harassment, or bad conduct results in immediate permanent account ban.</p>
                   <p>✔ Photos and personal details remain confidential under Islamic privacy guidelines.</p>
                 </div>
                 <FormMessage />

@@ -115,6 +115,28 @@ export const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
             </div>
           </div>
 
+          {/* Family Contact & Conduct Rules Notice */}
+          <div className="space-y-2 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-2xl p-3.5 text-xs">
+            <p className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1 text-[12px]">
+              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>Direct Family Contact & Conduct Rules</span>
+            </p>
+            <div className="space-y-1.5 text-[11px] leading-relaxed text-foreground/90">
+              <p>
+                <strong className="text-foreground font-semibold">1. Direct Communication:</strong> Platform provides verified contacts. Families initiate direct contact independently with adab & sincerity.
+              </p>
+              <p>
+                <strong className="text-foreground font-semibold">2. Respectful Conduct:</strong> Forced messaging, harassment, repeated calls, or pushing for urgent replies is strictly forbidden.
+              </p>
+              <p>
+                <strong className="text-foreground font-semibold">3. Graceful Refusal:</strong> If not a match, decline politely (e.g. <em>"JazakAllahu Khair, not a match"</em>).
+              </p>
+            </div>
+            <div className="mt-2 pt-2 border-t border-amber-500/20 text-[10px] font-bold text-red-600 dark:text-red-400">
+              ⚠️ Penalty Notice: Misconduct or harassment results in immediate permanent account ban.
+            </div>
+          </div>
+
           {/* Instructions Note */}
           <div className="text-[11px] text-muted-foreground bg-muted/60 p-3 rounded-xl border leading-relaxed">
             <span className="font-semibold text-foreground">💡 How to upgrade:</span> Click below to open WhatsApp. Complete your ₹491 payment via UPI (Google Pay, PhonePe, Paytm, or QR Code). If you have a registered profile, our team will activate your Premium badge and 1st page priority within minutes.

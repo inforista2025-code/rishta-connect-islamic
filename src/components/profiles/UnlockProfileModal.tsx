@@ -141,6 +141,33 @@ export const UnlockProfileModal: React.FC<UnlockProfileModalProps> = ({
             </div>
           </div>
 
+          {/* Family Contact & Community Conduct Guidelines */}
+          <div className="space-y-2 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-2xl p-3.5 text-xs">
+            <p className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1.5 text-[12px]">
+              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>Direct Family Contact & Conduct Rules</span>
+            </p>
+
+            <div className="space-y-1.5 text-[11px] leading-relaxed text-foreground/90">
+              <p>
+                <strong className="text-foreground font-semibold">1. Direct Family Contact:</strong> Rishta Matrimony provides verified family numbers & photos. Families must initiate direct contact independently with sincerity.
+              </p>
+              <p>
+                <strong className="text-foreground font-semibold">2. Respectful Communication:</strong> Be polite and patient. Forced conversations, harassment, spamming, or demanding urgent replies are strictly prohibited.
+              </p>
+              <p>
+                <strong className="text-foreground font-semibold">3. Polite Refusal:</strong> If a proposal is not a match, decline gracefully (e.g. <em>"JazakAllahu Khair, not a match for us"</em>). Do not ignore disrespectfully.
+              </p>
+              <p>
+                <strong className="text-foreground font-semibold">4. Respect Volunteer Admins:</strong> Admins serve voluntarily. Rude, demanding, or inappropriate behavior towards admins will not be tolerated.
+              </p>
+            </div>
+
+            <div className="mt-2 pt-2 border-t border-amber-500/20 text-[10px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+              <span>⚠️ Penalty Notice: Misconduct or harassment will cause immediate permanent account ban.</span>
+            </div>
+          </div>
+
           {/* Payment info note */}
           <div className="text-[11px] text-muted-foreground bg-muted/60 p-3 rounded-xl border leading-relaxed">
             <span className="font-semibold text-foreground">💳 How it works:</span> Click below to open WhatsApp. Complete the ₹48 payment via Google Pay, PhonePe, Paytm, or UPI QR code. Our team will verify and deliver the full details instantly.

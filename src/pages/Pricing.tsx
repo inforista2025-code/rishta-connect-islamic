@@ -173,6 +173,14 @@ export default function Pricing() {
       answer: "Yes, absolutely. We strictly adhere to Islamic privacy guidelines. Contact numbers and photos are shared only with serious, verified families seeking marriage."
     },
     {
+      question: "Do I contact the family directly after unlocking contact details?",
+      answer: "Yes. Rishta Matrimony is a facilitator that provides verified family contact numbers, unblurred photos, and full biodata. Unlocking a profile allows you to contact the family directly with sincerity and respect."
+    },
+    {
+      question: "What are the rules of conduct when contacting another family?",
+      answer: "We enforce a zero-tolerance policy for disrespect. Both parties must communicate politely and patiently. Forced messaging, harassment, repeated calls, or demanding urgent replies are strictly prohibited. If a proposal is not a match, decline gracefully (e.g. 'JazakAllahu Khair, not a match for us'). Violations result in immediate permanent account suspension and ban."
+    },
+    {
       question: "Can I register for free first and decide later?",
       answer: "Yes! Registration is 100% free. You can browse all profiles, create your biodata, and choose between the Single Profile Unlock (₹48) or Full Premium Plan (₹491) whenever you find a suitable match."
     }
@@ -377,6 +385,65 @@ export default function Pricing() {
             </div>
           </Card>
 
+        </div>
+
+        {/* Community Code of Conduct & Family Guidelines Banner */}
+        <div className="mt-12 max-w-4xl mx-auto bg-gradient-to-br from-amber-500/10 via-card to-amber-500/5 border-2 border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 border-b border-amber-500/20 pb-4">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-foreground">
+                Community Code of Conduct & Direct Family Contact Guidelines
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Important rules to ensure respectful, Islamic, and dignified matchmaking for all families
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div className="bg-background/80 rounded-2xl p-4 border border-border/70 space-y-1.5">
+              <h4 className="font-bold text-foreground flex items-center gap-1.5 text-sm text-primary">
+                <span>1. Direct Family Responsibility</span>
+              </h4>
+              <p className="text-muted-foreground leading-relaxed text-xs">
+                Rishta Matrimony provides verified family numbers, unblurred photos, and full biodata. Unlocking contact details means you agree to initiate direct, polite communication with the family independently.
+              </p>
+            </div>
+
+            <div className="bg-background/80 rounded-2xl p-4 border border-border/70 space-y-1.5">
+              <h4 className="font-bold text-foreground flex items-center gap-1.5 text-sm text-primary">
+                <span>2. Respectful Communication</span>
+              </h4>
+              <p className="text-muted-foreground leading-relaxed text-xs">
+                Be polite and patient. Forced messaging, harassment, repeated calling, or pushing for urgent replies is strictly forbidden. Always respect the privacy and boundaries of other families.
+              </p>
+            </div>
+
+            <div className="bg-background/80 rounded-2xl p-4 border border-border/70 space-y-1.5">
+              <h4 className="font-bold text-foreground flex items-center gap-1.5 text-sm text-primary">
+                <span>3. Graceful & Respectful Refusal</span>
+              </h4>
+              <p className="text-muted-foreground leading-relaxed text-xs">
+                If a proposal is not a match for your family, decline politely (e.g., <em>"JazakAllahu Khair, not a match for us"</em>). Do not ignore messages disrespectfully or respond rudely.
+              </p>
+            </div>
+
+            <div className="bg-background/80 rounded-2xl p-4 border border-border/70 space-y-1.5">
+              <h4 className="font-bold text-foreground flex items-center gap-1.5 text-sm text-primary">
+                <span>4. Volunteer Admin Support</span>
+              </h4>
+              <p className="text-muted-foreground leading-relaxed text-xs">
+                Be polite and patient — admins serve the community voluntarily. Rude, demanding, or disrespectful behavior toward admins will not be tolerated under any circumstances.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-bold text-red-700 dark:text-red-400 text-center flex items-center justify-center gap-2">
+            <span>⚠️ Zero Tolerance Policy: Any reported harassment, misconduct, or disrespectful behavior will result in immediate PERMANENT ACCOUNT SUSPENSION & BAN.</span>
+          </div>
         </div>
 
         {/* Frequently Asked Questions Section */}

@@ -368,6 +368,23 @@ ${profile.family}
                   </Button>
                 </div>
               </div>
+
+              {/* Direct Family Contact & Respect Notice */}
+              <div className="bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-xl p-3 text-[11px] leading-relaxed text-foreground/90 space-y-1">
+                <p className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>Direct Family Contact Policy:</span>
+                </p>
+                <p>
+                  • Unlocking provides verified family contact numbers. Families initiate direct contact independently with adab & respect.
+                </p>
+                <p>
+                  • Forced conversations, harassment, repeated calls, or disrespectful behavior toward families or volunteer admins is strictly forbidden.
+                </p>
+                <p className="text-[10px] font-bold text-red-600 dark:text-red-400">
+                  ⚠️ Misconduct or harassment will result in immediate permanent account suspension & phone ban.
+                </p>
+              </div>
             </div>
 
             {/* Modal Action Footer */}
