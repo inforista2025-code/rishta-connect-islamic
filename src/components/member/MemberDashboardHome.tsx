@@ -905,46 +905,61 @@ function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEdit
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Option 1: Premium Upgrade (₹491) */}
-            <div className="bg-card border-2 border-primary/40 rounded-2xl p-4 space-y-3 flex flex-col justify-between hover:border-primary transition-colors shadow-2xs">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-primary uppercase tracking-wider">⭐ Option 1: Full Premium</span>
-                  <span className="text-2xl font-black text-primary">₹491</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  2 Months unlimited contacts, unblurred photos, ⭐ Gold Badge & 1st page priority matching.
-                </p>
-              </div>
-              <Button
-                onClick={() => { setPaymentPlan("premium"); setDirectPaymentOpen(true); }}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-10 rounded-xl gap-2 cursor-pointer shadow-xs"
-              >
-                <QrCode className="w-4 h-4 text-amber-300" />
-                <span>Pay ₹491 (Full Premium)</span>
-              </Button>
+          <div className="max-w-md mx-auto bg-gradient-to-br from-amber-50/80 via-card to-amber-500/10 border-2 border-amber-500/40 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm text-center">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto shadow-xs">
+              <Crown className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-extrabold text-foreground">Upgrade to Premium</h3>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Unlock all verified profiles & direct contact numbers across the website
+              </p>
             </div>
 
-            {/* Option 2: Single Profile Unlock (₹48) */}
-            <div className="bg-card border-2 border-emerald-500/40 rounded-2xl p-4 space-y-3 flex flex-col justify-between hover:border-emerald-500 transition-colors shadow-2xs">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">🎯 Option 2: Single Unlock</span>
-                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹48</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  Unlock verified contact number & HD photos for any 1 selected proposal.
-                </p>
-              </div>
-              <Button
-                onClick={() => { setPaymentPlan("single"); setDirectPaymentOpen(true); }}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl gap-2 cursor-pointer shadow-xs"
-              >
-                <QrCode className="w-4 h-4 text-amber-300" />
-                <span>Pay ₹48 (Single Profile)</span>
-              </Button>
+            <ul className="space-y-2 text-xs text-left max-w-xs mx-auto">
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>View full verified contact details</span>
+              </li>
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Send unlimited profile interests</span>
+              </li>
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>View unblurred HD profile photos</span>
+              </li>
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Get featured on 1st Page pinned top</span>
+              </li>
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>⭐ Premium Gold Verified Badge</span>
+              </li>
+              <li className="flex items-center gap-2 font-semibold text-foreground">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Priority 1-on-1 customer support</span>
+              </li>
+            </ul>
+
+            <div className="rounded-2xl border border-amber-500/40 bg-background/90 py-3 px-4 text-center shadow-xs">
+              <span className="text-3xl font-black text-primary">₹491</span>
+              <span className="text-xs font-bold text-muted-foreground"> / 2 Months Access</span>
             </div>
+
+            <Button
+              onClick={() => { setPaymentPlan("premium"); setDirectPaymentOpen(true); }}
+              size="lg"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl shadow-md gap-2 cursor-pointer"
+            >
+              <QrCode className="w-5 h-5 text-amber-300" />
+              <span>Pay Direct via Barcode / UPI</span>
+            </Button>
+
+            <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> 100% Direct On-Screen UPI Payment (8789428096@upi)
+            </p>
           </div>
         </CardContent>
       </Card>
