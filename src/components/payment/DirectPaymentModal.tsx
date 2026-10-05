@@ -49,7 +49,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const upiId = "9128719875@ybl";
+  const upiId = "8789428096@upi";
   const payeeName = "Rishta Matrimony";
 
   const amount = selectedPlan === "premium" ? 491 : 48;
