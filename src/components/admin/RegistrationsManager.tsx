@@ -118,9 +118,19 @@ export function RegistrationsManager() {
 
   const handleVerify = async (id: number) => {
     try {
+      // Get the current max display_order so the newly verified profile
+      // appears right below premium profiles on the Profiles page
+      const { data: maxRow } = await supabase
+        .from('profiles_data')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const nextOrder = ((maxRow as any)?.display_order ?? 0) + 1;
+
       const { error } = await supabase
         .from('profiles_data')
-        .update({ verification_status: 'verified', is_live: true } as any)
+        .update({ verification_status: 'verified', is_live: true, display_order: nextOrder } as any)
         .eq('id', id);
       if (error) throw error;
       toast({ title: 'Profile verified and set live!' });
