@@ -120,6 +120,15 @@ export function MemberDashboardHome() {
   const [viewOpen, setViewOpen] = useState(false);
   const [dpOpen, setDpOpen] = useState(false);
 
+  // Single Profile Unlock Payment modal state
+  const [unlockTargetProfile, setUnlockTargetProfile] = useState<any | null>(null);
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+
+  const handleUnlockCandidate = useCallback((p: any) => {
+    setUnlockTargetProfile(p);
+    setUnlockModalOpen(true);
+  }, []);
+
   // section-specific lazy data
   const [savedList, setSavedList] = useState<any[]>([]);
   const [recentlyList, setRecentlyList] = useState<any[]>([]);
@@ -286,6 +295,7 @@ export function MemberDashboardHome() {
                     isPremium={isPremium}
                     onViewProfile={openView}
                     onSave={handleSave}
+                    onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     onSeeAllRecommended={() => setSection("recommended")}
                   />
@@ -306,6 +316,7 @@ export function MemberDashboardHome() {
                     profiles={recList}
                     onView={openView}
                     onSave={handleSave}
+                    onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
                     loading={!!sectionLoading.recommended}
@@ -332,6 +343,7 @@ export function MemberDashboardHome() {
                       profiles={browseList}
                       onView={openView}
                       onSave={handleSave}
+                      onUnlock={handleUnlockCandidate}
                       savedIds={savedIds}
                       self={profile}
                       loading={!!sectionLoading.browse}
@@ -347,6 +359,7 @@ export function MemberDashboardHome() {
                     profiles={savedList}
                     onView={openView}
                     onSave={handleSave}
+                    onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
                     emptyMsg="No saved profiles yet."
@@ -361,6 +374,7 @@ export function MemberDashboardHome() {
                     isPremium={isPremium}
                     onView={openView}
                     onSave={handleSave}
+                    onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
                     loading={!!sectionLoading.viewers}
@@ -454,6 +468,15 @@ export function MemberDashboardHome() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DirectPaymentModal
+        isOpen={unlockModalOpen}
+        onClose={() => setUnlockModalOpen(false)}
+        defaultPlan="single"
+        profileCode={unlockTargetProfile ? `RM-${unlockTargetProfile.gender === "Female" ? "BR" : "GR"}-${unlockTargetProfile.order ?? unlockTargetProfile.id}` : ""}
+        profileName={unlockTargetProfile?.name}
+        memberPhone={member?.whatsapp_number}
+      />
     </div>
   );
 }
@@ -535,7 +558,7 @@ function DashboardSidebar({ member, profile, completion, section, onSelect, coun
 }
 
 /* ===================== DASHBOARD CONTENT ===================== */
-function DashboardContent({ data, member, isPremium, onViewProfile, onSave, savedIds, onSeeAllRecommended }: any) {
+function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUnlock, savedIds, onSeeAllRecommended }: any) {
   const counts = data?.counts || {};
   const recommendations = data?.recommendations || [];
   const newWeek = data?.new_this_week || [];
@@ -578,6 +601,7 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, save
                   match={matchPercent(self, p)}
                   onView={() => onViewProfile(p.id)}
                   onSave={() => onSave(p.id, savedIds.has(p.id))}
+                  onUnlock={onUnlock}
                   saved={savedIds.has(p.id)}
                 />
               ))}
@@ -628,7 +652,7 @@ function StatTile({ icon, bg, label, value }: any) {
   );
 }
 
-function RecommendedCard({ p, match, onView, onSave, saved }: any) {
+function RecommendedCard({ p, match, onView, onSave, saved, onUnlock }: any) {
   return (
     <div className="group border rounded-xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
       <button
@@ -650,19 +674,33 @@ function RecommendedCard({ p, match, onView, onSave, saved }: any) {
         <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
         <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
       </button>
-      <div className="flex gap-1.5 p-2.5 pt-0">
-        <Button size="sm" className="h-9 text-xs px-2 flex-1 active:scale-[0.98] transition-transform duration-150" onClick={onView}>
-          <Heart className="w-3.5 h-3.5 mr-1" /> Interest
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-9 w-9 p-0 shrink-0 active:scale-[0.95] transition-all duration-150"
-          onClick={(e) => { e.stopPropagation(); onSave(); }}
-          aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
-        >
-          <Star className={cn("w-4 h-4", saved ? "fill-primary text-primary" : "")} />
-        </Button>
+
+      <div className="p-2.5 pt-0 space-y-1.5">
+        <div className="flex gap-1.5">
+          <Button size="sm" className="h-8 text-[11px] px-2 flex-1 font-semibold" onClick={onView}>
+            <Heart className="w-3.5 h-3.5 mr-1" /> Interest
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0 shrink-0 active:scale-[0.95] transition-all duration-150"
+            onClick={(e) => { e.stopPropagation(); onSave(); }}
+            aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
+          >
+            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "")} />
+          </Button>
+        </div>
+
+        {onUnlock && (
+          <Button
+            size="sm"
+            className="w-full h-8 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 rounded-lg shadow-2xs cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); onUnlock(p); }}
+          >
+            <Lock className="w-3 h-3 text-amber-300" />
+            <span>Unlock Contact (₹48)</span>
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -682,7 +720,7 @@ function MiniRow({ p, badge, time, onClick }: any) {
 }
 
 /* ===================== OTHER SECTIONS ===================== */
-function CardListSection({ title, profiles, onView, onSave, savedIds, self, emptyMsg, loading, error, onRetry }: any) {
+function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, self, emptyMsg, loading, error, onRetry }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
@@ -711,6 +749,7 @@ function CardListSection({ title, profiles, onView, onSave, savedIds, self, empt
                 match={matchPercent(self, p)}
                 onView={() => onView(p.id)}
                 onSave={() => onSave(p.id, savedIds.has(p.id))}
+                onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
               />
             ))}
@@ -721,7 +760,7 @@ function CardListSection({ title, profiles, onView, onSave, savedIds, self, empt
   );
 }
 
-function ViewersSection({ data, isPremium, onView, onSave, savedIds, self, loading, error, onRetry }: any) {
+function ViewersSection({ data, isPremium, onView, onSave, onUnlock, savedIds, self, loading, error, onRetry }: any) {
   const viewers = data?.viewers || [];
   return (
     <Card>
@@ -749,6 +788,7 @@ function ViewersSection({ data, isPremium, onView, onSave, savedIds, self, loadi
                 match={matchPercent(self, p)}
                 onView={() => onView(p.id)}
                 onSave={() => onSave(p.id, savedIds.has(p.id))}
+                onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
               />
             ))}
