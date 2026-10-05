@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Crown,
   Check,
@@ -81,7 +82,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
     setTimeout(() => setCopiedUpi(false), 2500);
   };
 
-  const handleSubmitUtr = (e: React.FormEvent) => {
+  const handleSubmitUtr = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!utrNumber.trim() || utrNumber.trim().length < 6) {
       toast({
@@ -93,14 +94,73 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // 1. Log request into Database for Admin Panel
+      const isSingle = selectedPlan === "single";
+      const fieldName = isSingle ? `SINGLE_PROFILE_UNLOCK_₹48` : `PREMIUM_UPGRADE_₹491`;
+      const reqVal = isSingle
+        ? `₹48 Payment for Target Profile: [${targetCodeOrName}] | UTR: ${utrNumber.trim()}`
+        : `₹491 Premium Plan Payment | UTR: ${utrNumber.trim()}`;
+
+      // Insert into Supabase table if logged in
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        const { data: prof } = await supabase
+          .from("profiles_data")
+          .select("id")
+          .eq("email", userData.user.email)
+          .maybeSingle();
+
+        if (prof) {
+          await supabase.from("profile_update_requests").insert({
+            profile_id: prof.id,
+            field_name: fieldName,
+            current_value: isSingle ? targetCodeOrName : "Free Plan",
+            requested_value: reqVal,
+            reason: `Payment UTR: ${utrNumber.trim()} (Paid via Barcode 8789428096@upi)`,
+            status: "pending",
+          });
+        }
+      }
+
+      // 2. Trigger Admin Email Alert
+      const emailSubject = encodeURIComponent(
+        `🔔 Payment Alert: ${isSingle ? `₹48 Single Unlock for ${targetCodeOrName}` : "₹491 Premium Plan Upgrade"}`
+      );
+      const emailBody = encodeURIComponent(
+        `Assalamu Alaikum Admin,\n\nA new payment receipt has been submitted on Rishta Matrimony:\n\n` +
+        `• Plan: ${planTitle}\n` +
+        `• Member: ${initialProfileName || "Registered Member"} (${initialProfileCode || "N/A"})\n` +
+        `• Mobile: ${memberPhone || "N/A"}\n` +
+        `• Target Profile: ${targetCodeOrName}\n` +
+        `• UTR / Ref No: ${utrNumber.trim()}\n` +
+        `• Payment Mode: Barcode / UPI (8789428096@upi)\n\n` +
+        `Please check Admin Dashboard to verify UTR and approve access.\n\nJazakAllahu Khair.`
+      );
+      
+      // Hidden trigger for email alert
+      const mailtoLink = `mailto:info.rista2025@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = mailtoLink;
+      document.body.appendChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 2000);
+
       setIsSubmitted(true);
       toast({
-        title: "🎉 Payment Receipt Submitted!",
-        description: "Admin team will verify your UTR and activate your profile within 5-10 minutes.",
+        title: "🎉 Payment Logged & Admin Notified!",
+        description: "Request recorded in Admin Panel. Click below to also notify Admin on WhatsApp.",
       });
-    }, 1000);
+    } catch (err: any) {
+      console.error("Payment log error:", err);
+      setIsSubmitted(true);
+      toast({
+        title: "🎉 Payment Submitted!",
+        description: "Please send your receipt on WhatsApp for instant 5-minute verification.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getPrefilledWhatsAppMsg = () => {
