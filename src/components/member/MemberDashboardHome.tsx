@@ -17,11 +17,13 @@ import {
   Loader2, Lock, Crown, LogOut, Star, Heart, Send, Inbox, ClipboardList,
   UserCheck, ShieldCheck, Edit3, LayoutDashboard, Search, Eye, MessageSquare,
   Activity, Settings, Menu, BookmarkPlus, BadgeCheck, ChevronRight, Lightbulb,
+  QrCode, Sparkles
 } from "lucide-react";
 import { PremiumUpgradeCard } from "./PremiumUpgradeCard";
 import { ProfilePhoto } from "./ProfilePhoto";
 import { ProfilePictureDialog } from "./ProfilePictureDialog";
 import { ViewProfileDialog } from "./ViewProfileDialog";
+import { DirectPaymentModal } from "@/components/payment/DirectPaymentModal";
 import { cn } from "@/lib/utils";
 import { calculateAge } from "@/lib/ageCalculator";
 
@@ -291,6 +293,7 @@ export function MemberDashboardHome() {
                 {section === "profile" && (
                   <ProfileSection
                     profile={profile}
+                    member={member}
                     editable={data?.editable || {}}
                     onRequestUpdate={openRequest}
                     onSaveEditable={saveEditable}
@@ -872,9 +875,80 @@ function PlaceholderSection({ title, description, cta, onCta }: any) {
 }
 
 /* ===================== PROFILE / EDIT ===================== */
-function ProfileSection({ profile, editable, onRequestUpdate, onSaveEditable, savingEditable }: any) {
+function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEditable, savingEditable }: any) {
+  const [directPaymentOpen, setDirectPaymentOpen] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<"single" | "premium">("premium");
+
+  const prefix = profile?.gender === "Female" ? "RM-BR" : "RM-GR";
+  const numPart = profile?.order !== undefined && profile?.order !== null ? profile.order : profile?.id;
+  const profileCode = profile ? `${prefix}-${numPart}` : "";
+
   return (
     <div className="space-y-4">
+      {/* Membership & Payment Center Card */}
+      <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card rounded-2xl shadow-sm overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-500" />
+              <CardTitle className="text-lg font-black text-foreground">
+                Membership Payment & Upgrade Center
+              </CardTitle>
+            </div>
+            <Badge className={member?.plan_type === "premium" ? "bg-purple-600 text-white font-bold" : "bg-emerald-600 text-white font-bold"}>
+              {member?.plan_type === "premium" ? "⭐ Active Premium Member" : "Free Member Account"}
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-muted-foreground mt-0.5">
+            Directly pay via Barcode / UPI (8789428096@upi) or send prefilled WhatsApp verification receipt to Admin with your profile details.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Option 1: Premium Upgrade (₹491) */}
+            <div className="bg-card border-2 border-primary/40 rounded-2xl p-4 space-y-3 flex flex-col justify-between hover:border-primary transition-colors shadow-2xs">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-primary uppercase tracking-wider">⭐ Option 1: Full Premium</span>
+                  <span className="text-2xl font-black text-primary">₹491</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  2 Months unlimited contacts, unblurred photos, ⭐ Gold Badge & 1st page priority matching.
+                </p>
+              </div>
+              <Button
+                onClick={() => { setPaymentPlan("premium"); setDirectPaymentOpen(true); }}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-10 rounded-xl gap-2 cursor-pointer shadow-xs"
+              >
+                <QrCode className="w-4 h-4 text-amber-300" />
+                <span>Pay ₹491 (Full Premium)</span>
+              </Button>
+            </div>
+
+            {/* Option 2: Single Profile Unlock (₹48) */}
+            <div className="bg-card border-2 border-emerald-500/40 rounded-2xl p-4 space-y-3 flex flex-col justify-between hover:border-emerald-500 transition-colors shadow-2xs">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">🎯 Option 2: Single Unlock</span>
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹48</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  Unlock verified contact number & HD photos for any 1 selected proposal.
+                </p>
+              </div>
+              <Button
+                onClick={() => { setPaymentPlan("single"); setDirectPaymentOpen(true); }}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl gap-2 cursor-pointer shadow-xs"
+              >
+                <QrCode className="w-4 h-4 text-amber-300" />
+                <span>Pay ₹48 (Single Profile)</span>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-green-600" />Verified Information</CardTitle>
@@ -895,7 +969,17 @@ function ProfileSection({ profile, editable, onRequestUpdate, onSaveEditable, sa
           ))}
         </CardContent>
       </Card>
+
       <EditableForm initial={editable} onSave={onSaveEditable} saving={savingEditable} />
+
+      <DirectPaymentModal
+        isOpen={directPaymentOpen}
+        onClose={() => setDirectPaymentOpen(false)}
+        defaultPlan={paymentPlan}
+        profileCode={profileCode}
+        profileName={member?.full_name || profile?.name}
+        memberPhone={member?.whatsapp_number}
+      />
     </div>
   );
 }

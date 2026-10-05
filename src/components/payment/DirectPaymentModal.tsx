@@ -24,7 +24,8 @@ import {
   Sparkles,
   Lock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  UserCheck
 } from "lucide-react";
 
 interface DirectPaymentModalProps {
@@ -33,19 +34,22 @@ interface DirectPaymentModalProps {
   defaultPlan?: "single" | "premium";
   profileCode?: string;
   profileName?: string;
+  memberPhone?: string;
 }
 
 export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   isOpen,
   onClose,
   defaultPlan = "premium",
-  profileCode,
-  profileName,
+  profileCode: initialProfileCode = "",
+  profileName: initialProfileName = "",
+  memberPhone = "",
 }) => {
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<"single" | "premium">(defaultPlan);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [utrNumber, setUtrNumber] = useState("");
+  const [targetProfileInput, setTargetProfileInput] = useState(initialProfileCode || initialProfileName || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -55,10 +59,12 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   const amount = selectedPlan === "premium" ? 491 : 48;
   const planTitle = selectedPlan === "premium" ? "Premium Rishta Plan (2 Months)" : "Single Profile Unlock";
 
+  const targetCodeOrName = targetProfileInput.trim() || initialProfileCode || initialProfileName || "Selected Profile";
+
   const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(
     selectedPlan === "premium"
-      ? "Premium Membership Plan"
-      : `Single Unlock Profile ${profileCode || ""}`
+      ? "Premium Membership Upgrade"
+      : `Single Unlock Profile ${targetCodeOrName}`
   )}`;
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
@@ -91,16 +97,46 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
       setIsSubmitting(false);
       setIsSubmitted(true);
       toast({
-        title: "🎉 Payment Submitted Successfully!",
+        title: "🎉 Payment Receipt Submitted!",
         description: "Admin team will verify your UTR and activate your profile within 5-10 minutes.",
       });
     }, 1000);
   };
 
+  const getPrefilledWhatsAppMsg = () => {
+    const refText = utrNumber.trim() ? `UTR / Ref No: ${utrNumber.trim()}` : "Paid via Barcode QR / UPI";
+    
+    if (selectedPlan === "premium") {
+      return `Assalamu Alaikum Admin Team 🌸,
+
+Maine Rs. 491 ka payment complete kar diya hai. Please meri profile ko Premium Profile me convert kar dein.
+
+📋 Member Details:
+• Name: ${initialProfileName || "Registered Member"}
+• Profile ID: ${initialProfileCode || "Registered Profile"}
+${memberPhone ? `• Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Premium Rishta Plan (Rs. 491 - 2 Months Access)
+• ${refText}
+
+Please verify karke meri profile ko Premium bana dein aur details confirm karein.
+JazakAllahu Khair 🤍`;
+    } else {
+      return `Assalamu Alaikum Admin Team 🌸,
+
+Maine Rs. 48 ka payment single profile unlock ke liye complete kar diya hai.
+
+📋 Request Details:
+• My Name / Member: ${initialProfileName || "Registered Member"}
+• Target Profile ID / Name: ${targetCodeOrName}
+${memberPhone ? `• My Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Single Profile Unlock (Rs. 48)
+• ${refText}
+
+Please verify karke is profile ki verified contact details & photos WhatsApp par send kar dein.
+JazakAllahu Khair 🤍`;
+    }
+  };
+
   const handleNotifyWhatsApp = () => {
-    const msg = selectedPlan === "premium"
-      ? `Assalamu Alaikum Admin, I have paid Rs. 491 for Premium Rishta Plan. UTR / Ref No: ${utrNumber || "Paid via QR"}. Please verify and activate my profile.`
-      : `Assalamu Alaikum Admin, I have paid Rs. 48 for Single Profile Unlock (${profileCode || ""} ${profileName || ""}). UTR / Ref No: ${utrNumber || "Paid via QR"}. Please verify and send details.`;
+    const msg = getPrefilledWhatsAppMsg();
     window.open(`https://wa.me/919128719875?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -123,7 +159,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
             Direct UPI Scan & Pay
           </DialogTitle>
           <DialogDescription className="text-xs text-emerald-100 mt-1 max-w-xs mx-auto">
-            Scan barcode or click UPI app button to pay directly. No WhatsApp delay required!
+            Scan barcode or click UPI app button to pay directly.
           </DialogDescription>
         </div>
 
@@ -164,7 +200,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
           </div>
 
           {/* Selected Plan Summary Card */}
-          <div className={`p-3.5 rounded-2xl border flex items-center justify-between ${
+          <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
             selectedPlan === "premium"
               ? "bg-gradient-to-r from-primary/10 via-amber-500/5 to-card border-primary/30"
               : "bg-emerald-500/10 border-emerald-500/30"
@@ -180,14 +216,30 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
               </h4>
               <p className="text-[11px] text-muted-foreground mt-0.5">
                 {selectedPlan === "premium"
-                  ? "Unlimited profiles + HD photos + 1st page priority"
-                  : profileCode ? `Unlock contact for Profile ID: #${profileCode}` : "Unlock contact & HD photos for 1 selected profile"}
+                  ? "Unlimited profiles + HD photos + Gold Badge + 1st page priority"
+                  : `Unlock contact & HD photos for ${targetCodeOrName}`}
               </p>
             </div>
-            <div className="text-right shrink-0">
+            <div className="text-left sm:text-right shrink-0">
               <span className="text-2xl sm:text-3xl font-black text-foreground">₹{amount}</span>
             </div>
           </div>
+
+          {/* If Single Profile Plan selected and no target prefilled, show input field */}
+          {selectedPlan === "single" && !initialProfileCode && (
+            <div className="space-y-1.5 bg-muted/40 p-3 rounded-xl border">
+              <Label className="text-xs font-bold text-foreground">
+                Target Profile ID / Name for ₹48 Unlock
+              </Label>
+              <Input
+                type="text"
+                placeholder="e.g. RM-BR-13 or Kamran Ansari"
+                value={targetProfileInput}
+                onChange={(e) => setTargetProfileInput(e.target.value)}
+                className="text-xs h-9 bg-background rounded-lg"
+              />
+            </div>
+          )}
 
           {isSubmitted ? (
             /* Success confirmation screen */
@@ -196,19 +248,19 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-foreground">Payment Receipt Received!</h3>
+                <h3 className="text-lg font-bold text-foreground">Payment Receipt Submitted!</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">
-                  Thank you! Your UTR Number <strong className="text-foreground">{utrNumber}</strong> has been logged. Our admin team will verify and activate your profile within 5-10 minutes.
+                  Thank you! Your UTR Number <strong className="text-foreground">{utrNumber}</strong> has been logged. Click below to send a prefilled confirmation message to Admin on WhatsApp for 5-10 minute activation.
                 </p>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
                 <Button
                   onClick={handleNotifyWhatsApp}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 gap-2 rounded-xl"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 gap-2 rounded-xl shadow-md"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Notify Admin on WhatsApp</span>
+                  <span>Send Prefilled Receipt on WhatsApp</span>
                 </Button>
                 <Button
                   onClick={handleResetModal}
@@ -222,7 +274,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
           ) : (
             /* Direct QR Code + Payment Form */
             <div className="space-y-4">
-              {/* Meesho-style Barcode Scanner Display */}
+              {/* Barcode Scanner Display */}
               <div className="bg-card border-2 border-dashed border-emerald-500/40 rounded-2xl p-4 text-center space-y-3 shadow-xs">
                 <div className="flex items-center justify-center gap-2 text-xs font-bold text-foreground">
                   <QrCode className="w-4 h-4 text-emerald-600" />
@@ -261,7 +313,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
                 </div>
               </div>
 
-              {/* Direct Smartphone Mobile Apps Launcher */}
+              {/* Direct Mobile Apps Launcher */}
               <div className="space-y-2">
                 <p className="text-[11px] font-bold text-muted-foreground text-center uppercase tracking-wider">
                   Or Tap Below to Pay via Installed App (Mobile Only)
@@ -295,7 +347,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
               <form onSubmit={handleSubmitUtr} className="bg-muted/40 border rounded-2xl p-3.5 space-y-3">
                 <div>
                   <Label htmlFor="utr" className="text-xs font-bold text-foreground flex items-center justify-between">
-                    <span>Step 2: Enter 12-Digit UTR / Transaction Ref No.</span>
+                    <span>Enter 12-Digit UTR / Transaction Ref No.</span>
                     <span className="text-[10px] text-muted-foreground font-normal">(After payment)</span>
                   </Label>
                   <div className="flex gap-2 mt-1.5">
@@ -321,7 +373,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/60">
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    100% Guaranteed Verification
+                    100% Verified Payment
                   </span>
                   <button
                     type="button"
@@ -329,7 +381,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
                     className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Send screenshot on WhatsApp</span>
+                    <span>Send Prefilled WhatsApp Receipt</span>
                   </button>
                 </div>
               </form>
