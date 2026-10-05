@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ interface DirectPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultPlan?: "single" | "premium";
+  hidePlanSwitcher?: boolean;
   profileCode?: string;
   profileName?: string;
   memberPhone?: string;
@@ -42,6 +43,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   isOpen,
   onClose,
   defaultPlan = "premium",
+  hidePlanSwitcher = false,
   profileCode: initialProfileCode = "",
   profileName: initialProfileName = "",
   memberPhone = "",
@@ -53,6 +55,11 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   const [targetProfileInput, setTargetProfileInput] = useState(initialProfileCode || initialProfileName || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    setSelectedPlan(defaultPlan);
+    setTargetProfileInput(initialProfileCode || initialProfileName || "");
+  }, [defaultPlan, initialProfileCode, initialProfileName, isOpen]);
 
   const upiId = "8789428096@upi";
   const payeeName = "Rishta Matrimony";
@@ -216,7 +223,7 @@ JazakAllahu Khair 🤍`;
             <span>Instant & Direct Payment Checkout</span>
           </div>
           <DialogTitle className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Direct UPI Scan & Pay
+            {selectedPlan === "premium" ? "Pay ₹491 for Premium Upgrade" : `Pay ₹48 to Unlock ${targetCodeOrName}`}
           </DialogTitle>
           <DialogDescription className="text-xs text-emerald-100 mt-1 max-w-xs mx-auto">
             Scan barcode or click UPI app button to pay directly.
@@ -224,43 +231,45 @@ JazakAllahu Khair 🤍`;
         </div>
 
         <div className="p-4 sm:p-6 space-y-5">
-          {/* Plan Switcher Tabs */}
-          <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1.5 rounded-2xl border">
-            <button
-              type="button"
-              onClick={() => { setSelectedPlan("single"); setIsSubmitted(false); }}
-              className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-0.5 cursor-pointer ${
-                selectedPlan === "single"
-                  ? "bg-emerald-600 text-white shadow-md scale-[1.02]"
-                  : "text-muted-foreground hover:bg-background/80"
-              }`}
-            >
-              <span className="flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-amber-300" />
-                Single Profile
-              </span>
-              <span className="text-sm font-black">₹48</span>
-            </button>
+          {/* Optional Plan Switcher Tabs (Only if not hidden) */}
+          {!hidePlanSwitcher && (
+            <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1.5 rounded-2xl border">
+              <button
+                type="button"
+                onClick={() => { setSelectedPlan("single"); setIsSubmitted(false); }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-0.5 cursor-pointer ${
+                  selectedPlan === "single"
+                    ? "bg-emerald-600 text-white shadow-md scale-[1.02]"
+                    : "text-muted-foreground hover:bg-background/80"
+                }`}
+              >
+                <span className="flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5 text-amber-300" />
+                  Single Profile
+                </span>
+                <span className="text-sm font-black">₹48</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => { setSelectedPlan("premium"); setIsSubmitted(false); }}
-              className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-0.5 cursor-pointer ${
-                selectedPlan === "premium"
-                  ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
-                  : "text-muted-foreground hover:bg-background/80"
-              }`}
-            >
-              <span className="flex items-center gap-1">
-                <Crown className="w-3.5 h-3.5 text-amber-300" />
-                Full Premium (2 Mo)
-              </span>
-              <span className="text-sm font-black">₹491</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => { setSelectedPlan("premium"); setIsSubmitted(false); }}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-0.5 cursor-pointer ${
+                  selectedPlan === "premium"
+                    ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
+                    : "text-muted-foreground hover:bg-background/80"
+                }`}
+              >
+                <span className="flex items-center gap-1">
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  Full Premium (2 Mo)
+                </span>
+                <span className="text-sm font-black">₹491</span>
+              </button>
+            </div>
+          )}
 
           {/* Selected Plan Summary Card */}
-          <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
             selectedPlan === "premium"
               ? "bg-gradient-to-r from-primary/10 via-amber-500/5 to-card border-primary/30"
               : "bg-emerald-500/10 border-emerald-500/30"
@@ -269,19 +278,19 @@ JazakAllahu Khair 🤍`;
               <Badge className={`text-[10px] font-extrabold mb-1 ${
                 selectedPlan === "premium" ? "bg-primary text-primary-foreground" : "bg-emerald-600 text-white"
               }`}>
-                {selectedPlan === "premium" ? "⭐ BEST VALUE PLAN" : "🎯 SINGLE UNLOCK"}
+                {selectedPlan === "premium" ? "⭐ PREMIUM UPGRADE" : "🎯 SINGLE PROFILE UNLOCK"}
               </Badge>
-              <h4 className="font-extrabold text-sm sm:text-base text-foreground">
+              <h4 className="font-extrabold text-base sm:text-lg text-foreground">
                 {planTitle}
               </h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {selectedPlan === "premium"
-                  ? "Unlimited profiles + HD photos + Gold Badge + 1st page priority"
-                  : `Unlock contact & HD photos for ${targetCodeOrName}`}
+                  ? "2 Months Unlimited Profiles + Unblurred HD Photos + Gold Badge + 1st Page Priority"
+                  : `Unlock verified contact number & HD photos for ${targetCodeOrName}`}
               </p>
             </div>
             <div className="text-left sm:text-right shrink-0">
-              <span className="text-2xl sm:text-3xl font-black text-foreground">₹{amount}</span>
+              <span className="text-3xl font-black text-foreground">₹{amount}</span>
             </div>
           </div>
 
@@ -338,7 +347,7 @@ JazakAllahu Khair 🤍`;
               <div className="bg-card border-2 border-dashed border-emerald-500/40 rounded-2xl p-4 text-center space-y-3 shadow-xs">
                 <div className="flex items-center justify-center gap-2 text-xs font-bold text-foreground">
                   <QrCode className="w-4 h-4 text-emerald-600" />
-                  <span>Scan QR Code with GPay, PhonePe, Paytm or BHIM</span>
+                  <span>Scan QR Code to Pay ₹{amount}</span>
                 </div>
 
                 {/* QR Barcode Image */}
@@ -350,7 +359,7 @@ JazakAllahu Khair 🤍`;
                   />
                   <div className="mt-2 pt-2 border-t text-[11px] font-bold text-emerald-800 flex items-center justify-center gap-1">
                     <span>Pay Exact:</span>
-                    <span className="text-sm font-black text-emerald-700">₹{amount}</span>
+                    <span className="text-base font-black text-emerald-700">₹{amount}</span>
                   </div>
                 </div>
 

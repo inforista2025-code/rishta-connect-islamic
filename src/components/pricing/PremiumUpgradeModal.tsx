@@ -145,6 +145,7 @@ export const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
         isOpen={directPaymentOpen}
         onClose={() => setDirectPaymentOpen(false)}
         defaultPlan="premium"
+        hidePlanSwitcher={true}
       />
     </>
   );

@@ -60,6 +60,7 @@ export function PremiumUpgradeCard() {
         isOpen={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         defaultPlan="premium"
+        hidePlanSwitcher={true}
       />
     </>
   );

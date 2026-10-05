@@ -473,6 +473,7 @@ export function MemberDashboardHome() {
         isOpen={unlockModalOpen}
         onClose={() => setUnlockModalOpen(false)}
         defaultPlan="single"
+        hidePlanSwitcher={true}
         profileCode={unlockTargetProfile ? `RM-${unlockTargetProfile.gender === "Female" ? "BR" : "GR"}-${unlockTargetProfile.order ?? unlockTargetProfile.id}` : ""}
         profileName={unlockTargetProfile?.name}
         memberPhone={member?.whatsapp_number}
@@ -1031,6 +1032,7 @@ function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEdit
         isOpen={directPaymentOpen}
         onClose={() => setDirectPaymentOpen(false)}
         defaultPlan={paymentPlan}
+        hidePlanSwitcher={true}
         profileCode={profileCode}
         profileName={member?.full_name || profile?.name}
         memberPhone={member?.whatsapp_number}
