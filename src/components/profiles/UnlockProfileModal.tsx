@@ -141,6 +141,33 @@ export const UnlockProfileModal: React.FC<UnlockProfileModalProps> = ({
             </div>
           </div>
 
+          {/* Why ₹48 Anti-Spam Protection Filter */}
+          <div className="bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-3 text-[11px] leading-relaxed">
+            <div className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 mb-1 text-xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Why is there a ₹48 Charge? (Anti-Spam & Privacy Filter)</span>
+            </div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              This small charge acts as a <strong className="text-foreground font-semibold">Security & Privacy Filter</strong> to stop casual spammers and non-serious visitors from misusing phone numbers & photos of honorable families. 100% goes to genuine serious requests.
+            </p>
+          </div>
+
+          {/* Family Call Script Tip */}
+          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3 text-[11px] leading-relaxed">
+            <div className="font-bold text-primary flex items-center gap-1.5 mb-1 text-xs">
+              <Phone className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>💡 Family Calling Tip (How to start conversation):</span>
+            </div>
+            <p className="italic text-foreground/90 text-[11px] leading-relaxed">
+              "Assalamu Alaikum, we got your proposal details through Rishta Matrimony platform. We would like to introduce our family and discuss further..."
+            </p>
+          </div>
+
+          {/* Safe Identity Verification Guide */}
+          <div className="bg-muted/60 border rounded-2xl p-3 text-[11px] leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-foreground">📄 Safe Member Verification:</span> To keep our platform 100% genuine & safe, members verify their profile using Aadhaar Card or 10th Marksheet (you may hide sensitive ID numbers for complete peace of mind).
+          </div>
+
           {/* Family Contact & Community Conduct Guidelines */}
           <div className="space-y-2 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-2xl p-3.5 text-xs">
             <p className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1.5 text-[12px]">
