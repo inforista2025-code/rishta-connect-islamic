@@ -1565,41 +1565,6 @@ const Profiles = () => {
           <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Find your ideal Muslim life partner according to the Quran & Sunnah. Browse authentic rishta proposals.
           </p>
-
-          {/* How It Works 2-Step Banner */}
-          <div className="max-w-4xl mx-auto mt-5 grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
-            {/* Step 1: Free Registration */}
-            <div className="bg-card/90 backdrop-blur-xs border border-emerald-500/30 rounded-2xl p-3.5 flex items-start gap-3 shadow-xs">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-extrabold text-sm flex items-center justify-center shrink-0 mt-0.5">
-                1
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h4 className="font-bold text-xs sm:text-sm text-foreground">Create Free Profile</h4>
-                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[9px] font-extrabold px-1.5 py-0">100% Free ₹0</Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  Register your biodata first for identity verification. It takes only 2 minutes & is 100% free to create.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2: Unlock Verified Details */}
-            <div className="bg-card/90 backdrop-blur-xs border border-primary/30 rounded-2xl p-3.5 flex items-start gap-3 shadow-xs">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary font-extrabold text-sm flex items-center justify-center shrink-0 mt-0.5">
-                2
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h4 className="font-bold text-xs sm:text-sm text-foreground">Unlock Verified Contact & Photos</h4>
-                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-extrabold px-1.5 py-0">Anti-Spam Filter</Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                  Pay ₹48 (Single Unlock) or ₹491 (Full Access). This small charge protects families from casual spammers & fake visitors.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
