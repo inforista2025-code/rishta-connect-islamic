@@ -263,6 +263,18 @@ export function RegistrationDetailModal({
         if (error) throw error;
         toast({ title: 'New profile created successfully!' });
       } else if (profile) {
+        if (
+          profile.verification_status.toLowerCase() !== 'verified' &&
+          payload.verification_status.toLowerCase() === 'verified'
+        ) {
+          const { data: maxOrderData } = await supabase
+            .from('profiles_data')
+            .select('display_order')
+            .order('display_order', { ascending: false })
+            .limit(1);
+          payload.display_order = (maxOrderData?.[0]?.display_order ?? 0) + 1;
+        }
+
         const { error } = await supabase
           .from('profiles_data')
           .update(payload)
