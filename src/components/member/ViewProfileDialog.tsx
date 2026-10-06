@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Crown, Lock, FileText, Mail, Phone, Heart, Star, MessageCircle } from "lucide-react";
+import { Loader2, Crown, Lock, FileText, Mail, Phone, Heart, Star, QrCode } from "lucide-react";
 import { useMemberApi } from "@/hooks/useMemberApi";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "./ProfilePhoto";
 import { useToast } from "@/hooks/use-toast";
-import { openUpgradeWhatsApp } from "@/lib/upgradeWhatsapp";
 import { calculateAge } from "@/lib/ageCalculator";
+import { DirectPaymentModal } from "@/components/payment/DirectPaymentModal";
 
 export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: boolean; onOpenChange: (v: boolean) => void; targetId: number | null }) {
   const { call } = useMemberApi();
@@ -20,6 +20,10 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   const [sending, setSending] = useState<"save" | "interest" | null>(null);
   const [saved, setSaved] = useState(false);
   const [interested, setInterested] = useState(false);
+
+  // Payment Barcode Modal State
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<"single" | "premium">("single");
 
   useEffect(() => {
     if (!open || !targetId) return;
@@ -38,10 +42,13 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
 
   const handleUnlockSingle = () => {
     if (!p) return;
-    const prefix = p.gender === "Female" ? "RM-BR" : "RM-GR";
-    const profileCode = `${prefix}-${p.order ?? p.id}`;
-    const text = `Assalamu Alaikum, I would like to unlock verified contact details and photos for Profile ID: #${profileCode} (${p.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`;
-    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
+    setPaymentPlan("single");
+    setPaymentModalOpen(true);
+  };
+
+  const handleUpgradePremium = () => {
+    setPaymentPlan("premium");
+    setPaymentModalOpen(true);
   };
 
   const doSave = async () => {
@@ -66,7 +73,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
       const res = await call("send_interest", { target_id: targetId });
       if (res?.error === "limit_reached") {
         toast({ title: "Free limit reached", description: res.message, variant: "destructive" });
-        openUpgradeWhatsApp();
+        handleUpgradePremium();
       } else {
         setInterested(true);
         toast({
@@ -84,164 +91,175 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] max-h-[92vh] overflow-y-auto p-4 sm:p-6">
-        {loading || !p ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {p.name}
-                {p.is_premium && <Badge className="bg-purple-600"><Crown className="w-3 h-3 mr-1" />Premium</Badge>}
-              </DialogTitle>
-              <DialogDescription>{profileAge} yrs · {p.location}</DialogDescription>
-            </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] max-h-[92vh] overflow-y-auto p-4 sm:p-6">
+          {loading || !p ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {p.name}
+                  {p.is_premium && <Badge className="bg-purple-600"><Crown className="w-3 h-3 mr-1" />Premium</Badge>}
+                </DialogTitle>
+                <DialogDescription>{profileAge} yrs · {p.location}</DialogDescription>
+              </DialogHeader>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
-              {(p.photo_urls || []).slice(0, isPremium ? 6 : 1).map((u: string, i: number) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => { if (isPremium && !p.photo_blurred) setLightbox(u); }}
-                  className={isPremium && !p.photo_blurred ? "cursor-zoom-in focus:outline-none" : "cursor-default"}
-                  aria-label="View photo"
-                >
-                  <ProfilePhoto src={u} alt={p.name} blurred={p.photo_blurred} size="full" className="aspect-square" showLockHint />
-                </button>
-              ))}
-              {!isPremium && (p.photo_count ?? 0) > 1 && (
-                <div className="aspect-square rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center text-center p-2 bg-primary/5">
-                  <Lock className="w-5 h-5 text-primary mb-1" />
-                  <span className="text-xs text-muted-foreground">+{(p.photo_count ?? 1) - 1} more</span>
-                  <span className="text-xs font-medium text-primary">Premium only</span>
-                </div>
-              )}
-            </div>
-
-            {!isSelf && (
-              <div className="flex gap-2 mb-4 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
-                <Button className="flex-1" onClick={doInterest} disabled={sending !== null || interested}>
-                  {sending === "interest" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className={`w-4 h-4 mr-1 ${interested ? "fill-current" : ""}`} />}
-                  {interested ? "Interest Sent" : "Send Interest"}
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={doSave} disabled={sending !== null}>
-                  {sending === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className={`w-4 h-4 mr-1 ${saved ? "fill-primary text-primary" : ""}`} />}
-                  {saved ? "Saved" : "Save"}
-                </Button>
-              </div>
-            )}
-
-            <div className="grid sm:grid-cols-2 gap-3 text-sm">
-              <Info label="Gender" value={p.gender} />
-              <Info label="Age" value={p.age} />
-              <Info label="Marital Status" value={p.marital_status} />
-              <Info label="Location" value={p.location} />
-              <Info label="Education" value={p.education} />
-              <Info label="Profession" value={p.profession} />
-              <Info label="Height" value={p.height} />
-              <Info label="Complexion" value={p.complexion} />
-              <Info label="Maslak" value={p.maslak} />
-              <Info label="Caste" value={p.caste} />
-            </div>
-
-            {isPremium ? (
-              <div className="mt-4 space-y-3">
-                <Section title="Family Details" body={p.family} />
-                <Section title="Islamic Knowledge" body={p.islamic_knowledge} />
-                <Section title="Partner Preferences" body={p.preferred_partner} />
-                <Section title="Preferred Location" body={p.preferred_location} />
-                <Section title="Preferred Age" body={p.preferred_age} />
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  {p.email && (
-                    <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /><a href={`mailto:${p.email}`} className="hover:underline">{p.email}</a></div>
-                  )}
-                  {p.whatsapp_number && (
-                    <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /><a href={`https://wa.me/${String(p.whatsapp_number).replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="hover:underline">{p.whatsapp_number}</a></div>
-                  )}
-                </div>
-                {p.biodata_url && (
-                  <Button asChild variant="outline" className="w-full">
-                    <a href={p.biodata_url} target="_blank" rel="noreferrer"><FileText className="w-4 h-4 mr-2" /> Download Biodata PDF</a>
-                  </Button>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
+                {(p.photo_urls || []).slice(0, isPremium ? 6 : 1).map((u: string, i: number) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { if (isPremium && !p.photo_blurred) setLightbox(u); }}
+                    className={isPremium && !p.photo_blurred ? "cursor-zoom-in focus:outline-none" : "cursor-default"}
+                    aria-label="View photo"
+                  >
+                    <ProfilePhoto src={u} alt={p.name} blurred={p.photo_blurred} size="full" className="aspect-square" showLockHint />
+                  </button>
+                ))}
+                {!isPremium && (p.photo_count ?? 0) > 1 && (
+                  <div className="aspect-square rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center text-center p-2 bg-primary/5">
+                    <Lock className="w-5 h-5 text-primary mb-1" />
+                    <span className="text-xs text-muted-foreground">+{(p.photo_count ?? 1) - 1} more</span>
+                    <span className="text-xs font-medium text-primary">Premium only</span>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="mt-4 bg-muted/30 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
-                <div>
-                  <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                    <Lock className="w-4 h-4 text-emerald-600" />
-                    <span>Unlock Verified Contact & Full Details</span>
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Choose your preferred unlock option to connect with {p.name}'s family:
-                  </p>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  {/* Option 1: Single Profile Unlock ₹48 */}
-                  <div className="bg-card border border-emerald-500/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                          Option 1: Single Profile
-                        </span>
-                        <span className="text-base font-black text-emerald-600 dark:text-emerald-400">₹48</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        Unlock verified guardian contact, personal WhatsApp & photos for this profile.
-                      </p>
-                    </div>
-                    <Button
-                      onClick={handleUnlockSingle}
-                      size="sm"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>Unlock This Profile (₹48)</span>
-                    </Button>
-                  </div>
-
-                  {/* Option 2: Full Premium Plan ₹491 */}
-                  <div className="bg-card border border-primary/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
-                          <Crown className="w-3 h-3 text-amber-500" />
-                          Option 2: Premium Plan
-                        </span>
-                        <span className="text-base font-black text-primary">₹491</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        2 Months unlimited access to all profiles across the website, photos & contacts.
-                      </p>
-                    </div>
-                    <Button
-                      onClick={openUpgradeWhatsApp}
-                      size="sm"
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Crown className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Upgrade to Premium (₹491)</span>
-                    </Button>
-                  </div>
+              {!isSelf && (
+                <div className="flex gap-2 mb-4 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
+                  <Button className="flex-1" onClick={doInterest} disabled={sending !== null || interested}>
+                    {sending === "interest" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className={`w-4 h-4 mr-1 ${interested ? "fill-current" : ""}`} />}
+                    {interested ? "Interest Sent" : "Send Interest"}
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={doSave} disabled={sending !== null}>
+                    {sending === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className={`w-4 h-4 mr-1 ${saved ? "fill-primary text-primary" : ""}`} />}
+                    {saved ? "Saved" : "Save"}
+                  </Button>
                 </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                <Info label="Gender" value={p.gender} />
+                <Info label="Age" value={p.age} />
+                <Info label="Marital Status" value={p.marital_status} />
+                <Info label="Location" value={p.location} />
+                <Info label="Education" value={p.education} />
+                <Info label="Profession" value={p.profession} />
+                <Info label="Height" value={p.height} />
+                <Info label="Complexion" value={p.complexion} />
+                <Info label="Maslak" value={p.maslak} />
+                <Info label="Caste" value={p.caste} />
               </div>
-            )}
-          </>
-        )}
-      </DialogContent>
-      <Dialog open={!!lightbox} onOpenChange={(v) => !v && setLightbox(null)}>
-        <DialogContent className="max-w-4xl p-2 bg-black/95 border-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Photo</DialogTitle>
-          </DialogHeader>
-          {lightbox && (
-            <img src={lightbox} alt="Full size" className="w-full h-auto max-h-[85vh] object-contain rounded" />
+
+              {isPremium ? (
+                <div className="mt-4 space-y-3">
+                  <Section title="Family Details" body={p.family} />
+                  <Section title="Islamic Knowledge" body={p.islamic_knowledge} />
+                  <Section title="Partner Preferences" body={p.preferred_partner} />
+                  <Section title="Preferred Location" body={p.preferred_location} />
+                  <Section title="Preferred Age" body={p.preferred_age} />
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                    {p.email && (
+                      <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /><a href={`mailto:${p.email}`} className="hover:underline">{p.email}</a></div>
+                    )}
+                    {p.whatsapp_number && (
+                      <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /><a href={`https://wa.me/${String(p.whatsapp_number).replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="hover:underline">{p.whatsapp_number}</a></div>
+                    )}
+                  </div>
+                  {p.biodata_url && (
+                    <Button asChild variant="outline" className="w-full">
+                      <a href={p.biodata_url} target="_blank" rel="noreferrer"><FileText className="w-4 h-4 mr-2" /> Download Biodata PDF</a>
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-4 bg-muted/30 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+                  <div>
+                    <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      <Lock className="w-4 h-4 text-emerald-600" />
+                      <span>Unlock Verified Contact & Full Details</span>
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Choose your preferred unlock option to connect with {p.name}'s family:
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {/* Option 1: Single Profile Unlock ₹48 Barcode */}
+                    <div className="bg-card border border-emerald-500/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                            Option 1: Single Profile
+                          </span>
+                          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">₹48</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          Unlock verified guardian contact, personal WhatsApp & photos for this profile.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleUnlockSingle}
+                        size="sm"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Pay ₹48 (Barcode / UPI)</span>
+                      </Button>
+                    </div>
+
+                    {/* Option 2: Full Premium Plan ₹491 Barcode */}
+                    <div className="bg-card border border-primary/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                            <Crown className="w-3 h-3 text-amber-500" />
+                            Option 2: Premium Plan
+                          </span>
+                          <span className="text-base font-black text-primary">₹491</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          2 Months unlimited access to all profiles across the website, photos & contacts.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleUpgradePremium}
+                        size="sm"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Pay ₹491 (Barcode / UPI)</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </DialogContent>
+        <Dialog open={!!lightbox} onOpenChange={(v) => !v && setLightbox(null)}>
+          <DialogContent className="max-w-4xl p-2 bg-black/95 border-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Photo</DialogTitle>
+            </DialogHeader>
+            {lightbox && (
+              <img src={lightbox} alt="Full size" className="w-full h-auto max-h-[85vh] object-contain rounded" />
+            )}
+          </DialogContent>
+        </Dialog>
       </Dialog>
-    </Dialog>
+
+      <DirectPaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        defaultPlan={paymentPlan}
+        hidePlanSwitcher={true}
+        profileCode={p ? `RM-${p.gender === "Female" ? "BR" : "GR"}-${p.order ?? p.id}` : ""}
+        profileName={p?.name}
+      />
+    </>
   );
 }
 
