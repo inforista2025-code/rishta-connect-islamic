@@ -286,7 +286,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => handleAppLaunch(gpayUrl)}
+                  onClick={() => handleAppLaunch(genericUpiUrl)}
                   className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors shadow-xs group text-center cursor-pointer"
                 >
                   <Smartphone className="w-4 h-4 text-emerald-600 mb-1 group-hover:scale-110 transition-transform" />
