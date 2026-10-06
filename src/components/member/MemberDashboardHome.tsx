@@ -19,6 +19,7 @@ import {
   Activity, Settings, Menu, BookmarkPlus, BadgeCheck, ChevronRight, Lightbulb,
   QrCode, Sparkles
 } from "lucide-react";
+import { Check } from "lucide-react";
 import { PremiumUpgradeCard } from "./PremiumUpgradeCard";
 import { ProfilePhoto } from "./ProfilePhoto";
 import { ProfilePictureDialog } from "./ProfilePictureDialog";
