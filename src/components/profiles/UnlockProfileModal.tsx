@@ -2,23 +2,18 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Lock, 
-  Check, 
-  Phone, 
-  Image as ImageIcon, 
-  FileText, 
-  Zap, 
   ShieldCheck, 
   MessageCircle, 
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Send,
+  CheckCircle2
 } from "lucide-react";
 
 interface UnlockProfileModalProps {
@@ -59,7 +54,7 @@ export const UnlockProfileModal: React.FC<UnlockProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0 rounded-3xl border-2 border-emerald-500/30">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0 rounded-3xl border border-emerald-500/30 shadow-2xl">
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 text-white p-5 text-center relative">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white mb-2 shadow-xs backdrop-blur-xs">
@@ -76,10 +71,10 @@ export const UnlockProfileModal: React.FC<UnlockProfileModalProps> = ({
 
         <div className="p-5 space-y-4">
           {/* Target Profile Card Summary */}
-          <div className="bg-muted/40 border border-border/80 rounded-2xl p-3.5 flex items-center justify-between">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-2xl p-3.5 flex items-center justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="text-[10px] font-bold border-primary/40 text-primary">
+                <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/50 text-emerald-700 dark:text-emerald-300 bg-white/60 dark:bg-emerald-900/50">
                   ID: #{profileCode}
                 </Badge>
                 {profile.gender && (
@@ -101,61 +96,71 @@ export const UnlockProfileModal: React.FC<UnlockProfileModalProps> = ({
             </div>
           </div>
 
-          {/* What will be delivered */}
-          <div className="space-y-2 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-3.5">
-            <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 mb-2">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span>What will be delivered to your WhatsApp:</span>
-            </p>
-            
-            <div className="space-y-2 text-xs">
-              <div className="flex items-start gap-2">
-                <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Check className="w-3 h-3" />
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">Direct Guardian & Personal Phone / WhatsApp</span>
-                  <p className="text-[11px] text-muted-foreground">Talk directly to the family with full trust & sincerity.</p>
-                </div>
-              </div>
+          {/* Point-wise Clean Information Box */}
+          <div className="border border-border/80 rounded-2xl p-4 bg-muted/20 space-y-4">
+            {/* What will be delivered */}
+            <div>
+              <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>What Will Be Delivered:</span>
+              </h5>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <span><strong className="text-foreground font-semibold">Direct Guardian & Personal Contact:</strong> Phone & WhatsApp details to connect directly.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <span><strong className="text-foreground font-semibold">Original HD Photos:</strong> Clear, unblurred high-resolution photos sent to WhatsApp.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <span><strong className="text-foreground font-semibold">Complete Verified Biodata:</strong> Family background, education & Deeni details.</span>
+                </li>
+              </ul>
+            </div>
 
-              <div className="flex items-start gap-2">
-                <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Check className="w-3 h-3" />
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">Clear Original Unblurred HD Photos</span>
-                  <p className="text-[11px] text-muted-foreground">High-resolution verified photos sent to your WhatsApp.</p>
-                </div>
-              </div>
+            <hr className="border-border/60" />
 
-              <div className="flex items-start gap-2">
-                <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Check className="w-3 h-3" />
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">Complete Verified Biodata Details</span>
-                  <p className="text-[11px] text-muted-foreground">Family background, deeni knowledge, career & education.</p>
-                </div>
-              </div>
+            {/* How it works - Point wise 1, 2, 3 */}
+            <div>
+              <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-2.5">
+                <Send className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>How It Works (Unlock Process):</span>
+              </h5>
+              <ol className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    1
+                  </span>
+                  <div>
+                    <strong className="text-foreground font-semibold">Profile Registration:</strong> Pehle aapko apna profile register karna hoga.
+                  </div>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    2
+                  </span>
+                  <div>
+                    <strong className="text-foreground font-semibold">ID Verification:</strong> Profile & ID verification process complete hone ke baad.
+                  </div>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    3
+                  </span>
+                  <div>
+                    <strong className="text-foreground font-semibold">₹48 Payment & Delivery:</strong> ₹48 payment karne ke baad aapko profile send ki jayegi.
+                  </div>
+                </li>
+              </ol>
             </div>
           </div>
 
-          {/* Why ₹48 Anti-Spam Protection Filter */}
-          <div className="bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-3 text-[11px] leading-relaxed">
-            <div className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 mb-1 text-xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Why is there a ₹48 Charge? (Anti-Spam Filter)</span>
-            </div>
-            <p className="text-muted-foreground text-[11px] leading-relaxed">
-              This small charge acts as a <strong className="text-foreground font-semibold">Security & Privacy Filter</strong> to stop casual spammers and non-serious visitors from misusing phone numbers & photos of honorable families.
-            </p>
-          </div>
-
-          {/* Payment info note */}
-          <div className="text-[11px] text-muted-foreground bg-muted/60 p-3 rounded-xl border leading-relaxed">
-            <span className="font-semibold text-foreground">💳 How it works:</span> Click below to open WhatsApp with a prefilled message. Complete the ₹48 payment via Google Pay, PhonePe, Paytm, or UPI QR code. Our team will verify and deliver the full details instantly.
-          </div>
+          {/* Anti-Spam Protection Note */}
+          <p className="text-[11px] text-muted-foreground text-center px-2">
+            🛡️ <span className="font-semibold text-foreground">Anti-Spam Filter:</span> Small ₹48 charge protects family privacy and ensures genuine inquiries.
+          </p>
 
           {/* Primary Action Button: WhatsApp Prefilled */}
           <Button
