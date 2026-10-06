@@ -320,6 +320,7 @@ export function MemberDashboardHome() {
                     onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
+                    isPremium={isPremium}
                     loading={!!sectionLoading.recommended}
                     error={sectionError.recommended}
                     onRetry={() => loadSection("recommended")}
@@ -347,6 +348,7 @@ export function MemberDashboardHome() {
                       onUnlock={handleUnlockCandidate}
                       savedIds={savedIds}
                       self={profile}
+                      isPremium={isPremium}
                       loading={!!sectionLoading.browse}
                       error={sectionError.browse}
                       onRetry={() => loadSection("browse")}
@@ -363,6 +365,7 @@ export function MemberDashboardHome() {
                     onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
+                    isPremium={isPremium}
                     emptyMsg="No saved profiles yet."
                     loading={!!sectionLoading.saved}
                     error={sectionError.saved}
@@ -478,6 +481,7 @@ export function MemberDashboardHome() {
         profileCode={unlockTargetProfile ? `RM-${unlockTargetProfile.gender === "Female" ? "BR" : "GR"}-${unlockTargetProfile.order ?? unlockTargetProfile.id}` : ""}
         profileName={unlockTargetProfile?.name}
         memberPhone={member?.whatsapp_number}
+        targetProfileId={unlockTargetProfile?.id}
       />
     </div>
   );
@@ -618,6 +622,7 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUn
                   onSave={() => onSave(p.id, savedIds.has(p.id))}
                   onUnlock={onUnlock}
                   saved={savedIds.has(p.id)}
+                  isPremium={isPremium}
                 />
               ))}
             </div>
@@ -667,7 +672,8 @@ function StatTile({ icon, bg, label, value }: any) {
   );
 }
 
-function RecommendedCard({ p, match, onView, onSave, saved, onUnlock }: any) {
+function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium }: any) {
+  const isUnlocked = Boolean(p.is_unlocked);
   return (
     <div className="group border rounded-xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
       <button
@@ -682,6 +688,11 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock }: any) {
         <span className="absolute bottom-2 left-2">
           <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px] shadow-xs">{match}% Match</Badge>
         </span>
+        {isUnlocked && !isPremium && (
+          <span className="absolute top-2 right-2">
+            <Badge className="bg-emerald-600 text-white text-[10px] shadow-xs font-bold">Unlocked ✅</Badge>
+          </span>
+        )}
       </button>
       <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none flex-1">
         <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
@@ -706,7 +717,17 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock }: any) {
           </Button>
         </div>
 
-        {onUnlock && (
+        {isUnlocked ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-8 text-[11px] bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 font-bold gap-1 rounded-lg shadow-2xs cursor-pointer"
+            onClick={onView}
+          >
+            <Check className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Unlocked (View Contact)</span>
+          </Button>
+        ) : onUnlock && !isPremium ? (
           <Button
             size="sm"
             className="w-full h-8 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 rounded-lg shadow-2xs cursor-pointer"
@@ -715,7 +736,7 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock }: any) {
             <Lock className="w-3 h-3 text-amber-300" />
             <span>Unlock Contact (₹48)</span>
           </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -735,7 +756,7 @@ function MiniRow({ p, badge, time, onClick }: any) {
 }
 
 /* ===================== OTHER SECTIONS ===================== */
-function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, self, emptyMsg, loading, error, onRetry }: any) {
+function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, self, isPremium, emptyMsg, loading, error, onRetry }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
@@ -766,6 +787,7 @@ function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, 
                 onSave={() => onSave(p.id, savedIds.has(p.id))}
                 onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
+                isPremium={isPremium}
               />
             ))}
           </div>
@@ -805,6 +827,7 @@ function ViewersSection({ data, isPremium, onView, onSave, onUnlock, savedIds, s
                 onSave={() => onSave(p.id, savedIds.has(p.id))}
                 onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
+                isPremium={isPremium}
               />
             ))}
           </div>

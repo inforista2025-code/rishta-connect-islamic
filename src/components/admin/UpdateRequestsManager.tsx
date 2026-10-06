@@ -44,16 +44,16 @@ export function UpdateRequestsManager() {
   };
 
   const isPaymentRequest = (r: any) => {
+    if (r.request_type === "single_unlock" || r.request_type === "premium_upgrade") return true;
     const fn = (r.field_name || "").toUpperCase();
-    return fn.includes("SINGLE_PROFILE_UNLOCK") || fn.includes("PREMIUM_UPGRADE") || fn.includes("48") || fn.includes("491");
+    return fn.startsWith("SINGLE_PROFILE_UNLOCK") || fn.startsWith("PREMIUM_UPGRADE");
   };
 
   const handleSendWhatsAppReply = (r: any) => {
     const rawPhone = r.profile?.whatsapp_number || "";
     const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
     const memberName = r.profile?.name || "Member";
-    const fn = (r.field_name || "").toUpperCase();
-    const isSingle = fn.includes("SINGLE_PROFILE") || fn.includes("48");
+    const isSingle = r.request_type === "single_unlock" || (r.field_name || "").toUpperCase().startsWith("SINGLE_PROFILE");
     const isPayment = isPaymentRequest(r);
     const targetInfo = r.current_value || r.requested_value || "Selected Profile";
 
@@ -116,7 +116,7 @@ export function UpdateRequestsManager() {
               {r.admin_notes && <div className="text-xs bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-lg text-emerald-800 dark:text-emerald-300"><span className="font-semibold">Admin Notes:</span> {r.admin_notes}</div>}
               
               <div className="flex items-center gap-2 pt-1 flex-wrap">
-                {isPayment && r.profile?.whatsapp_number && (
+                {isPayment && r.status === "approved" && r.profile?.whatsapp_number && (
                   <Button
                     size="sm"
                     variant="outline"

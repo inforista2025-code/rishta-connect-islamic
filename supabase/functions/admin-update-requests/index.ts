@@ -65,12 +65,15 @@ serve(async (req) => {
         .select("*")
         .order("created_at", { ascending: false });
       const ids = [...new Set((requests ?? []).map((r) => r.profile_id))];
-      const { data: profiles } = ids.length
-        ? await admin.from("profiles_data").select("id, name, email, whatsapp_number").in("id", ids)
+      const targetIds = [...new Set((requests ?? []).map((r) => r.target_profile_id).filter(Boolean))];
+      const allIds = [...new Set([...ids, ...targetIds])];
+      const { data: profiles } = allIds.length
+        ? await admin.from("profiles_data").select("id, name, email, whatsapp_number, gender, order").in("id", allIds)
         : { data: [] as any[] };
       const enriched = (requests ?? []).map((r) => ({
         ...r,
         profile: profiles?.find((p) => p.id === r.profile_id) ?? null,
+        target_profile: r.target_profile_id ? profiles?.find((p) => p.id === r.target_profile_id) ?? null : null,
       }));
       return json({ requests: enriched });
     }
@@ -83,13 +86,65 @@ serve(async (req) => {
         .eq("id", request_id)
         .maybeSingle();
       if (!reqRow) return json({ error: "Request not found" }, 404);
-      const col = fieldMap[reqRow.field_name];
-      if (!col) return json({ error: `Field ${reqRow.field_name} not editable` }, 400);
-      const { error: upErr } = await admin
-        .from("profiles_data")
-        .update({ [col]: reqRow.requested_value })
-        .eq("id", reqRow.profile_id);
-      if (upErr) return json({ error: upErr.message }, 400);
+
+      const isSingleUnlock =
+        reqRow.request_type === "single_unlock" ||
+        (reqRow.field_name && reqRow.field_name.includes("SINGLE_PROFILE_UNLOCK"));
+      const isPremiumUpgrade =
+        reqRow.request_type === "premium_upgrade" ||
+        (reqRow.field_name && reqRow.field_name.includes("PREMIUM_UPGRADE"));
+
+      if (isSingleUnlock) {
+        let targetId = reqRow.target_profile_id;
+        if (!targetId && reqRow.requested_value) {
+          const match = reqRow.requested_value.match(/#RM-(?:BR|GR)-(\d+)/i);
+          if (match) {
+            const num = parseInt(match[1]);
+            const { data: tProf } = await admin
+              .from("profiles_data")
+              .select("id")
+              .or(`order.eq.${num},id.eq.${num}`)
+              .limit(1)
+              .maybeSingle();
+            if (tProf) targetId = tProf.id;
+          }
+        }
+        if (!targetId) return json({ error: "Target profile id missing for single profile unlock" }, 400);
+
+        const { error: unlockErr } = await admin
+          .from("profile_unlocks")
+          .upsert(
+            {
+              member_profile_id: reqRow.profile_id,
+              target_profile_id: targetId,
+              request_id: reqRow.id,
+              amount: reqRow.amount || 48,
+              approved_by: user.id,
+            },
+            { onConflict: "member_profile_id,target_profile_id" },
+          );
+        if (unlockErr) return json({ error: unlockErr.message }, 400);
+      } else if (isPremiumUpgrade) {
+        const expiry = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+        const { error: upErr } = await admin
+          .from("profiles_data")
+          .update({
+            plan_type: "premium",
+            membership_tier: "premium",
+            premium_expiry: expiry,
+          })
+          .eq("id", reqRow.profile_id);
+        if (upErr) return json({ error: upErr.message }, 400);
+      } else {
+        const col = fieldMap[reqRow.field_name];
+        if (!col) return json({ error: `Field ${reqRow.field_name} not editable` }, 400);
+        const { error: upErr } = await admin
+          .from("profiles_data")
+          .update({ [col]: reqRow.requested_value })
+          .eq("id", reqRow.profile_id);
+        if (upErr) return json({ error: upErr.message }, 400);
+      }
+
       await admin
         .from("profile_update_requests")
         .update({

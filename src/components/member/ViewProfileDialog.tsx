@@ -38,6 +38,8 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   const isPremium = data?.viewer_is_premium;
   const p = data?.profile;
   const isSelf = data?.is_self;
+  const isUnlocked = Boolean(data?.is_unlocked || p?.is_unlocked);
+  const hasAccess = Boolean(isPremium || isSelf || isUnlocked || data?.has_full_access);
   const profileAge = p ? calculateAge(p.dob || p.date_of_birth, p.age) : "";
 
   const handleUnlockSingle = () => {
@@ -102,23 +104,24 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                 <DialogTitle className="flex items-center gap-2">
                   {p.name}
                   {p.is_premium && <Badge className="bg-purple-600"><Crown className="w-3 h-3 mr-1" />Premium</Badge>}
+                  {isUnlocked && !isPremium && <Badge className="bg-emerald-600 text-white font-semibold">Unlocked ✅</Badge>}
                 </DialogTitle>
                 <DialogDescription>{profileAge} yrs · {p.location}</DialogDescription>
               </DialogHeader>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
-                {(p.photo_urls || []).slice(0, isPremium ? 6 : 1).map((u: string, i: number) => (
+                {(p.photo_urls || []).slice(0, hasAccess ? 6 : 1).map((u: string, i: number) => (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => { if (isPremium && !p.photo_blurred) setLightbox(u); }}
-                    className={isPremium && !p.photo_blurred ? "cursor-zoom-in focus:outline-none" : "cursor-default"}
+                    onClick={() => { if (hasAccess && !p.photo_blurred) setLightbox(u); }}
+                    className={hasAccess && !p.photo_blurred ? "cursor-zoom-in focus:outline-none" : "cursor-default"}
                     aria-label="View photo"
                   >
                     <ProfilePhoto src={u} alt={p.name} blurred={p.photo_blurred} size="full" className="aspect-square" showLockHint />
                   </button>
                 ))}
-                {!isPremium && (p.photo_count ?? 0) > 1 && (
+                {!hasAccess && (p.photo_count ?? 0) > 1 && (
                   <div className="aspect-square rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center text-center p-2 bg-primary/5">
                     <Lock className="w-5 h-5 text-primary mb-1" />
                     <span className="text-xs text-muted-foreground">+{(p.photo_count ?? 1) - 1} more</span>
@@ -153,7 +156,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                 <Info label="Caste" value={p.caste} />
               </div>
 
-              {isPremium ? (
+              {hasAccess ? (
                 <div className="mt-4 space-y-3">
                   <Section title="Family Details" body={p.family} />
                   <Section title="Islamic Knowledge" body={p.islamic_knowledge} />
@@ -258,6 +261,7 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
         hidePlanSwitcher={true}
         profileCode={p ? `RM-${p.gender === "Female" ? "BR" : "GR"}-${p.order ?? p.id}` : ""}
         profileName={p?.name}
+        targetProfileId={p?.id || targetId || undefined}
       />
     </>
   );

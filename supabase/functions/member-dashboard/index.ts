@@ -92,8 +92,9 @@ function computeCompletion(p: any, editable: any) {
   return { percent: total, missing };
 }
 
-function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean) {
+function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean, unlocked = false) {
   const allPhotos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
+  const fullAccess = viewerIsPremium || isSelf || unlocked;
   const base = {
     id: p.id,
     name: p.name,
@@ -113,12 +114,14 @@ function sanitizeProfile(p: any, viewerIsPremium: boolean, isSelf: boolean) {
     preferred_location: p.preferred_location,
     preferred_age: p.preferred_age,
     plan_type: p.plan_type,
+    order: p.order,
     is_premium: isPremium(p),
+    is_unlocked: unlocked,
     photo_urls: allPhotos.length ? [allPhotos[0]] : [],
     photo_count: allPhotos.length,
-    photo_blurred: !(viewerIsPremium || isSelf),
+    photo_blurred: !fullAccess,
   };
-  if (viewerIsPremium || isSelf) {
+  if (fullAccess) {
     return {
       ...base,
       email: p.email,
@@ -142,6 +145,16 @@ serve(async (req) => {
     const { profile } = auth;
     const profileId = profile.id;
     const premium = isPremium(profile);
+
+    // Profiles this member has unlocked individually (₹48, admin-approved)
+    const { data: unlockRows } = await supabase
+      .from("profile_unlocks")
+      .select("target_profile_id")
+      .eq("member_profile_id", profileId);
+    const unlockedIds = new Set<number>((unlockRows ?? []).map((r: any) => r.target_profile_id));
+    // Shadow the module-level sanitizer so every listing respects per-profile unlocks
+    const sanitize = (p: any, viewerIsPremium: boolean, isSelf: boolean) =>
+      sanitizeProfile(p, viewerIsPremium, isSelf, unlockedIds.has(p.id));
 
     // Load editable extension
     const { data: editableExisting } = await supabase
@@ -190,7 +203,7 @@ serve(async (req) => {
         const { data: recRaw } = await recQ;
         const recommendations = (recRaw ?? [])
           .sort((a: any, b: any) => Number(isPremium(b)) - Number(isPremium(a)))
-          .map((p) => sanitizeProfile(p, premium, false));
+          .map((p) => sanitize(p, premium, false));
 
         // recently viewed by me
         const { data: rvRows } = await supabase
@@ -215,7 +228,7 @@ serve(async (req) => {
         const recentlyViewed = rvIds
           .map((id) => rvProfiles?.find((p: any) => p.id === id))
           .filter(Boolean)
-          .map((p: any) => ({ ...sanitizeProfile(p, premium, false), viewed_at: rvTime[p.id] }));
+          .map((p: any) => ({ ...sanitize(p, premium, false), viewed_at: rvTime[p.id] }));
 
         // who viewed me
         const { data: wvRows } = await supabase
@@ -241,7 +254,7 @@ serve(async (req) => {
         const whoViewedMe = limitedWvIds
           .map((id) => wvProfiles?.find((p: any) => p.id === id))
           .filter(Boolean)
-          .map((p: any) => ({ ...sanitizeProfile(p, premium, false), viewed_at: wvTime[p.id] }));
+          .map((p: any) => ({ ...sanitize(p, premium, false), viewed_at: wvTime[p.id] }));
 
         // new profiles this week
         const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
@@ -252,10 +265,10 @@ serve(async (req) => {
           .order("created_at", { ascending: false }).limit(8);
         if (wantGender) newQ = newQ.eq("gender", wantGender);
         const { data: newRaw } = await newQ;
-        const newThisWeek = (newRaw ?? []).map((p: any) => sanitizeProfile(p, premium, false));
+        const newThisWeek = (newRaw ?? []).map((p: any) => sanitize(p, premium, false));
 
         return json({
-          profile: sanitizeProfile(profile, true, true),
+          profile: sanitize(profile, true, true),
           editable: editableExisting ?? {},
           is_premium: premium,
           completion,
@@ -311,8 +324,10 @@ serve(async (req) => {
         }
         const isSelf = target === profileId;
         return json({
-          profile: sanitizeProfile(targetProfile, premium, isSelf),
+          profile: sanitize(targetProfile, premium, isSelf),
           viewer_is_premium: premium,
+          is_unlocked: unlockedIds.has(target),
+          has_full_access: premium || isSelf || unlockedIds.has(target),
           is_self: isSelf,
         });
       }
@@ -340,7 +355,7 @@ serve(async (req) => {
           : { data: [] as any[] };
         const result = limited.map((id) => {
           const p = profs?.find((x: any) => x.id === id);
-          return p ? { ...sanitizeProfile(p, premium, false), viewed_at: times[id] } : null;
+          return p ? { ...sanitize(p, premium, false), viewed_at: times[id] } : null;
         }).filter(Boolean);
         return json({ viewers: result, total: ids.length, locked: !premium && ids.length > 4 });
       }
@@ -367,7 +382,7 @@ serve(async (req) => {
           : { data: [] as any[] };
         const result = ids.map((id) => {
           const p = profs?.find((x: any) => x.id === id);
-          return p ? { ...sanitizeProfile(p, premium, false), viewed_at: times[id] } : null;
+          return p ? { ...sanitize(p, premium, false), viewed_at: times[id] } : null;
         }).filter(Boolean);
         return json({ profiles: result });
       }
@@ -431,7 +446,7 @@ serve(async (req) => {
         const sorted = ids
           .map((id) => profiles?.find((p) => p.id === id))
           .filter(Boolean)
-          .map((p) => sanitizeProfile(p, premium, false));
+          .map((p) => sanitize(p, premium, false));
         return json({ saved: sorted });
       }
 
@@ -501,7 +516,7 @@ serve(async (req) => {
           .in("id", ids);
         const enriched = (interests ?? []).map((r: any) => {
           const p = profiles?.find((x) => x.id === r[otherCol]);
-          return { ...r, profile: p ? sanitizeProfile(p, premium, false) : null };
+          return { ...r, profile: p ? sanitize(p, premium, false) : null };
         });
         return json({ interests: enriched });
       }
@@ -521,7 +536,7 @@ serve(async (req) => {
         const { data } = await q;
         const sorted = (data ?? [])
           .sort((a: any, b: any) => Number(isPremium(b)) - Number(isPremium(a)))
-          .map((p) => sanitizeProfile(p, premium, false));
+          .map((p) => sanitize(p, premium, false));
         return json({ recommendations: sorted });
       }
 
@@ -539,8 +554,62 @@ serve(async (req) => {
         const { data } = await q;
         const sorted = (data ?? [])
           .sort((a: any, b: any) => Number(isPremium(b)) - Number(isPremium(a)))
-          .map((p) => sanitizeProfile(p, premium, false));
+          .map((p) => sanitize(p, premium, false));
         return json({ profiles: sorted, viewer_is_premium: premium });
+      }
+
+      case "submit_payment_request": {
+        const plan = body.plan === "premium" ? "premium" : "single";
+        const target = plan === "single" ? Number(body.target_id) : null;
+        if (plan === "single") {
+          if (!target || target === profileId) return json({ error: "Invalid target profile" }, 400);
+          if (premium) return json({ error: "already_premium", message: "You are already Premium — all profiles are unlocked." }, 400);
+          if (unlockedIds.has(target)) return json({ error: "already_unlocked", message: "This profile is already unlocked for you." }, 400);
+        } else if (premium) {
+          return json({ error: "already_premium", message: "Your Premium plan is already active." }, 400);
+        }
+
+        const requestType = plan === "single" ? "single_unlock" : "premium_upgrade";
+        // Avoid duplicate pending requests for the same thing
+        let dupQ = supabase
+          .from("profile_update_requests")
+          .select("id")
+          .eq("profile_id", profileId)
+          .eq("request_type", requestType)
+          .eq("status", "pending");
+        if (target) dupQ = dupQ.eq("target_profile_id", target);
+        const { data: dup } = await dupQ.maybeSingle();
+        if (dup) return json({ success: true, request_id: dup.id, duplicate: true });
+
+        let targetLabel = "";
+        if (target) {
+          const { data: t } = await supabase
+            .from("profiles_data").select("id, name, gender, order").eq("id", target).maybeSingle();
+          if (!t) return json({ error: "Target profile not found" }, 404);
+          const code = `RM-${t.gender === "Female" ? "BR" : "GR"}-${t.order ?? t.id}`;
+          targetLabel = `#${code} (${t.name})`;
+        }
+
+        const amount = plan === "single" ? 48 : 491;
+        const { data: inserted, error } = await supabase
+          .from("profile_update_requests")
+          .insert({
+            profile_id: profileId,
+            request_type: requestType,
+            target_profile_id: target,
+            amount,
+            field_name: plan === "single" ? "SINGLE_PROFILE_UNLOCK_₹48" : "PREMIUM_UPGRADE_₹491",
+            current_value: plan === "single" ? targetLabel : (profile.plan_type || "free"),
+            requested_value: plan === "single"
+              ? `₹48 paid to unlock ${targetLabel}`
+              : "₹491 paid for Premium Plan (2 Months)",
+            reason: body.note ? String(body.note).slice(0, 500) : "Paid via UPI QR (8789428096@upi)",
+            status: "pending",
+          })
+          .select("id")
+          .single();
+        if (error) return json({ error: error.message }, 400);
+        return json({ success: true, request_id: inserted.id });
       }
 
       default:

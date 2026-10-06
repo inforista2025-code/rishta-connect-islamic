@@ -29,6 +29,7 @@ interface DirectPaymentModalProps {
   profileCode?: string;
   profileName?: string;
   memberPhone?: string;
+  targetProfileId?: number;
 }
 
 export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
@@ -39,6 +40,7 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
   profileCode: initialProfileCode = "",
   profileName: initialProfileName = "",
   memberPhone = "",
+  targetProfileId,
 }) => {
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<"single" | "premium">(defaultPlan);
@@ -98,25 +100,50 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
       ? `₹48 Payment for Target Profile: [${targetCodeOrName}] (Paid via Barcode)`
       : `₹491 Premium Plan Payment (Paid via Barcode)`;
 
+    // Resolve target profile id if single unlock
+    let resolvedTargetId = targetProfileId;
+    if (!resolvedTargetId && isSingle) {
+      const match = targetCodeOrName.match(/(\d+)/);
+      if (match) {
+        resolvedTargetId = parseInt(match[1]);
+      }
+    }
+
     // Log request into Database for Admin Panel in background
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        const { data: prof } = await supabase
-          .from("profiles_data")
-          .select("id")
-          .eq("email", userData.user.email)
-          .maybeSingle();
+      const memberToken = typeof window !== "undefined" ? localStorage.getItem("member_session_token") : null;
+      if (memberToken) {
+        await supabase.functions.invoke("member-dashboard", {
+          body: {
+            session_token: memberToken,
+            action: "submit_payment_request",
+            plan: selectedPlan,
+            target_id: resolvedTargetId || undefined,
+            note: `Paid via Barcode QR (${upiId}) for ${targetCodeOrName}`,
+          },
+        });
+      } else {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user) {
+          const { data: prof } = await supabase
+            .from("profiles_data")
+            .select("id")
+            .eq("email", userData.user.email)
+            .maybeSingle();
 
-        if (prof) {
-          await supabase.from("profile_update_requests").insert({
-            profile_id: prof.id,
-            field_name: fieldName,
-            current_value: isSingle ? targetCodeOrName : "Free Plan",
-            requested_value: reqVal,
-            reason: `Paid via Barcode QR (${upiId})`,
-            status: "pending",
-          });
+          if (prof) {
+            await supabase.from("profile_update_requests").insert({
+              profile_id: prof.id,
+              request_type: isSingle ? "single_unlock" : "premium_upgrade",
+              target_profile_id: resolvedTargetId || null,
+              amount: isSingle ? 48 : 491,
+              field_name: fieldName,
+              current_value: isSingle ? targetCodeOrName : "Free Plan",
+              requested_value: reqVal,
+              reason: `Paid via Barcode QR (${upiId})`,
+              status: "pending",
+            });
+          }
         }
       }
     } catch (e) {
