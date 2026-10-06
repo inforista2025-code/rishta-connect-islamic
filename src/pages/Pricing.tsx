@@ -7,7 +7,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { useNavigate } from "react-router-dom";
-import { PremiumUpgradeModal } from "@/components/pricing/PremiumUpgradeModal";
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +16,6 @@ import {
 
 export default function Pricing() {
   const [isLoading, setIsLoading] = useState(true);
-  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -148,7 +146,8 @@ export default function Pricing() {
   };
 
   const handleWhatsAppUpgrade = () => {
-    setIsPremiumModalOpen(true);
+    const text = `Assalamu Alaikum, I would like to upgrade to the Premium Rishta Plan (Rs. 491 for 2 Months) for unlimited profile access & contacts. Kindly share payment details. JazakAllahu Khair.`;
+    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const faqs = [
@@ -421,11 +420,6 @@ export default function Pricing() {
           </p>
         </div>
       </div>
-
-      <PremiumUpgradeModal
-        isOpen={isPremiumModalOpen}
-        onClose={() => setIsPremiumModalOpen(false)}
-      />
 
       <Footer />
     </div>
