@@ -588,9 +588,22 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUn
 
       {/* Recommended */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-row items-center justify-between pb-3 flex-wrap gap-2">
           <CardTitle className="text-lg">Recommended For You</CardTitle>
-          <Button variant="outline" size="sm" className="text-primary border-primary/40" onClick={onSeeAllRecommended}>View All</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-primary border-primary/50 hover:bg-primary/10 font-bold text-xs rounded-xl shadow-2xs gap-1 cursor-pointer"
+            onClick={onSeeAllRecommended}
+          >
+            <span>
+              {(self?.gender || member?.gender || "").toLowerCase() === "male"
+                ? "View All Bride Profiles (Dulhan) →"
+                : (self?.gender || member?.gender || "").toLowerCase() === "female"
+                ? "View All Groom Profiles (Dulha) →"
+                : "View All Opposite Proposals →"}
+            </span>
+          </Button>
         </CardHeader>
         <CardContent>
           {recommendations.length === 0 ? (
