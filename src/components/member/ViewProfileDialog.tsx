@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Crown, Lock, FileText, Mail, Phone, Heart, Star } from "lucide-react";
+import { Loader2, Crown, Lock, FileText, Mail, Phone, Heart, Star, MessageCircle } from "lucide-react";
 import { useMemberApi } from "@/hooks/useMemberApi";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "./ProfilePhoto";
@@ -35,6 +35,14 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
   const p = data?.profile;
   const isSelf = data?.is_self;
   const profileAge = p ? calculateAge(p.dob || p.date_of_birth, p.age) : "";
+
+  const handleUnlockSingle = () => {
+    if (!p) return;
+    const prefix = p.gender === "Female" ? "RM-BR" : "RM-GR";
+    const profileCode = `${prefix}-${p.order ?? p.id}`;
+    const text = `Assalamu Alaikum, I would like to unlock verified contact details and photos for Profile ID: #${profileCode} (${p.name}) for Rs. 48. Kindly share the payment UPI / QR details. JazakAllahu Khair.`;
+    window.open(`https://wa.me/919128719875?text=${encodeURIComponent(text)}`, "_blank");
+  };
 
   const doSave = async () => {
     if (!targetId) return;
@@ -159,14 +167,62 @@ export function ViewProfileDialog({ open, onOpenChange, targetId }: { open: bool
                 )}
               </div>
             ) : (
-              <div className="mt-4 p-4 rounded-lg border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50">
-                <div className="flex items-start gap-3">
-                  <Crown className="w-6 h-6 text-purple-600 shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">Unlock Full Profile</h4>
-                    <p className="text-sm text-muted-foreground mt-1">View original photos, family details, biodata PDF, contact information and more.</p>
-                    <Button className="mt-3 bg-purple-600 hover:bg-purple-700" onClick={openUpgradeWhatsApp}>
-                      Upgrade via WhatsApp · ₹491/2 Months
+              <div className="mt-4 bg-muted/30 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+                <div>
+                  <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                    <Lock className="w-4 h-4 text-emerald-600" />
+                    <span>Unlock Verified Contact & Full Details</span>
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Choose your preferred unlock option to connect with {p.name}'s family:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {/* Option 1: Single Profile Unlock ₹48 */}
+                  <div className="bg-card border border-emerald-500/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                          Option 1: Single Profile
+                        </span>
+                        <span className="text-base font-black text-emerald-600 dark:text-emerald-400">₹48</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        Unlock verified guardian contact, personal WhatsApp & photos for this profile.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleUnlockSingle}
+                      size="sm"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Unlock This Profile (₹48)</span>
+                    </Button>
+                  </div>
+
+                  {/* Option 2: Full Premium Plan ₹491 */}
+                  <div className="bg-card border border-primary/40 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-xs">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                          <Crown className="w-3 h-3 text-amber-500" />
+                          Option 2: Premium Plan
+                        </span>
+                        <span className="text-base font-black text-primary">₹491</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        2 Months unlimited access to all profiles across the website, photos & contacts.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={openUpgradeWhatsApp}
+                      size="sm"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 rounded-lg gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Crown className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Upgrade to Premium (₹491)</span>
                     </Button>
                   </div>
                 </div>
