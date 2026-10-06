@@ -58,14 +58,17 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
 
   const targetCodeOrName = targetProfileInput.trim() || initialProfileCode || initialProfileName || "Selected Profile";
 
-  const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(
-    selectedPlan === "premium"
-      ? "Premium Membership Upgrade"
-      : `Single Unlock Profile ${targetCodeOrName}`
-  )}`;
+  const tnText = selectedPlan === "premium"
+    ? "Premium Membership Upgrade"
+    : `Single Unlock Profile ${targetCodeOrName}`;
+
+  const genericUpiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(tnText)}`;
+  const phonepeUrl = `phonepe://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(tnText)}`;
+  const paytmUrl = `paytmmp://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(tnText)}`;
+  const gpayUrl = `tez://upi/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(tnText)}`;
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
-    upiUrl
+    genericUpiUrl
   )}&margin=10`;
 
   const handleCopyUpi = () => {
@@ -76,6 +79,16 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
       description: `${upiId} copied to clipboard. Open any UPI app to pay.`,
     });
     setTimeout(() => setCopiedUpi(false), 2500);
+  };
+
+  const handleAppLaunch = (appSchemeUrl: string) => {
+    const start = Date.now();
+    window.location.href = appSchemeUrl;
+    setTimeout(() => {
+      if (Date.now() - start < 1500) {
+        window.location.href = genericUpiUrl;
+      }
+    }, 800);
   };
 
   const handleNotifyWhatsApp = async () => {
@@ -247,33 +260,38 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
               </div>
             </div>
 
-            {/* Direct Mobile Apps Launcher */}
+            {/* Direct Mobile Apps Launcher with App-Specific Deep Links */}
             <div className="space-y-2">
               <p className="text-[11px] font-bold text-muted-foreground text-center uppercase tracking-wider">
                 Or Tap Below to Pay via Installed App (Mobile Only)
               </p>
               <div className="grid grid-cols-3 gap-2">
-                <a
-                  href={upiUrl}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-border/80 bg-card hover:border-emerald-500 transition-colors shadow-xs group text-center"
+                <button
+                  type="button"
+                  onClick={() => handleAppLaunch(phonepeUrl)}
+                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-purple-200 dark:border-purple-800/40 bg-purple-50/50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors shadow-xs group text-center cursor-pointer"
                 >
-                  <Smartphone className="w-4 h-4 text-blue-600 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-[11px] font-bold text-foreground">GPay / PhonePe</span>
-                </a>
-                <a
-                  href={upiUrl}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-border/80 bg-card hover:border-emerald-500 transition-colors shadow-xs group text-center"
+                  <Smartphone className="w-4 h-4 text-purple-600 mb-1 group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-extrabold text-purple-950 dark:text-purple-300">PhonePe</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAppLaunch(paytmUrl)}
+                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-sky-200 dark:border-sky-800/40 bg-sky-50/50 dark:bg-sky-950/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors shadow-xs group text-center cursor-pointer"
                 >
                   <Smartphone className="w-4 h-4 text-sky-600 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-[11px] font-bold text-foreground">Paytm UPI</span>
-                </a>
-                <a
-                  href={upiUrl}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-border/80 bg-card hover:border-emerald-500 transition-colors shadow-xs group text-center"
+                  <span className="text-[11px] font-extrabold text-sky-950 dark:text-sky-300">Paytm</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleAppLaunch(gpayUrl)}
+                  className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors shadow-xs group text-center cursor-pointer"
                 >
                   <Smartphone className="w-4 h-4 text-emerald-600 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-[11px] font-bold text-foreground">Any UPI App</span>
-                </a>
+                  <span className="text-[11px] font-extrabold text-emerald-950 dark:text-emerald-300">GPay / Any App</span>
+                </button>
               </div>
             </div>
 
