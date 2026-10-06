@@ -759,27 +759,49 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium,
   const educationText = p.education && p.education.toLowerCase() !== "nothing" ? p.education : null;
 
   return (
-    <div className="group border rounded-2xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
-      <button
-        type="button"
-        onClick={onView}
-        className="relative block w-full text-left focus:outline-none focus:ring-2 focus:ring-primary overflow-hidden"
-        aria-label={`View ${p.name}'s profile`}
-      >
-        <div className="group-hover:scale-105 transition-transform duration-500 ease-out">
-          <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
-        </div>
-        <span className="absolute bottom-2 left-2">
-          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 text-[10px] font-bold shadow-xs">{match}% Match</Badge>
-        </span>
-        {isUnlocked && !isPremium && (
-          <span className="absolute top-2 right-2">
-            <Badge className="bg-emerald-600 text-white text-[10px] shadow-xs font-bold">Unlocked ✅</Badge>
+    <div className="group border rounded-2xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col relative">
+      <div className="relative block w-full text-left overflow-hidden">
+        <button
+          type="button"
+          onClick={onView}
+          className="relative block w-full text-left focus:outline-none focus:ring-2 focus:ring-primary overflow-hidden cursor-pointer"
+          aria-label={`View ${p.name}'s profile`}
+        >
+          <div className="group-hover:scale-105 transition-transform duration-500 ease-out">
+            <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
+          </div>
+          <span className="absolute bottom-2 left-2 z-10">
+            <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 text-[10px] font-bold shadow-xs">{match}% Match</Badge>
           </span>
-        )}
-      </button>
+          {isUnlocked && !isPremium && (
+            <span className="absolute top-2 left-2 z-10">
+              <Badge className="bg-emerald-600 text-white text-[10px] shadow-xs font-bold">Unlocked ✅</Badge>
+            </span>
+          )}
+        </button>
 
-      <button type="button" onClick={onView} className="p-3 space-y-1 text-left focus:outline-none flex-1">
+        {/* Shortlist Star Button on photo */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onSave();
+          }}
+          className={cn(
+            "absolute top-2 right-2 z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md backdrop-blur-xs cursor-pointer",
+            saved
+              ? "bg-amber-500 text-white hover:bg-amber-600 scale-105 shadow-amber-500/30"
+              : "bg-black/45 hover:bg-black/65 text-white hover:scale-105"
+          )}
+          aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
+          title={saved ? "Remove from shortlist" : "Add to shortlist"}
+        >
+          <Star className={cn("w-4 h-4", saved ? "fill-white text-white" : "text-white")} />
+        </button>
+      </div>
+
+      <button type="button" onClick={onView} className="p-3 space-y-1 text-left focus:outline-none flex-1 cursor-pointer">
         <div className="font-bold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
         <div className="text-xs text-muted-foreground truncate">{calculateAge(p.dob || p.date_of_birth, p.age)} yrs · {p.location || "—"}</div>
         {educationText && <div className="text-xs text-muted-foreground truncate">{educationText}</div>}
@@ -787,24 +809,24 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium,
       </button>
 
       <div className="p-3 pt-0 space-y-2">
-        <div className="flex items-center gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5 w-full">
           <Button
             size="sm"
-            className="h-8 text-xs px-2.5 flex-1 font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg cursor-pointer shadow-xs gap-1"
+            className="h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg cursor-pointer shadow-xs gap-1 w-full justify-center px-1"
             onClick={onView}
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>View Profile</span>
+            <Eye className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">View Profile</span>
           </Button>
 
           <Button
             size="sm"
             variant="outline"
             className={cn(
-              "h-8 px-2 text-xs font-bold rounded-lg cursor-pointer transition-colors gap-1",
+              "h-8 text-xs font-bold rounded-lg cursor-pointer transition-colors gap-1 w-full justify-center px-1",
               isInterestSent
                 ? "bg-rose-50 dark:bg-rose-950/40 text-rose-600 border-rose-200 dark:border-rose-800"
-                : "text-muted-foreground hover:text-rose-600 hover:border-rose-300"
+                : "text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:border-rose-300"
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -813,19 +835,8 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium,
             disabled={isInterestSent}
             title={isInterestSent ? "Interest already sent" : "Send Interest"}
           >
-            <Heart className={cn("w-3.5 h-3.5", isInterestSent ? "fill-rose-500 text-rose-500" : "")} />
-            <span className="hidden sm:inline">{isInterestSent ? "Sent" : "Interest"}</span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 w-8 p-0 shrink-0 rounded-lg cursor-pointer active:scale-[0.95] transition-all"
-            onClick={(e) => { e.stopPropagation(); onSave(); }}
-            aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
-            title={saved ? "Remove from shortlist" : "Add to shortlist"}
-          >
-            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "text-muted-foreground")} />
+            <Heart className={cn("w-3.5 h-3.5 shrink-0", isInterestSent ? "fill-rose-500 text-rose-500" : "fill-rose-500/20 text-rose-500")} />
+            <span className="truncate">{isInterestSent ? "Sent" : "Interest"}</span>
           </Button>
         </div>
 
