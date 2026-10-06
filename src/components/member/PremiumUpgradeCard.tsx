@@ -7,8 +7,8 @@ import { DirectPaymentModal } from "@/components/payment/DirectPaymentModal";
 const benefits = [
   "View full verified contact details",
   "Send unlimited profile interests",
-  "View unblurred HD profile photos",
-  "Get featured on 1st Page pinned top",
+  "View unblurred profile photos",
+  "Featured on top of match recommendations",
   "⭐ Premium Gold Verified Badge",
   "Priority 1-on-1 customer support",
 ];
@@ -47,7 +47,7 @@ export function PremiumUpgradeCard() {
             onClick={() => setPaymentOpen(true)}
           >
             <QrCode className="w-4 h-4 text-amber-300" />
-            <span>Pay Direct via Barcode / UPI</span>
+            <span>Pay Direct via QR Code / UPI</span>
           </Button>
 
           <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1 text-center font-medium">

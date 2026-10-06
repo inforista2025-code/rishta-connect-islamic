@@ -11,13 +11,17 @@ const corsHeaders = {
 };
 
 interface RegistrationEmailRequest {
-  type: "registration" | "verification_status";
+  type: "registration" | "verification_status" | "payment_notification";
   full_name: string;
   email: string;
   gender?: string;
   city?: string;
   whatsapp_number?: string;
   verification_status?: "verified" | "rejected";
+  payment_plan?: string;
+  amount?: number;
+  target_profile?: string;
+  notes?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -147,6 +151,60 @@ const handler = async (req: Request): Promise<Response> => {
 
       return new Response(
         JSON.stringify({ success: true, email: emailResponse }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    } else if (type === "payment_notification") {
+      const planName = payload.payment_plan === "premium" ? "Premium Plan (2 Months - ₹491)" : `Single Profile Unlock (₹48)`;
+      const subject = `💰 New Payment Request: ${planName} by ${full_name}`;
+      const adminEmailResponse = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ["info.rista2025@gmail.com"],
+        subject,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #059669;">New Payment Alert (UPI QR Code)</h2>
+            <p style="font-size: 15px; color: #333;">A member has submitted payment confirmation via direct QR code:</p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Member Name</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${full_name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Plan & Amount</td>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #059669;">${planName} (₹${payload.amount || (payload.payment_plan === 'premium' ? 491 : 48)})</td>
+              </tr>
+              ${payload.target_profile ? `
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Target Profile to Unlock</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${payload.target_profile}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">WhatsApp</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${whatsapp_number || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Email</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${email || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">Notes</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${payload.notes || 'Paid via UPI QR 8789428096@upi'}</td>
+              </tr>
+            </table>
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+              Please check your bank/UPI app for ₹${payload.amount || (payload.payment_plan === 'premium' ? 491 : 48)} credit, then go to Admin Dashboard → Update Requests to approve.
+            </p>
+          </div>
+        `,
+      });
+
+      console.log("Admin payment notification email sent:", adminEmailResponse);
+
+      return new Response(
+        JSON.stringify({ success: true, adminEmail: adminEmailResponse }),
         {
           status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders },

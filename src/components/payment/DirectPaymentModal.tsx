@@ -150,10 +150,28 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
       console.error("Background request log error:", e);
     }
 
+    // Also trigger email alert to admin in background (Bug #7 fix)
+    try {
+      await supabase.functions.invoke("send-registration-emails", {
+        body: {
+          type: "payment_notification",
+          full_name: initialProfileName || "Registered Member",
+          email: "",
+          whatsapp_number: memberPhone || "N/A",
+          payment_plan: selectedPlan,
+          amount,
+          target_profile: isSingle ? targetCodeOrName : undefined,
+          notes: `Paid via UPI QR (${upiId})`,
+        },
+      });
+    } catch (mailErr) {
+      console.warn("Background admin email trigger skipped:", mailErr);
+    }
+
     // WhatsApp Message
     const msg = isSingle
-      ? `Assalamu Alaikum Admin Team 🌸,\n\nMaine Rs. 48 ka payment single profile unlock ke liye complete kar diya hai.\n\n📋 Request Details:\n• My Name / Member: ${initialProfileName || "Registered Member"}\n• Target Profile ID / Name: ${targetCodeOrName}\n${memberPhone ? `• Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Single Profile Unlock (Rs. 48)\n• Mode: Paid via Barcode / UPI\n\nPlease verify karke is profile ki verified contact details & photos WhatsApp par send kar dein.\nJazakAllahu Khair 🤍`
-      : `Assalamu Alaikum Admin Team 🌸,\n\nMaine Rs. 491 ka payment complete kar diya hai. Please meri profile ko Premium Profile me convert kar dein.\n\n📋 Member Details:\n• Name: ${initialProfileName || "Registered Member"}\n• Profile ID: ${initialProfileCode || "Registered Profile"}\n${memberPhone ? `• Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Premium Rishta Plan (Rs. 491 - 2 Months Access)\n• Mode: Paid via Barcode / UPI\n\nPlease verify karke meri profile ko Premium bana dein aur details confirm karein.\nJazakAllahu Khair 🤍`;
+      ? `Assalamu Alaikum Admin Team 🌸,\n\nMaine Rs. 48 ka payment single profile unlock ke liye complete kar diya hai.\n\n📋 Request Details:\n• My Name / Member: ${initialProfileName || "Registered Member"}\n• Target Profile ID / Name: ${targetCodeOrName}\n${memberPhone ? `• Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Single Profile Unlock (Rs. 48)\n• Mode: Paid via UPI QR Code\n\nPlease verify karke is profile ki verified contact details & photos WhatsApp par send kar dein.\nJazakAllahu Khair 🤍`
+      : `Assalamu Alaikum Admin Team 🌸,\n\nMaine Rs. 491 ka payment complete kar diya hai. Please meri profile ko Premium Profile me convert kar dein.\n\n📋 Member Details:\n• Name: ${initialProfileName || "Registered Member"}\n• Profile ID: ${initialProfileCode || "Registered Profile"}\n${memberPhone ? `• Registered Mobile: ${memberPhone}\n` : ""}• Payment Plan: Premium Rishta Plan (Rs. 491 - 2 Months Access)\n• Mode: Paid via UPI QR Code\n\nPlease verify karke meri profile ko Premium bana dein aur details confirm karein.\nJazakAllahu Khair 🤍`;
 
     window.open(`https://wa.me/919128719875?text=${encodeURIComponent(msg)}`, "_blank");
     onClose();
@@ -169,10 +187,10 @@ export const DirectPaymentModal: React.FC<DirectPaymentModalProps> = ({
             <span>100% Direct UPI Payment (Zero Extra Fees)</span>
           </div>
           <DialogTitle className="text-xl font-extrabold tracking-tight text-white flex items-center justify-center gap-2">
-            <span>Direct Payment Barcode</span>
+            <span>Direct Payment QR Code</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-emerald-100 mt-1 max-w-xs mx-auto">
-            Scan barcode using Google Pay, PhonePe, Paytm or any UPI app.
+            Scan QR code using Google Pay, PhonePe, Paytm or any UPI app.
           </DialogDescription>
         </div>
 

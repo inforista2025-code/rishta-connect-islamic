@@ -177,7 +177,7 @@ serve(async (req) => {
       case "dashboard_summary": {
         const completion = computeCompletion(profile, editableExisting);
         // counts
-        const [savedCount, viewedCount, viewersCount, sentMonth] = await Promise.all([
+        const [savedCount, viewedCount, viewersCount, sentMonth, receivedCount] = await Promise.all([
           supabase.from("saved_profiles").select("id", { count: "exact", head: true }).eq("owner_profile_id", profileId),
           supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("viewer_profile_id", profileId),
           supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("viewed_profile_id", profileId),
@@ -186,6 +186,7 @@ serve(async (req) => {
             return supabase.from("profile_interests").select("id", { count: "exact", head: true })
               .eq("sender_profile_id", profileId).gte("created_at", monthAgo.toISOString());
           })(),
+          supabase.from("profile_interests").select("id", { count: "exact", head: true }).eq("receiver_profile_id", profileId),
         ]);
         const freeLimit = 5;
         const sentThisMonth = sentMonth.count ?? 0;
@@ -276,6 +277,7 @@ serve(async (req) => {
             saved: savedCount.count ?? 0,
             recently_viewed: viewedCount.count ?? 0,
             who_viewed_me: viewersCount.count ?? 0,
+            interests_received: receivedCount.count ?? 0,
             free_requests_left: freeLeft,
             free_requests_limit: freeLimit,
           },
@@ -609,6 +611,32 @@ serve(async (req) => {
           .select("id")
           .single();
         if (error) return json({ error: error.message }, 400);
+
+        // Notify admin via email in background (Bug #7 fix)
+        (async () => {
+          try {
+            await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-registration-emails`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              },
+              body: JSON.stringify({
+                type: "payment_notification",
+                full_name: profile.name || "Member",
+                email: profile.email || "N/A",
+                whatsapp_number: profile.whatsapp_number || "N/A",
+                payment_plan: plan,
+                amount,
+                target_profile: targetLabel || undefined,
+                notes: body.note || "Paid via UPI QR 8789428096@upi",
+              }),
+            });
+          } catch (e) {
+            console.error("Payment notification email error:", e);
+          }
+        })();
+
         return json({ success: true, request_id: inserted.id });
       }
 

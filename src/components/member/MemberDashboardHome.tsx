@@ -83,16 +83,57 @@ function lockedValue(profile: any, key: string) {
 }
 
 function matchPercent(self: any, other: any): number {
-  let score = 70;
-  const sLoc = (self?.location || "").toLowerCase();
-  const oLoc = (other?.location || "").toLowerCase();
-  if (sLoc && oLoc && (sLoc.includes(oLoc.split(",")[0]) || oLoc.includes(sLoc.split(",")[0]))) score += 10;
-  if (self?.education && other?.education && self.education === other.education) score += 6;
-  if (self?.maslak && other?.maslak && self.maslak === other.maslak) score += 8;
-  if (self?.marital_status && other?.marital_status && self.marital_status === other.marital_status) score += 4;
-  const seed = (other?.id || 0) % 7;
-  score += seed;
-  return Math.min(99, score);
+  if (!self || !other) return 75;
+
+  let score = 55; // baseline compatibility
+
+  // 1. Maslak compatibility (+15)
+  if (self.maslak && other.maslak) {
+    if (String(self.maslak).trim().toLowerCase() === String(other.maslak).trim().toLowerCase()) {
+      score += 15;
+    }
+  }
+
+  // 2. Location compatibility (+15)
+  const sLoc = String(self.location || "").toLowerCase().trim();
+  const oLoc = String(other.location || "").toLowerCase().trim();
+  if (sLoc && oLoc) {
+    const sCity = sLoc.split(",")[0].trim();
+    const oCity = oLoc.split(",")[0].trim();
+    if (sLoc === oLoc || (sCity && oLoc.includes(sCity)) || (oCity && sLoc.includes(oCity))) {
+      score += 15;
+    } else {
+      score += 6;
+    }
+  }
+
+  // 3. Marital status compatibility (+10)
+  if (self.marital_status && other.marital_status) {
+    if (String(self.marital_status).trim().toLowerCase() === String(other.marital_status).trim().toLowerCase()) {
+      score += 10;
+    }
+  }
+
+  // 4. Age compatibility (+10)
+  const sAge = parseInt(self.age) || 0;
+  const oAge = parseInt(other.age) || 0;
+  if (sAge > 0 && oAge > 0) {
+    const diff = Math.abs(sAge - oAge);
+    if (diff <= 3) score += 10;
+    else if (diff <= 6) score += 7;
+    else if (diff <= 10) score += 4;
+  }
+
+  // 5. Education compatibility (+8)
+  if (self.education && other.education) {
+    if (String(self.education).trim().toLowerCase() === String(other.education).trim().toLowerCase()) {
+      score += 8;
+    } else {
+      score += 4;
+    }
+  }
+
+  return Math.min(98, Math.max(62, score));
 }
 
 function relativeTime(iso?: string) {
@@ -130,6 +171,9 @@ export function MemberDashboardHome() {
     setUnlockModalOpen(true);
   }, []);
 
+  // Track sent interest IDs so buttons accurately reflect sent state (Bug #4 fix)
+  const [sentInterestIds, setSentInterestIds] = useState<Set<number>>(new Set());
+
   // section-specific lazy data
   const [savedList, setSavedList] = useState<any[]>([]);
   const [recentlyList, setRecentlyList] = useState<any[]>([]);
@@ -159,7 +203,39 @@ export function MemberDashboardHome() {
     } finally { setBusy(false); }
   }, [call, toast]);
 
-  useEffect(() => { if (member) loadSummary(); }, [member, loadSummary]);
+  useEffect(() => {
+    if (member) {
+      loadSummary();
+      // Load sent interests initially to populate sent state on cards
+      call("list_interests", { direction: "sent" })
+        .then((res) => {
+          if (res?.interests) {
+            setSentInterestIds(new Set((res.interests || []).map((i: any) => i.receiver_profile_id)));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [member, loadSummary, call]);
+
+  const handleSendInterest = async (targetId: number, targetName?: string) => {
+    if (!targetId || sentInterestIds.has(targetId)) return;
+    try {
+      const res = await call("send_interest", { target_id: targetId });
+      if (res?.error === "limit_reached") {
+        toast({ title: "Free limit reached", description: res.message, variant: "destructive" });
+        setSection("profile");
+      } else {
+        setSentInterestIds((prev) => new Set([...prev, targetId]));
+        toast({
+          title: "Interest sent 💌",
+          description: targetName ? `Your interest has been sent to ${targetName}.` : "Interest sent successfully.",
+        });
+        loadSummary();
+      }
+    } catch (e: any) {
+      toast({ title: "Could not send interest", description: e.message, variant: "destructive" });
+    }
+  };
 
   // Load section data on demand
   const loadSection = useCallback(async (s: SectionKey) => {
@@ -298,6 +374,8 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
+                    sentInterestIds={sentInterestIds}
+                    onSendInterest={handleSendInterest}
                     onSeeAllRecommended={() => setSection("browse")}
                   />
                 )}
@@ -321,6 +399,8 @@ export function MemberDashboardHome() {
                     savedIds={savedIds}
                     self={profile}
                     isPremium={isPremium}
+                    sentInterestIds={sentInterestIds}
+                    onSendInterest={handleSendInterest}
                     loading={!!sectionLoading.recommended}
                     error={sectionError.recommended}
                     onRetry={() => loadSection("recommended")}
@@ -349,6 +429,8 @@ export function MemberDashboardHome() {
                       savedIds={savedIds}
                       self={profile}
                       isPremium={isPremium}
+                      sentInterestIds={sentInterestIds}
+                      onSendInterest={handleSendInterest}
                       loading={!!sectionLoading.browse}
                       error={sectionError.browse}
                       onRetry={() => loadSection("browse")}
@@ -366,6 +448,8 @@ export function MemberDashboardHome() {
                     savedIds={savedIds}
                     self={profile}
                     isPremium={isPremium}
+                    sentInterestIds={sentInterestIds}
+                    onSendInterest={handleSendInterest}
                     emptyMsg="No saved profiles yet."
                     loading={!!sectionLoading.saved}
                     error={sectionError.saved}
@@ -381,6 +465,8 @@ export function MemberDashboardHome() {
                     onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
                     self={profile}
+                    sentInterestIds={sentInterestIds}
+                    onSendInterest={handleSendInterest}
                     loading={!!sectionLoading.viewers}
                     error={sectionError.viewers}
                     onRetry={() => loadSection("viewers")}
@@ -407,22 +493,6 @@ export function MemberDashboardHome() {
           {/* Right rail */}
           <aside className="space-y-4 min-w-0">
             {!isPremium && <PremiumUpgradeCard />}
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-primary" />
-                  <h4 className="font-semibold text-sm">Profile Tips</h4>
-                </div>
-                <p className="text-xs text-muted-foreground">Complete your profile and add more photos to get better matches.</p>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs"><span>{completion.percent}% Complete</span></div>
-                  <Progress value={completion.percent} className="h-1.5" />
-                </div>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => setSection("profile")}>
-                  Improve Profile
-                </Button>
-              </CardContent>
-            </Card>
 
             <WhoViewedPreview
               viewers={data?.who_viewed_me || []}
@@ -564,26 +634,35 @@ function DashboardSidebar({ member, profile, completion, section, onSelect, coun
 }
 
 /* ===================== DASHBOARD CONTENT ===================== */
-function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUnlock, savedIds, onSeeAllRecommended }: any) {
+function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUnlock, savedIds, onSeeAllRecommended, onSendInterest, sentInterestIds }: any) {
   const counts = data?.counts || {};
   const recommendations = data?.recommendations || [];
   const newWeek = data?.new_this_week || [];
   const recently = data?.recently_viewed || [];
   const self = data?.profile;
+
+  const profileStatus = (self?.verification_status || member?.verification_status || "pending").toLowerCase();
+  const isVerified = profileStatus === "verified";
+
   return (
     <div className="space-y-4">
       {/* Greeting */}
-      <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-100">
+      <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-100 dark:from-pink-950/20 dark:to-rose-950/20 dark:border-pink-900/30">
         <CardContent className="p-5">
-          <h2 className="text-xl sm:text-2xl font-bold">Assalamualaikum, {member.full_name}! 👋</h2>
-          <p className="text-sm text-muted-foreground mt-1">Welcome back! Your profile is {data?.completion?.percent || 0}% complete.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Assalamualaikum, {member.full_name}! 👋</h2>
+          <p className="text-sm text-muted-foreground mt-1">Welcome back to Rishta Matrimony.</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-            <StatTile icon={<ShieldCheck className="w-5 h-5 text-green-600" />} bg="bg-green-100" label="Profile Status" value={<span className="text-green-700">Verified</span>} />
-            <StatTile icon={<Star className="w-5 h-5 text-pink-600" />} bg="bg-pink-100" label="Saved Profiles" value={counts.saved ?? 0} />
-            <StatTile icon={<Eye className="w-5 h-5 text-amber-600" />} bg="bg-amber-100" label="Recently Viewed" value={counts.recently_viewed ?? 0} />
             <StatTile
-              icon={<BookmarkPlus className="w-5 h-5 text-rose-600" />} bg="bg-rose-100"
-              label="Free Requests Left"
+              icon={<ShieldCheck className={cn("w-5 h-5", isVerified ? "text-green-600" : "text-amber-600")} />}
+              bg={isVerified ? "bg-green-100 dark:bg-green-950/50" : "bg-amber-100 dark:bg-amber-950/50"}
+              label="Profile Status"
+              value={<span className={isVerified ? "text-green-700 dark:text-green-400" : "text-amber-700 dark:text-amber-400 font-semibold"}>{isVerified ? "Verified" : "Pending"}</span>}
+            />
+            <StatTile icon={<Star className="w-5 h-5 text-pink-600" />} bg="bg-pink-100 dark:bg-pink-950/50" label="Saved Profiles" value={counts.saved ?? 0} />
+            <StatTile icon={<Inbox className="w-5 h-5 text-purple-600" />} bg="bg-purple-100 dark:bg-purple-950/50" label="Interests Received" value={counts.interests_received ?? 0} />
+            <StatTile
+              icon={<Heart className="w-5 h-5 text-rose-600" />} bg="bg-rose-100 dark:bg-rose-950/50"
+              label="Free Interests Left"
               value={isPremium ? "∞" : `${counts.free_requests_left ?? 0} / ${counts.free_requests_limit ?? 5}`}
             />
           </div>
@@ -623,6 +702,8 @@ function DashboardContent({ data, member, isPremium, onViewProfile, onSave, onUn
                   onUnlock={onUnlock}
                   saved={savedIds.has(p.id)}
                   isPremium={isPremium}
+                  onSendInterest={onSendInterest}
+                  isInterestSent={sentInterestIds?.has(p.id)}
                 />
               ))}
             </div>
@@ -672,10 +753,13 @@ function StatTile({ icon, bg, label, value }: any) {
   );
 }
 
-function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium }: any) {
+function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium, onSendInterest, isInterestSent }: any) {
   const isUnlocked = Boolean(p.is_unlocked);
+  const professionText = p.profession && p.profession.toLowerCase() !== "nothing" ? p.profession : null;
+  const educationText = p.education && p.education.toLowerCase() !== "nothing" ? p.education : null;
+
   return (
-    <div className="group border rounded-xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
+    <div className="group border rounded-2xl overflow-hidden bg-card hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 ease-out flex flex-col">
       <button
         type="button"
         onClick={onView}
@@ -686,7 +770,7 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium 
           <ProfilePhoto src={p.photo_urls?.[0]} alt={p.name} blurred={p.photo_blurred} size="full" rounded="md" className="aspect-square rounded-none" showLockHint />
         </div>
         <span className="absolute bottom-2 left-2">
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-[10px] shadow-xs">{match}% Match</Badge>
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 text-[10px] font-bold shadow-xs">{match}% Match</Badge>
         </span>
         {isUnlocked && !isPremium && (
           <span className="absolute top-2 right-2">
@@ -694,49 +778,62 @@ function RecommendedCard({ p, match, onView, onSave, saved, onUnlock, isPremium 
           </span>
         )}
       </button>
-      <button type="button" onClick={onView} className="p-2.5 space-y-1 text-left focus:outline-none flex-1">
-        <div className="font-semibold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{calculateAge(p.dob || p.date_of_birth, p.age)} yrs · {p.location || "—"}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{p.education || "—"}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{p.profession || "—"}</div>
+
+      <button type="button" onClick={onView} className="p-3 space-y-1 text-left focus:outline-none flex-1">
+        <div className="font-bold text-sm truncate group-hover:text-primary transition-colors duration-200">{p.name}</div>
+        <div className="text-xs text-muted-foreground truncate">{calculateAge(p.dob || p.date_of_birth, p.age)} yrs · {p.location || "—"}</div>
+        {educationText && <div className="text-xs text-muted-foreground truncate">{educationText}</div>}
+        {professionText && <div className="text-xs text-muted-foreground truncate">{professionText}</div>}
       </button>
 
-      <div className="p-2.5 pt-0 space-y-1.5">
-        <div className="flex gap-1.5">
-          <Button size="sm" className="h-8 text-[11px] px-2 flex-1 font-semibold" onClick={onView}>
-            <Heart className="w-3.5 h-3.5 mr-1" /> Interest
+      <div className="p-3 pt-0 space-y-2">
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            className="h-8 text-xs px-2.5 flex-1 font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg cursor-pointer shadow-xs gap-1"
+            onClick={onView}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>View Profile</span>
           </Button>
+
           <Button
             size="sm"
             variant="outline"
-            className="h-8 w-8 p-0 shrink-0 active:scale-[0.95] transition-all duration-150"
+            className={cn(
+              "h-8 px-2 text-xs font-bold rounded-lg cursor-pointer transition-colors gap-1",
+              isInterestSent
+                ? "bg-rose-50 dark:bg-rose-950/40 text-rose-600 border-rose-200 dark:border-rose-800"
+                : "text-muted-foreground hover:text-rose-600 hover:border-rose-300"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isInterestSent && onSendInterest) onSendInterest(p.id, p.name);
+            }}
+            disabled={isInterestSent}
+            title={isInterestSent ? "Interest already sent" : "Send Interest"}
+          >
+            <Heart className={cn("w-3.5 h-3.5", isInterestSent ? "fill-rose-500 text-rose-500" : "")} />
+            <span className="hidden sm:inline">{isInterestSent ? "Sent" : "Interest"}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0 shrink-0 rounded-lg cursor-pointer active:scale-[0.95] transition-all"
             onClick={(e) => { e.stopPropagation(); onSave(); }}
             aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
+            title={saved ? "Remove from shortlist" : "Add to shortlist"}
           >
-            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "")} />
+            <Star className={cn("w-3.5 h-3.5", saved ? "fill-primary text-primary" : "text-muted-foreground")} />
           </Button>
         </div>
 
-        {isUnlocked ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full h-8 text-[11px] bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 font-bold gap-1 rounded-lg shadow-2xs cursor-pointer"
-            onClick={onView}
-          >
-            <Check className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Unlocked (View Contact)</span>
-          </Button>
-        ) : onUnlock && !isPremium ? (
-          <Button
-            size="sm"
-            className="w-full h-8 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 rounded-lg shadow-2xs cursor-pointer"
-            onClick={(e) => { e.stopPropagation(); onUnlock(p); }}
-          >
-            <Lock className="w-3 h-3 text-amber-300" />
-            <span>Unlock Contact (₹48)</span>
-          </Button>
-        ) : null}
+        {isUnlocked && (
+          <div className="w-full py-1 text-center text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-lg">
+            <span>Contact Unlocked ✅</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -756,7 +853,7 @@ function MiniRow({ p, badge, time, onClick }: any) {
 }
 
 /* ===================== OTHER SECTIONS ===================== */
-function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, self, isPremium, emptyMsg, loading, error, onRetry }: any) {
+function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, self, isPremium, onSendInterest, sentInterestIds, emptyMsg, loading, error, onRetry }: any) {
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
@@ -788,6 +885,8 @@ function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, 
                 onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
                 isPremium={isPremium}
+                onSendInterest={onSendInterest}
+                isInterestSent={sentInterestIds?.has(p.id)}
               />
             ))}
           </div>
@@ -797,7 +896,7 @@ function CardListSection({ title, profiles, onView, onSave, onUnlock, savedIds, 
   );
 }
 
-function ViewersSection({ data, isPremium, onView, onSave, onUnlock, savedIds, self, loading, error, onRetry }: any) {
+function ViewersSection({ data, isPremium, onView, onSave, onUnlock, savedIds, self, onSendInterest, sentInterestIds, loading, error, onRetry }: any) {
   const viewers = data?.viewers || [];
   return (
     <Card>
@@ -828,6 +927,8 @@ function ViewersSection({ data, isPremium, onView, onSave, onUnlock, savedIds, s
                 onUnlock={onUnlock}
                 saved={savedIds.has(p.id)}
                 isPremium={isPremium}
+                onSendInterest={onSendInterest}
+                isInterestSent={sentInterestIds?.has(p.id)}
               />
             ))}
           </div>
@@ -978,7 +1079,7 @@ function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEdit
             </Badge>
           </div>
           <CardDescription className="text-xs text-muted-foreground mt-0.5">
-            Directly pay via Barcode / UPI (8789428096@upi) or send prefilled WhatsApp verification receipt to Admin with your profile details.
+            Directly pay via QR Code / UPI (8789428096@upi) or send prefilled WhatsApp verification receipt to Admin with your profile details.
           </CardDescription>
         </CardHeader>
 
@@ -1005,11 +1106,11 @@ function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEdit
               </li>
               <li className="flex items-center gap-2 font-semibold text-foreground">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>View unblurred HD profile photos</span>
+                <span>View unblurred profile photos</span>
               </li>
               <li className="flex items-center gap-2 font-semibold text-foreground">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Get featured on 1st Page pinned top</span>
+                <span>Featured on top of match recommendations</span>
               </li>
               <li className="flex items-center gap-2 font-semibold text-foreground">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1032,7 +1133,7 @@ function ProfileSection({ profile, member, editable, onRequestUpdate, onSaveEdit
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl shadow-md gap-2 cursor-pointer"
             >
               <QrCode className="w-5 h-5 text-amber-300" />
-              <span>Pay Direct via Barcode / UPI</span>
+              <span>Pay Direct via QR Code / UPI</span>
             </Button>
 
             <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1 font-medium">
