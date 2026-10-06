@@ -298,7 +298,7 @@ export function MemberDashboardHome() {
                     onSave={handleSave}
                     onUnlock={handleUnlockCandidate}
                     savedIds={savedIds}
-                    onSeeAllRecommended={() => setSection("recommended")}
+                    onSeeAllRecommended={() => setSection("browse")}
                   />
                 )}
                 {section === "profile" && (
@@ -323,7 +323,7 @@ export function MemberDashboardHome() {
                     loading={!!sectionLoading.recommended}
                     error={sectionError.recommended}
                     onRetry={() => loadSection("recommended")}
-                    emptyMsg="No matches yet. Complete your profile to see more."
+                    emptyMsg="No recommendations found based on current criteria."
                   />
                 )}
                 {section === "browse" && (
@@ -340,7 +340,7 @@ export function MemberDashboardHome() {
                       </Card>
                     )}
                     <CardListSection
-                      title={`Browse All Profiles${profile?.gender ? ` (${profile.gender === "Male" ? "Sisters" : "Brothers"})` : ""}`}
+                      title={`All ${profile?.gender ? (profile.gender === "Male" ? "Bride Profiles (Dulhan Proposals)" : "Groom Profiles (Dulha Proposals)") : "Opposite Gender Profiles"}`}
                       profiles={browseList}
                       onView={openView}
                       onSave={handleSave}
