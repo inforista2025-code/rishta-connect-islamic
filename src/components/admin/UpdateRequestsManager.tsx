@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Check, X } from "lucide-react";
+import { Loader2, Check, X, MessageCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function UpdateRequestsManager() {
@@ -43,57 +43,98 @@ export function UpdateRequestsManager() {
     } finally { setActing(null); }
   };
 
+  const handleSendWhatsAppReply = (r: any) => {
+    const rawPhone = r.profile?.whatsapp_number || "";
+    const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+    const memberName = r.profile?.name || "Member";
+    const isSingle = r.field_name?.includes("SINGLE_PROFILE") || r.field_name?.includes("48");
+    const targetInfo = r.current_value || r.requested_value || "Selected Profile";
+
+    let text = "";
+    if (isSingle) {
+      text = `Assalamu Alaikum ${memberName} 🌸,\n\nAapka ₹48 payment single profile unlock (${targetInfo}) ke liye verify ho gaya hai! Complete verified contact details aur photos WhatsApp par send ki ja rahi hain.\n\nJazakAllahu Khair 🤍`;
+    } else {
+      text = `Assalamu Alaikum ${memberName} 🌸,\n\nAapka Premium Plan (₹491) payment verify ho gaya hai! Aapki profile Premium upgrade kar di gayi hai.\n\nJazakAllahu Khair 🤍`;
+    }
+
+    if (cleanPhone) {
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, "_blank");
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   if (!requests.length) return <div className="text-center py-10 text-muted-foreground">No profile update requests.</div>;
 
   return (
     <div className="space-y-4">
       {requests.map((r) => (
-        <Card key={r.id}>
+        <Card key={r.id} className="border-border/80 shadow-xs">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <CardTitle className="text-lg">
-                {r.profile?.name || `Profile #${r.profile_id}`} — {r.field_name}
+                {r.profile?.name || `Profile #${r.profile_id}`} — <span className="text-primary font-bold">{r.field_name}</span>
               </CardTitle>
               <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "secondary"}>
                 {r.status}
               </Badge>
             </div>
-            <CardDescription className="text-xs">
-              {r.profile?.email} · {r.profile?.whatsapp_number} · {new Date(r.created_at).toLocaleString()}
+            <CardDescription className="text-xs flex items-center gap-2 flex-wrap mt-1">
+              <span>📧 {r.profile?.email || "No email"}</span>
+              <span>•</span>
+              <span>📱 {r.profile?.whatsapp_number || "No mobile"}</span>
+              <span>•</span>
+              <span>📅 {new Date(r.created_at).toLocaleString()}</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
-              <div className="rounded border p-3 bg-muted/30">
-                <p className="text-xs text-muted-foreground mb-1">Current</p>
-                <p className="whitespace-pre-wrap">{r.current_value || "—"}</p>
+              <div className="rounded-xl border p-3 bg-muted/30">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Target Profile / Current Value</p>
+                <p className="whitespace-pre-wrap font-medium">{r.current_value || "—"}</p>
               </div>
-              <div className="rounded border p-3 bg-primary/5">
-                <p className="text-xs text-muted-foreground mb-1">Requested</p>
-                <p className="whitespace-pre-wrap">{r.requested_value}</p>
+              <div className="rounded-xl border p-3 bg-primary/5">
+                <p className="text-xs font-semibold text-primary mb-1">Payment Details / Requested</p>
+                <p className="whitespace-pre-wrap font-medium">{r.requested_value}</p>
               </div>
             </div>
-            {r.reason && <div className="text-sm"><span className="text-muted-foreground">Reason:</span> {r.reason}</div>}
-            {r.admin_notes && <div className="text-sm"><span className="text-muted-foreground">Admin notes:</span> {r.admin_notes}</div>}
-            {r.status === "pending" && (
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Optional admin notes"
-                  value={notes[r.id] || ""}
-                  onChange={(e) => setNotes((n) => ({ ...n, [r.id]: e.target.value }))}
-                  rows={2}
-                />
-                <div className="flex gap-2">
-                  <Button onClick={() => act(r.id, "approve")} disabled={acting === r.id}>
-                    {acting === r.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
-                    Approve & Apply
+            {r.reason && <div className="text-xs bg-muted/50 p-2.5 rounded-lg"><span className="font-semibold text-foreground">Reason / UTR:</span> {r.reason}</div>}
+            {r.admin_notes && <div className="text-xs bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-lg text-emerald-800 dark:text-emerald-300"><span className="font-semibold">Admin Notes:</span> {r.admin_notes}</div>}
+            
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              {r.profile?.whatsapp_number && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 border-emerald-600/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white font-semibold text-xs rounded-lg gap-1.5 cursor-pointer"
+                  onClick={() => handleSendWhatsAppReply(r)}
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
+                  <span>Send Confirmation on WhatsApp</span>
+                </Button>
+              )}
+
+              {r.status === "pending" && (
+                <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                  <Button size="sm" onClick={() => act(r.id, "approve")} disabled={acting === r.id} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg gap-1 cursor-pointer">
+                    {acting === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    Approve & Unlock
                   </Button>
-                  <Button variant="destructive" onClick={() => act(r.id, "reject")} disabled={acting === r.id}>
-                    <X className="w-4 h-4 mr-1" />Reject
+                  <Button size="sm" variant="destructive" onClick={() => act(r.id, "reject")} disabled={acting === r.id} className="font-bold text-xs rounded-lg gap-1 cursor-pointer">
+                    <X className="w-3.5 h-3.5" />Reject
                   </Button>
                 </div>
-              </div>
+              )}
+            </div>
+            {r.status === "pending" && (
+              <Textarea
+                placeholder="Optional Admin note (e.g. UTR verified on GPay)..."
+                value={notes[r.id] || ""}
+                onChange={(e) => setNotes((n) => ({ ...n, [r.id]: e.target.value }))}
+                rows={1}
+                className="text-xs mt-2"
+              />
             )}
           </CardContent>
         </Card>
