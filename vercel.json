@@ -17,7 +17,18 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|LinkedInBot|Slackbot|Discordbot).*"
+          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot).*"
+        }
+      ],
+      "destination": "/api/og-profiles"
+    },
+    {
+      "source": "/profiles/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot).*"
         }
       ],
       "destination": "/api/og-profiles"
