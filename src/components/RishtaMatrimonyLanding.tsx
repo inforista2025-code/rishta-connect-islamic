@@ -10,6 +10,7 @@ import { SuccessAndTrustSection } from "./SuccessAndTrustSection";
 import { PremiumSection } from "./PremiumSection";
 import { CommunityLinksSection } from "./CommunityLinksSection";
 import { FAQSection } from "./FAQSection";
+import { NewsletterSection } from "./NewsletterSection";
 import { ContactSection } from "./ContactSection";
 import { Footer } from "./Footer";
 
@@ -60,7 +61,10 @@ export function RishtaMatrimonyLanding() {
       {/* 10. Frequently Asked Questions (FAQ) */}
       <FAQSection />
 
-      {/* 11. Contact Support */}
+      {/* 11. Daily Halal Match Newsletter Subscription */}
+      <NewsletterSection />
+
+      {/* 12. Contact Support */}
       <div ref={contactRef} id="contact">
         <ContactSection />
       </div>

@@ -1,0 +1,3 @@
+# List of unsubscribed email addresses (one email per line).
+# Example:
+# user@example.com
