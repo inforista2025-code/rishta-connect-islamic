@@ -65,7 +65,7 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="relative py-14 sm:py-20 overflow-hidden bg-gradient-to-b from-[#1F0A13] via-[#2A0F1A] to-[#1F0A13] text-white border-y border-pink-900/40">
+    <section className="relative pt-14 sm:pt-20 pb-8 sm:pb-12 overflow-hidden bg-gradient-to-b from-[#1F0A13] via-[#2A0F1A] to-[#1F0A13] text-white border-t border-pink-900/40">
       {/* Decorative Glow */}
       <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500 via-rose-600 to-transparent blur-3xl" />
 

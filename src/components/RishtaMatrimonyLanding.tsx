@@ -61,15 +61,15 @@ export function RishtaMatrimonyLanding() {
       {/* 10. Frequently Asked Questions (FAQ) */}
       <FAQSection />
 
-      {/* 11. Daily Halal Match Newsletter Subscription */}
-      <NewsletterSection />
-
-      {/* 12. Contact Support */}
+      {/* 11. Contact Support */}
       <div ref={contactRef} id="contact">
         <ContactSection />
       </div>
 
-      {/* 12. Footer */}
+      {/* 12. Daily Halal Match Newsletter Subscription */}
+      <NewsletterSection />
+
+      {/* 13. Footer */}
       <Footer />
     </div>
   );
