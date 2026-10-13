@@ -366,16 +366,24 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
   const maleCount = liveProfiles.filter((p) => (p.gender || "").toLowerCase() === "male").length;
   const femaleCount = liveProfiles.filter((p) => (p.gender || "").toLowerCase() === "female").length;
 
-  // Process Registered Members
-  const registeredEmailMap = new Map<string, ProfileRecord>();
+  // 1. Separate profiles into Verified Live Members vs Pending/Unverified Registrations
+  const verifiedMembersMap = new Map<string, ProfileRecord>();
+  const pendingMembersMap = new Map<string, ProfileRecord>();
+
   for (const p of allProfiles) {
     const email = (p.email || "").trim().toLowerCase();
-    if (email && email.includes("@")) {
-      registeredEmailMap.set(email, p);
+    if (!email || !email.includes("@")) continue;
+
+    const isVerified = (p.verification_status || "").toLowerCase() === "verified" && p.is_live === true;
+    if (isVerified) {
+      verifiedMembersMap.set(email, p);
+    } else {
+      pendingMembersMap.set(email, p);
     }
   }
 
-  for (const [email, member] of registeredEmailMap.entries()) {
+  // 2. Verified Members: Receive personalized matching digest + ₹48 single unlock & ₹491 plan incentives
+  for (const [email, member] of verifiedMembersMap.entries()) {
     if (seenEmails.has(email)) continue;
     seenEmails.add(email);
 
@@ -412,7 +420,21 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
     });
   }
 
-  // Process Newsletter-Only Subscribers (visitors who haven't registered)
+  // 3. Pending/Unverified Profiles: per requirements, receive visitor newsletter until approved/verified by admin
+  for (const [email, pendingProfile] of pendingMembersMap.entries()) {
+    if (seenEmails.has(email)) continue;
+    seenEmails.add(email);
+
+    recipients.push({
+      type: "visitor",
+      email,
+      name: pendingProfile.name || "Valued Member",
+      subject: `🌸 Find Your Righteous Partner – ${maleCount + femaleCount}+ Verified Profiles on Rishta Matrimony`,
+      html: buildVisitorNewsletterHtml(maleCount, femaleCount, email),
+    });
+  }
+
+  // 4. Newsletter Subscribers: visitors who haven't registered or verified yet
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers?select=email&status=eq.active`, {
       headers: {

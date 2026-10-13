@@ -345,14 +345,21 @@ def fetch_recipients():
     male_count = sum(1 for p in live_profiles if (p.get("gender") or "").lower() == "male")
     female_count = sum(1 for p in live_profiles if (p.get("gender") or "").lower() == "female")
 
-    # Registered Profiles
-    registered_map = {}
+    # 1. Separate profiles into Verified Live Members vs Pending/Unverified Registrations
+    verified_map = {}
+    pending_map = {}
     for p in all_profiles:
         email = (p.get("email") or "").strip().lower()
-        if email and "@" in email:
-            registered_map[email] = p
+        if not email or "@" not in email:
+            continue
+        is_verified = (p.get("verification_status") or "").lower() == "verified" and p.get("is_live") is True
+        if is_verified:
+            verified_map[email] = p
+        else:
+            pending_map[email] = p
 
-    for email, member in registered_map.items():
+    # 2. Verified Members: Receive personalized matching digest + ₹48 single unlock & ₹491 plan incentives
+    for email, member in verified_map.items():
         if email in seen or email in unsubscribed:
             continue
         seen.add(email)
@@ -377,6 +384,20 @@ def fetch_recipients():
             "name": member.get("name") or "Member",
             "subject": subject,
             "html": html
+        })
+
+    # 3. Pending/Unverified Profiles: receive visitor newsletter until approved/verified by admin
+    for email, pending_profile in pending_map.items():
+        if email in seen or email in unsubscribed:
+            continue
+        seen.add(email)
+
+        recipients.append({
+            "type": "visitor",
+            "email": email,
+            "name": pending_profile.get("name") or "Valued Member",
+            "subject": f"🌸 Find Your Righteous Partner – {male_count + female_count}+ Verified Profiles on Rishta Matrimony",
+            "html": build_visitor_newsletter_html(male_count, female_count, email)
         })
 
     # Newsletter Subscribers (visitors)
