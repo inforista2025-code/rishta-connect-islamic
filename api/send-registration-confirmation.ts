@@ -76,15 +76,15 @@ function buildUserEmailHtml(fullName: string, whatsappNumber: string, city: stri
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; margin: 25px 0;">
                 <tr>
                   <td style="padding: 22px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                      <span style="font-size: 20px; margin-right: 8px;">📲</span>
-                      <strong style="color: #15803d; font-size: 16px;">अगला कदम: WhatsApp वेरिफिकेशन (Next Step)</strong>
+                    <div style="margin-bottom: 10px;">
+                      <span style="font-size: 20px; vertical-align: middle; margin-right: 6px;">📲</span>
+                      <strong style="color: #15803d; font-size: 16px; vertical-align: middle;">Next Step: WhatsApp Profile Verification</strong>
                     </div>
-                    <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.7; color: #166534;">
-                      हमारी टीम बहुत जल्द आपके व्हाट्सएप नंबर <strong>${whatsappNumber ? `(+91 ${whatsappNumber})` : "पर"}</strong> संपर्क करेगी ताकि आपकी प्रोफाइल और बायोडेटा की पुष्टि (Verification) की जा सके।
+                    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #166534;">
+                      Our team will reach out to you shortly on your registered WhatsApp number ${whatsappNumber ? `(<strong>+91 ${whatsappNumber}</strong>)` : ""} to verify your biodata details and complete your profile approval.
                     </p>
-                    <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: #15803d;">
-                      <em>Our team will contact you on WhatsApp shortly for profile verification. Once verified, your profile will become active for matching.</em>
+                    <p style="margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: #15803d;">
+                      Once verified, your profile will be activated on the platform so you can explore and connect with compatible matches.
                     </p>
                   </td>
                 </tr>
@@ -95,7 +95,7 @@ function buildUserEmailHtml(fullName: string, whatsappNumber: string, city: stri
                 <tr>
                   <td style="padding: 15px 18px;">
                     <div style="color: #9d174d; font-size: 13px; line-height: 1.6;">
-                      🔒 <strong>100% प्राइवेसी सुरक्षा:</strong> आपकी फोटो, बायोडेटा और संपर्क विवरण इस्लामिक प्राइवेसी मानकों के अनुसार पूरी तरह सुरक्षित हैं।
+                      🔒 <strong>100% Privacy & Data Protection:</strong> Your personal biodata, photographs, and contact information are strictly protected in accordance with authentic Islamic modesty and privacy guidelines.
                     </div>
                   </td>
                 </tr>
