@@ -8,6 +8,13 @@
       "when": 1791849537637,
       "tag": "0000_create_newsletter_subscribers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791881072909,
+      "tag": "0001_allow_anon_select_newsletter_subscribers",
+      "breakpoints": true
     }
   ]
 }
