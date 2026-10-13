@@ -3,6 +3,7 @@ import sys
 import ssl
 import json
 import smtplib
+import time
 import urllib.request
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -187,6 +188,9 @@ def send_newsletter(is_live=False):
                 server.sendmail(SENDER_EMAIL, recipient["email"], msg.as_string())
                 success_count += 1
                 print(f"Sent successfully to: {recipient['email']}")
+                
+                # Human-like delay between emails to protect sender reputation and avoid spam flags
+                time.sleep(2.5)
             except Exception as e:
                 print(f"Failed to send to {recipient['email']}: {e}")
 

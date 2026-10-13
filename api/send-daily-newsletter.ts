@@ -1,6 +1,9 @@
 import nodemailer from "nodemailer";
 
-const SENDER_EMAIL = process.env.SMTP_EMAIL || "info.rista2025@gmail.com";
+// Vercel serverless function max execution time (in seconds)
+export const maxDuration = 60;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const APP_PASSWORD = process.env.SMTP_APP_PASSWORD || "oeoysisyrjvvrwyy";
 const ADMIN_EMAIL = "info.rista2025@gmail.com";
 
@@ -167,22 +170,41 @@ export default async function handler(req: any, res: any) {
 
     let successCount = 0;
     const errors: string[] = [];
+    const startTime = Date.now();
 
-    // Send emails
-    for (const sub of subscribers) {
-      try {
-        await transporter.sendMail({
-          from: `Rishta Matrimony <${SENDER_EMAIL}>`,
-          to: sub.email,
-          subject: "🌟 Rishta Matrimony – Daily Matches & Community Updates",
-          html: buildNewsletterHtml(sub.name, sub.email),
-          headers: {
-            "List-Unsubscribe": `<mailto:${SENDER_EMAIL}?subject=Unsubscribe>`,
-          },
-        });
-        successCount++;
-      } catch (err: any) {
-        errors.push(`${sub.email}: ${err.message}`);
+    // Paced sending: batches of 2 with a 2-second delay between them
+    // This provides human-like sending cadence to prevent Gmail spam detection
+    // while comfortably finishing all recipients within Vercel's serverless timeout window.
+    for (let i = 0; i < subscribers.length; i += 2) {
+      // Timeout safeguard: gracefully wrap up and report if nearing 52 seconds
+      if (Date.now() - startTime > 52000) {
+        console.warn(`[Cron Dispatcher] Approaching Vercel execution threshold at recipient ${i}/${subscribers.length}. Wrapping up.`);
+        break;
+      }
+
+      const batch = subscribers.slice(i, i + 2);
+      await Promise.allSettled(
+        batch.map(async (sub) => {
+          try {
+            await transporter.sendMail({
+              from: `Rishta Matrimony <${SENDER_EMAIL}>`,
+              to: sub.email,
+              subject: "🌟 Rishta Matrimony – Daily Matches & Community Updates",
+              html: buildNewsletterHtml(sub.name, sub.email),
+              headers: {
+                "List-Unsubscribe": `<mailto:${SENDER_EMAIL}?subject=Unsubscribe>`,
+              },
+            });
+            successCount++;
+          } catch (err: any) {
+            errors.push(`${sub.email}: ${err.message}`);
+          }
+        })
+      );
+
+      // 2-second delay between outgoing batches
+      if (i + 2 < subscribers.length) {
+        await sleep(2000);
       }
     }
 
