@@ -147,7 +147,21 @@ export function RegistrationForm() {
 
   const sendRegistrationEmails = async (data: RegistrationData) => {
     try {
-      const { error } = await supabase.functions.invoke('send-registration-emails', {
+      // 1. Send instant user confirmation email + admin alert via Gmail SMTP
+      fetch('/api/send-registration-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: data.fullName,
+          email: data.email,
+          gender: data.gender,
+          city: data.residenceLocation,
+          whatsapp_number: data.whatsappNumber,
+        }),
+      }).catch((err) => console.warn('Instant user email note:', err));
+
+      // 2. Also call Supabase background function as backup
+      await supabase.functions.invoke('send-registration-emails', {
         body: {
           type: 'registration',
           full_name: data.fullName,
@@ -157,9 +171,6 @@ export function RegistrationForm() {
           whatsapp_number: data.whatsappNumber,
         },
       });
-      if (error) {
-        console.warn('Email sending failed (non-blocking):', error);
-      }
     } catch (err) {
       console.warn('Email sending failed (non-blocking):', err);
     }
