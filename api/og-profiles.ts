@@ -70,7 +70,7 @@ export default async function handler(req: any, res: any) {
     window.location.replace("${targetUrl}");
   </script>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f7f5f0; color: #1f4037; text-align: center; padding: 50px 20px;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fdf2f6; color: #880e4f; text-align: center; padding: 50px 20px;">
   <h2>Opening Rishta Matrimony...</h2>
   <p>${title}</p>
   <p><a href="${targetUrl}" style="color: #2c7a7b; font-weight: bold; text-decoration: underline;">Click here if not redirected automatically.</a></p>
