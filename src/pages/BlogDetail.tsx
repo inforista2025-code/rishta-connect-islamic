@@ -91,7 +91,7 @@ export default function BlogDetail() {
     translateContent(lang);
   };
 
-  const defaultImage = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=600&fit=crop';
+  const defaultImage = 'https://rishtamatrimony.vercel.app/og-image.jpg';
 
   if (isLoading) {
     return (
