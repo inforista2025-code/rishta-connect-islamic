@@ -1,7 +1,8 @@
 # Project Roadmap
 
-- [ ] Update only the profile share image using the supplied couple/logo reference; retain website share image.
-- [ ] Check and correct profile-link previews for Telegram and other supported social platforms; explain Instagram limitations.
+- [x] Update only the profile share image using the supplied couple/logo reference; retain website share image.
+- [x] Correct and test profile-link metadata for Telegram and supported social crawlers; Instagram display remains platform-controlled.
+- [ ] Deploy updated profile image and preview changes to Vercel. Blocker: Vercel authorization or user-connected GitHub auto-deploy is required; Telegram/Instagram in-app display cannot be confirmed before deployment.
 
 - [x] Replace old phone number +91 7672933587 with +91 9128719875 everywhere in the project.
 - [x] Make mobile footer 20% more compact on all pages except member login.
