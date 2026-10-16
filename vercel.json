@@ -17,7 +17,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot|Applebot|iMessage|Pinterestbot).*"
+          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot|Applebot|iMessage|Pinterestbot|Instagram|meta-externalagent|meta-externalfetcher|Snapchat|vkShare).*"
         }
       ],
       "destination": "/api/og-profiles"
@@ -28,10 +28,10 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot|Applebot|iMessage|Pinterestbot).*"
+          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|facebot|Twitterbot|twitterbot|TelegramBot|telegrambot|LinkedInBot|linkedinbot|Slackbot|Discordbot|Applebot|iMessage|Pinterestbot|Instagram|meta-externalagent|meta-externalfetcher|Snapchat|vkShare).*"
         }
       ],
-      "destination": "/api/og-profiles"
+      "destination": "/api/og-profiles?id=$1"
     },
     {
       "source": "/api/(.*)",

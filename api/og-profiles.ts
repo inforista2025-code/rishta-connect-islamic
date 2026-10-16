@@ -1,17 +1,24 @@
 const SUPABASE_URL = "https://rxlzlkcdszulyetcxxih.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bHpsa2Nkc3p1bHlldGN4eGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2OTAzODIsImV4cCI6MjA3NTI2NjM4Mn0.PXcKNOiJlQr_BSqPZKIGTQYKK-e6Y5obVg7WPJm17hM";
 
-export default async function handler(req: any, res: any) {
-  const profileId = req.query?.id;
+export function getShareUrls(profileId: unknown) {
   const siteUrl = "https://rishtamatrimony.vercel.app";
+  const id = typeof profileId === "string" && /^\d+$/.test(profileId) ? profileId : undefined;
+  return {
+    profileId: id,
+    targetUrl: id ? `${siteUrl}/profiles?id=${encodeURIComponent(id)}` : `${siteUrl}/profiles`,
+    ogImage: id ? `${siteUrl}/og-profile.jpg?v=20261016` : `${siteUrl}/og-image.jpg`,
+  };
+}
+
+export default async function handler(req: any, res: any) {
+  const { profileId, targetUrl, ogImage } = getShareUrls(req.query?.id);
+  const isCrawler = /bot|crawler|spider|whatsapp|facebookexternalhit|facebot|iMessage|Instagram|meta-external|Pinterest|Snapchat/i.test(req.headers?.["user-agent"] || "");
 
   let title = "Rishta Matrimony - 100% Halal Islamic Marriage Community";
   let description = "Join our Muslim Matrimony community to connect with verified profiles. Connecting Muslim hearts with authentic Islamic values.";
-  let ogImage = `${siteUrl}/og-image.jpg`;
-  let targetUrl = `${siteUrl}/profiles`;
 
   if (profileId) {
-    targetUrl = `${siteUrl}/profiles?id=${profileId}`;
     try {
       const resp = await fetch(`${SUPABASE_URL}/rest/v1/profiles_data?id=eq.${profileId}&select=id,name,gender,verification_status,is_live`, {
         headers: {
@@ -28,7 +35,6 @@ export default async function handler(req: any, res: any) {
 
           title = `Rishta Matrimony - Verified Profile: ${candidateName}`;
           description = `100% Verified Profile on Rishta Matrimony. Connecting Muslim hearts with authentic Islamic values and complete family privacy.`;
-          ogImage = `${siteUrl}/og-profile.jpg`;
         }
       }
     } catch (e) {
@@ -36,6 +42,8 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  // Profile names are data, never executable HTML.
+  title = title.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char] || char));
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,10 +73,10 @@ export default async function handler(req: any, res: any) {
   <meta name="twitter:image" content="${ogImage}" />
 
   <!-- Instant Browser Redirect -->
-  <meta http-equiv="refresh" content="0; url=${targetUrl}" />
+  ${isCrawler ? "" : `<meta http-equiv="refresh" content="0; url=${targetUrl}" />
   <script>
     window.location.replace("${targetUrl}");
-  </script>
+  </script>`}
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fdf2f6; color: #880e4f; text-align: center; padding: 50px 20px;">
   <h2>Opening Rishta Matrimony...</h2>
@@ -78,6 +86,7 @@ export default async function handler(req: any, res: any) {
 </html>`;
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Vary", "User-Agent");
   res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
   return res.status(200).send(html);
 }
