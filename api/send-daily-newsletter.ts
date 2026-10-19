@@ -30,8 +30,12 @@ interface ProfileRecord {
   location?: string;
   profession?: string;
   education?: string;
+  caste?: string;
+  maslak?: string;
   email?: string | null;
   is_live?: boolean;
+  verification_status?: string;
+  created_at?: string;
 }
 
 interface NewsletterRecipient {
@@ -42,15 +46,117 @@ interface NewsletterRecipient {
   html: string;
 }
 
-function buildVisitorNewsletterHtml(maleCount: number, femaleCount: number, recipientEmail: string): string {
+function getISTDayOfWeek(): number {
+  // Indian Standard Time is UTC + 5:30
+  const nowIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  return nowIST.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+}
+
+function buildVisitorNewsletterHtml(
+  maleCount: number,
+  femaleCount: number,
+  recipientEmail: string,
+  dayOfWeek: number
+): { subject: string; html: string } {
   const unsubMailto = `mailto:${SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipientEmail}`;
   const totalCount = maleCount + femaleCount;
 
-  return `<!DOCTYPE html>
+  // 7-Day Rotating Configurations for Newsletter Visitors
+  const dailyThemes: Record<
+    number,
+    {
+      subject: string;
+      badge: string;
+      headline: string;
+      introParagraph: string;
+      highlightBoxTitle: string;
+      highlightBoxBody: string;
+    }
+  > = {
+    0: {
+      // Sunday
+      subject: "🌟 Candidates Added This Week: Take a Sneak Peek on Rishta Matrimony",
+      badge: "Weekend Roundup",
+      headline: "Meet New Verified Candidates Added This Week",
+      introParagraph:
+        "Every single week, dozens of serious and verified Muslim candidates join Rishta Matrimony to complete half their deen. Here is your weekly community highlight.",
+      highlightBoxTitle: `🌟 Active Community: ${totalCount}+ Verified Candidates`,
+      highlightBoxBody: `With <strong>${maleCount}+ verified grooms</strong> and <strong>${femaleCount}+ verified brides</strong> currently active on our platform, families across India are finding compatible proposals every day.`,
+    },
+    1: {
+      // Monday
+      subject: "⚡ Find Your Righteous Partner: Register in Under 2 Minutes (100% Free)",
+      badge: "Fresh Week Start",
+      headline: "Start Your Matrimonial Journey in Under 2 Minutes",
+      introParagraph:
+        "Don't delay completing half your deen. Creating your matrimonial profile on Rishta Matrimony is completely free, straightforward, and takes less than 2 minutes.",
+      highlightBoxTitle: "⚡ Fast, Free & Frictionless Registration",
+      highlightBoxBody:
+        "No complex paperwork or hidden charges. Simply provide your basic biodata and partner preferences, and our team will get your profile verified quickly.",
+    },
+    2: {
+      // Tuesday
+      subject: "🛡️ 100% Modest & Privacy-Protected: How Rishta Matrimony Protects You",
+      badge: "Privacy Guarantee",
+      headline: "Your Family's Privacy & Modesty Always Comes First",
+      introParagraph:
+        "In authentic Islamic matchmaking, modesty (haya) and privacy are sacred. Unlike casual dating or open social apps, Rishta Matrimony safeguards every detail.",
+      highlightBoxTitle: "🔒 Four Pillars of Privacy & Security",
+      highlightBoxBody:
+        "• Photos are protected and not publicly broadcast.<br/>• Personal phone numbers are never shared without verification.<br/>• Zero Google indexing — profiles remain private.<br/>• Direct family & wali involvement.",
+    },
+    3: {
+      // Wednesday
+      subject: `📊 ${totalCount}+ Verified Grooms & Brides Awaiting Righteous Matches – Rishta Matrimony`,
+      badge: "Community Growth",
+      headline: "A Growing Community of Serious Muslim Families",
+      introParagraph:
+        "Finding a compatible life partner requires genuine, verified options. Our verified network connects families across various professions, education levels, and regions.",
+      highlightBoxTitle: `📊 Live Community Numbers: ${totalCount}+ Profiles`,
+      highlightBoxBody: `Currently hosting <strong>${maleCount}+ Verified Grooms</strong> and <strong>${femaleCount}+ Verified Brides</strong>, verified personally by our administrative team.`,
+    },
+    4: {
+      // Thursday
+      subject: "📲 Zero Fake Profiles: Personally Verified by Admin on WhatsApp – Rishta Matrimony",
+      badge: "Verified Trust",
+      headline: "Authentic Connections: Every Profile Personally Verified",
+      introParagraph:
+        "Tired of duplicate or inactive profiles on other websites? Rishta Matrimony enforces a strict manual verification policy before any biodata goes live.",
+      highlightBoxTitle: "✓ Personal WhatsApp Verification Process",
+      highlightBoxBody:
+        "Our administrative team reaches out directly on WhatsApp to verify identity, biodata details, and partner expectations. Need help filling your form? Our helpline is available at <strong>+91 9128719875</strong>.",
+    },
+    5: {
+      // Friday
+      subject: "🕌 Jumu'ah Reflection: The Sacred Virtues of Nikah in Islam",
+      badge: "Jumu'ah Mubarak",
+      headline: "The Noble Sunnah of Completing Half Your Deen",
+      introParagraph:
+        "On this blessed day of Jumu'ah, take a mindful step towards fulfilling the Prophet's ﷺ noble guidance on marriage, modesty, and righteous partnership.",
+      highlightBoxTitle: "📖 Hadith on the Sanctity of Marriage",
+      highlightBoxBody:
+        "<em>\"When a person marries, they have completed half of their religion, so let them fear Allah regarding the remaining half.\"</em> [Al-Bayhaqi]<br/><br/>May Allah SWT bless your noble intentions and grant you a righteous life partner.",
+    },
+    6: {
+      // Saturday
+      subject: "💡 Tired of Traditional Marriage Brokers? Discover Transparent Matchmaking",
+      badge: "Modern & Transparent",
+      headline: "Dignified, Modern & Transparent Islamic Matchmaking",
+      introParagraph:
+        "Traditional matchmakers often involve high brokerage fees, long delays, and unclear details. Rishta Matrimony brings transparency, dignity, and direct family access.",
+      highlightBoxTitle: "🌟 The Rishta Matrimony Advantage",
+      highlightBoxBody:
+        "• Direct guardian & family contact access.<br/>• Transparent, affordable plans (starting at just ₹48).<br/>• Self-paced search tailored to your age, education, and maslak.",
+    },
+  };
+
+  const currentTheme = dailyThemes[dayOfWeek] || dailyThemes[1];
+
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Complete Half Your Deen – Rishta Matrimony</title>
+  <title>${currentTheme.headline} – Rishta Matrimony</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f7f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f5f0; padding: 30px 10px;">
@@ -70,62 +176,43 @@ function buildVisitorNewsletterHtml(maleCount: number, femaleCount: number, reci
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px;">Assalamu Alaikum wa Rahmatullah,</h2>
+              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
+                ${currentTheme.badge}
+              </div>
+
+              <h2 style="margin-top: 0; color: #1f4037; font-size: 22px; line-height: 1.3;">${currentTheme.headline}</h2>
               <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
-                Are you or your family looking for a righteous, compatible life partner? Take the noble step of <strong>completing half your deen</strong> on <strong>Rishta Matrimony</strong> — India's trusted platform for authentic Islamic matchmaking.
+                ${currentTheme.introParagraph}
               </p>
 
-              <!-- Live Community Stats Box -->
+              <!-- Daily Thematic Highlight Box -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1.5px solid #86efac; border-radius: 10px; margin: 25px 0;">
                 <tr>
                   <td style="padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 14px;">
-                      <span style="font-size: 22px;">🌟</span>
-                      <strong style="color: #166534; font-size: 16px; display: block; margin-top: 4px;">Live Verified Community (${totalCount}+ Profiles)</strong>
+                    <strong style="color: #166534; font-size: 16px; display: block; margin-bottom: 8px;">${currentTheme.highlightBoxTitle}</strong>
+                    <div style="font-size: 14px; line-height: 1.7; color: #15803d;">
+                      ${currentTheme.highlightBoxBody}
                     </div>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
-                          <div style="font-size: 22px; font-weight: 800; color: #15803d;">${maleCount}+</div>
-                          <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Grooms</div>
-                        </td>
-                        <td width="10"></td>
-                        <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
-                          <div style="font-size: 22px; font-weight: 800; color: #15803d;">${femaleCount}+</div>
-                          <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Brides</div>
-                        </td>
-                      </tr>
-                    </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- Islamic Trust & Privacy Pillars -->
-              <h3 style="color: #1f4037; font-size: 16px; margin: 25px 0 12px;">Why Families Trust Rishta Matrimony:</h3>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <!-- Community Counts Overview -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
                 <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    🛡️ <strong>100% Modest & Halal:</strong> Governed strictly by authentic Islamic values and family involvement. No casual dating or unsolicited messaging.
+                  <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <div style="font-size: 22px; font-weight: 800; color: #15803d;">${maleCount}+</div>
+                    <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Grooms</div>
                   </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    🔒 <strong>Strict Privacy Protection:</strong> Photographs and personal contact details are completely safeguarded and never exposed to search engines.
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    ✓ <strong>WhatsApp Admin Verification:</strong> Every single profile is manually verified on WhatsApp by our team before activation — zero fake accounts.
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    ⚡ <strong>Quick & 100% Free:</strong> Creating your matrimonial profile is completely free and takes less than 2 minutes.
+                  <td width="10"></td>
+                  <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <div style="font-size: 22px; font-weight: 800; color: #15803d;">${femaleCount}+</div>
+                    <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Brides</div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Primary CTA -->
+              <!-- Primary Call To Action -->
               <div style="text-align: center; margin: 35px 0 25px;">
                 <a href="https://rishtamatrimony.vercel.app/register" style="background: linear-gradient(135deg, #1f4037, #2c7a7b); color: #ffffff; text-decoration: none; padding: 15px 36px; font-size: 15px; font-weight: 700; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(31, 64, 55, 0.3);">
                   Register Your Matrimonial Profile (Free) →
@@ -135,8 +222,8 @@ function buildVisitorNewsletterHtml(maleCount: number, femaleCount: number, reci
               <!-- Assistance Note -->
               <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px 18px; text-align: center; margin-top: 25px;">
                 <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">
-                  💬 <strong>Need help filling your biodata?</strong><br/>
-                  Our matrimonial support team is available on WhatsApp to assist you: <strong>+91 9128719875</strong>
+                  💬 <strong>Need help creating your biodata?</strong><br/>
+                  Our support team is available on WhatsApp to assist you or your family: <strong>+91 9128719875</strong>
                 </p>
               </div>
 
@@ -167,14 +254,114 @@ function buildVisitorNewsletterHtml(maleCount: number, femaleCount: number, reci
   </table>
 </body>
 </html>`;
+
+  return { subject: currentTheme.subject, html };
 }
 
-function buildMemberDigestHtml(member: ProfileRecord, matches: ProfileRecord[], recipientEmail: string): string {
+function buildMemberDigestHtml(
+  member: ProfileRecord,
+  matches: ProfileRecord[],
+  recipientEmail: string,
+  dayOfWeek: number
+): { subject: string; html: string } {
   const unsubMailto = `mailto:${SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipientEmail}`;
   const userName = member.name || "Respected Member";
   const userGender = (member.gender || "male").toLowerCase();
   const targetGenderLabel = userGender === "male" ? "Bride" : "Groom";
   const location = member.location || "Your Region";
+
+  // 7-Day Rotating Configurations for Verified Members
+  const dailyMemberThemes: Record<
+    number,
+    {
+      subject: string;
+      badge: string;
+      headline: string;
+      introNote: string;
+      tipTitle: string;
+      tipBody: string;
+    }
+  > = {
+    0: {
+      // Sunday
+      subject: `💎 Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony`,
+      badge: "Sunday Spotlight: Direct Connect",
+      headline: "Connect Directly with Your Chosen Proposals Today",
+      introNote:
+        "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
+      tipTitle: "💎 Fast-Track Your Matrimonial Search",
+      tipBody:
+        "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership.",
+    },
+    1: {
+      // Monday
+      subject: `📍 New Verified Matches in ${location} – Start Your Week with Rishta Matrimony`,
+      badge: "Regional & Local Focus",
+      headline: `Top Recommended ${targetGenderLabel} Proposals in ${location} & Nearby`,
+      introNote:
+        `Start your week by exploring compatible proposals located in or around <strong>${location}</strong>. Local connections make family meetings and background verification seamless.`,
+      tipTitle: "📍 The Power of Regional Compatibility",
+      tipBody:
+        "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families.",
+    },
+    2: {
+      // Tuesday
+      subject: `🎓 Top Qualified Matches: Engineers, Doctors & Graduates on Rishta Matrimony`,
+      badge: "Education & Career Spotlight",
+      headline: `Highly Educated & Professional ${targetGenderLabel} Candidates`,
+      introNote:
+        "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds.",
+      tipTitle: "🎓 Academic & Professional Profiles",
+      tipBody:
+        "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners.",
+    },
+    3: {
+      // Wednesday
+      subject: `⭐ Who Viewed Your Profile? Active Members Receive 3x More Inquiries – Rishta Matrimony`,
+      badge: "Profile Health & Visibility",
+      headline: "Boost Your Profile Rank & Check Profile Views",
+      introNote:
+        "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
+      tipTitle: "⭐ Activity Boost Guarantee",
+      tipBody:
+        "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals.",
+    },
+    4: {
+      // Thursday
+      subject: `✨ Just Verified: Meet the Newest Candidates Added on Rishta Matrimony`,
+      badge: "Newest Weekly Arrivals",
+      headline: `Newly Verified ${targetGenderLabel} Profiles Added This Week`,
+      introNote:
+        "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
+      tipTitle: "✨ Fresh Proposals Every Week",
+      tipBody:
+        "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families.",
+    },
+    5: {
+      // Friday
+      subject: `🕌 Jumu'ah Mubarak ${userName} – Take a Blessed Step Towards Nikah`,
+      badge: "Jumu'ah Mubarak",
+      headline: "A Blessed Day to Advance Your Noble Intentions of Nikah",
+      introNote:
+        `Assalamu Alaikum ${userName}. On this blessed Jumu'ah, we present curated, modest <strong>${targetGenderLabel} proposals</strong> upholding authentic Islamic principles.`,
+      tipTitle: "📖 Islamic Principle of Compatibility",
+      tipBody:
+        "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]",
+    },
+    6: {
+      // Saturday
+      subject: `👨‍👩‍👦 Weekend Rishta Review: Curated Matches for You and Your Family – Rishta Matrimony`,
+      badge: "Weekend Family Digest",
+      headline: "Review Compatible Proposals with Your Family Today",
+      introNote:
+        "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
+      tipTitle: "👨‍👩‍👦 Family Consultation (Mashwarah)",
+      tipBody:
+        "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision.",
+    },
+  };
+
+  const currentTheme = dailyMemberThemes[dayOfWeek] || dailyMemberThemes[1];
 
   let matchCardsHtml = "";
   for (const m of matches) {
@@ -217,11 +404,11 @@ function buildMemberDigestHtml(member: ProfileRecord, matches: ProfileRecord[], 
     </table>`;
   }
 
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Your Personalized Daily Matches – Rishta Matrimony</title>
+  <title>${currentTheme.headline} – Rishta Matrimony</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f7f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f5f0; padding: 30px 10px;">
@@ -241,15 +428,19 @@ function buildMemberDigestHtml(member: ProfileRecord, matches: ProfileRecord[], 
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px;">Assalamu Alaikum ${userName},</h2>
+              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
+                ${currentTheme.badge}
+              </div>
+
+              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px; line-height: 1.3;">${currentTheme.headline}</h2>
               <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
-                Here are your latest verified <strong>${targetGenderLabel} proposals</strong> recommended specifically for your preferences and region (<strong>${location}</strong>):
+                ${currentTheme.introNote}
               </p>
 
               <!-- Recommended Matches -->
               <div style="margin: 25px 0 15px;">
                 <h3 style="margin: 0 0 14px; font-size: 16px; color: #166534;">
-                  🎯 Top Recommended ${targetGenderLabel} Matches For You:
+                  🎯 Top Curated ${targetGenderLabel} Matches:
                 </h3>
                 ${matchCardsHtml}
               </div>
@@ -297,11 +488,11 @@ function buildMemberDigestHtml(member: ProfileRecord, matches: ProfileRecord[], 
                 </tr>
               </table>
 
-              <!-- Active Profile Tip (Why Log In Regularly) -->
+              <!-- Dynamic Daily Tip -->
               <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px; margin: 25px 0 15px;">
-                <strong style="color: #92400e; font-size: 14px;">💡 Increase Your Proposal Inquiries:</strong>
+                <strong style="color: #92400e; font-size: 14px;">💡 ${currentTheme.tipTitle}:</strong>
                 <p style="margin: 6px 0 0; font-size: 13px; color: #78350f; line-height: 1.6;">
-                  Profiles that log in regularly are featured higher in daily searches and receive <strong>3x more views and proposals</strong> from interested families. Log in today to check if new families have viewed or shortlisted your profile!
+                  ${currentTheme.tipBody}
                 </p>
               </div>
 
@@ -339,21 +530,27 @@ function buildMemberDigestHtml(member: ProfileRecord, matches: ProfileRecord[], 
   </table>
 </body>
 </html>`;
+
+  return { subject: currentTheme.subject, html };
 }
 
 async function fetchRecipients(): Promise<NewsletterRecipient[]> {
   const recipients: NewsletterRecipient[] = [];
   const seenEmails = new Set<string>();
+  const dayOfWeek = getISTDayOfWeek();
 
   // Fetch all profiles
   let allProfiles: ProfileRecord[] = [];
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,email,is_live,verification_status`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    });
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+      }
+    );
     if (res.ok) {
       allProfiles = await res.json();
     }
@@ -382,7 +579,7 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
     }
   }
 
-  // 2. Verified Members: Receive personalized matching digest + ₹48 single unlock & ₹491 plan incentives
+  // 2. Verified Members: Receive personalized matching digest + 7-day dynamic rotation
   for (const [email, member] of verifiedMembersMap.entries()) {
     if (seenEmails.has(email)) continue;
     seenEmails.add(email);
@@ -393,7 +590,7 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
       (c) => (c.gender || "").toLowerCase() === targetGender && c.id !== member.id
     );
 
-    // Location matching
+    // Extract Location Tokens
     const memberLoc = (member.location || "").toLowerCase().replace(/,/g, " ");
     const locTokens = memberLoc
       .split(/\s+/)
@@ -404,33 +601,61 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
       return locTokens.some((tok) => cLoc.includes(tok));
     });
 
-    const otherMatches = candidates.filter((c) => !regionalMatches.includes(c));
-    const selectedMatches = [...regionalMatches, ...otherMatches].slice(0, 3);
+    // Education / Profession Matches (High Qualification Spotlight)
+    const educationKeywords = ["doctor", "engineer", "mbbs", "md", "b.tech", "m.tech", "mba", "professor", "teacher", "ca", "software", "graduate"];
+    const educationMatches = candidates.filter((c) => {
+      const edu = (c.education || "").toLowerCase();
+      const prof = (c.profession || "").toLowerCase();
+      return educationKeywords.some((k) => edu.includes(k) || prof.includes(k));
+    });
 
-    const subject = regionalMatches.length > 0
-      ? `✨ New Verified Matches in ${member.location || "Your Region"} – Rishta Matrimony`
-      : `✨ Recommended Verified Matches For You – Rishta Matrimony`;
+    // Newest profiles (Sort by ID desc)
+    const newestMatches = [...candidates].sort((a, b) => b.id - a.id);
+
+    // Dynamic Matching Sorting based on Day of Week:
+    let selectedMatches: ProfileRecord[] = [];
+    if (dayOfWeek === 1 && regionalMatches.length > 0) {
+      // Monday: Regional priority
+      const other = candidates.filter((c) => !regionalMatches.includes(c));
+      selectedMatches = [...regionalMatches, ...other].slice(0, 3);
+    } else if (dayOfWeek === 2 && educationMatches.length > 0) {
+      // Tuesday: High Qualification priority
+      const other = candidates.filter((c) => !educationMatches.includes(c));
+      selectedMatches = [...educationMatches, ...other].slice(0, 3);
+    } else if (dayOfWeek === 4) {
+      // Thursday: Newest profiles added
+      selectedMatches = newestMatches.slice(0, 3);
+    } else {
+      // Other days (Wed, Fri, Sat, Sun): Balanced regional + diverse profiles
+      const other = candidates.filter((c) => !regionalMatches.includes(c));
+      selectedMatches = [...regionalMatches, ...other].slice(0, 3);
+    }
+
+    // Generate dynamic member email
+    const { subject, html } = buildMemberDigestHtml(member, selectedMatches, email, dayOfWeek);
 
     recipients.push({
       type: "member",
       email,
       name: member.name || "Member",
       subject,
-      html: buildMemberDigestHtml(member, selectedMatches, email),
+      html,
     });
   }
 
-  // 3. Pending/Unverified Profiles: per requirements, receive visitor newsletter until approved/verified by admin
+  // 3. Pending/Unverified Profiles: receive visitor newsletter until approved/verified by admin
   for (const [email, pendingProfile] of pendingMembersMap.entries()) {
     if (seenEmails.has(email)) continue;
     seenEmails.add(email);
+
+    const { subject, html } = buildVisitorNewsletterHtml(maleCount, femaleCount, email, dayOfWeek);
 
     recipients.push({
       type: "visitor",
       email,
       name: pendingProfile.name || "Valued Member",
-      subject: `🌸 Find Your Righteous Partner – ${maleCount + femaleCount}+ Verified Profiles on Rishta Matrimony`,
-      html: buildVisitorNewsletterHtml(maleCount, femaleCount, email),
+      subject,
+      html,
     });
   }
 
@@ -448,12 +673,13 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
         const email = (r.email || "").trim().toLowerCase();
         if (email && email.includes("@") && !seenEmails.has(email)) {
           seenEmails.add(email);
+          const { subject, html } = buildVisitorNewsletterHtml(maleCount, femaleCount, email, dayOfWeek);
           recipients.push({
             type: "visitor",
             email,
             name: "Valued Member",
-            subject: `🌸 Find Your Righteous Partner – ${maleCount + femaleCount}+ Verified Profiles on Rishta Matrimony`,
-            html: buildVisitorNewsletterHtml(maleCount, femaleCount, email),
+            subject,
+            html,
           });
         }
       }
@@ -473,10 +699,14 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    const dayOfWeek = getISTDayOfWeek();
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDayName = dayNames[dayOfWeek];
+
     const recipients = await fetchRecipients();
     const memberCount = recipients.filter((r) => r.type === "member").length;
     const visitorCount = recipients.filter((r) => r.type === "visitor").length;
-    console.log(`[Cron Dispatcher] Total: ${recipients.length} recipients (Members: ${memberCount}, Visitors: ${visitorCount}).`);
+    console.log(`[Cron Dispatcher] Day: ${currentDayName} (IST). Total: ${recipients.length} recipients (${memberCount} Members, ${visitorCount} Visitors).`);
 
     let successCount = 0;
     const errors: string[] = [];
@@ -521,18 +751,19 @@ export default async function handler(req: any, res: any) {
       await transporter.sendMail({
         from: `Rishta Matrimony Automation <${SENDER_EMAIL}>`,
         to: ADMIN_EMAIL,
-        subject: `📊 Daily Matrimonial Dispatch: ${successCount}/${recipients.length} Delivered (${memberCount} Members, ${visitorCount} Visitors)`,
+        subject: `📊 [${currentDayName}] Daily Matrimonial Dispatch: ${successCount}/${recipients.length} Delivered`,
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2 style="color: #1f4037;">Daily Matrimonial Newsletter Report</h2>
+            <h2 style="color: #1f4037;">Daily Matrimonial Newsletter Report (${currentDayName})</h2>
             <p><strong>Status:</strong> Completed</p>
+            <p><strong>Scheduled Day:</strong> ${currentDayName} (IST)</p>
             <p><strong>Total Recipients:</strong> ${recipients.length}</p>
-            <p><strong>Registered Members:</strong> ${memberCount}</p>
-            <p><strong>Newsletter Visitors:</strong> ${visitorCount}</p>
+            <p><strong>Verified Members Delivered:</strong> ${memberCount}</p>
+            <p><strong>Visitors / Pending Delivered:</strong> ${visitorCount}</p>
             <p><strong>Successfully Delivered:</strong> ${successCount}</p>
             <p><strong>Failed:</strong> ${errors.length}</p>
             ${errors.length > 0 ? `<p><strong>Errors:</strong><br/>${errors.join("<br/>")}</p>` : ""}
-            <p style="color: #718096; font-size: 13px;">Automated dispatch by Vercel Cloud Cron with smart audience segmentation, regional matching, and ₹48/₹491 upgrade incentives.</p>
+            <p style="color: #718096; font-size: 13px;">Automated 7-day dynamic rotation by Vercel Cloud Cron at 9:00 AM IST.</p>
           </div>
         `,
       });
@@ -542,7 +773,8 @@ export default async function handler(req: any, res: any) {
 
     return res.status(200).json({
       success: true,
-      message: `Dispatched ${successCount} emails (Members: ${memberCount}, Visitors: ${visitorCount})`,
+      day: currentDayName,
+      message: `Dispatched ${successCount} emails (${memberCount} Members, ${visitorCount} Visitors)`,
       totalRecipients: recipients.length,
       memberCount,
       visitorCount,

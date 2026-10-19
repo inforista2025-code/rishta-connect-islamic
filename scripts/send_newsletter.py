@@ -5,6 +5,7 @@ import json
 import smtplib
 import time
 import urllib.request
+from datetime import datetime, timezone, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -18,6 +19,14 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 UNSUBSCRIBE_FILE = os.path.join(os.path.dirname(__file__), "unsubscribed.txt")
 
+def get_ist_day_of_week():
+    """Returns day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday) in Indian Standard Time (IST)."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist)
+    # Python weekday(): 0 = Mon, 6 = Sun -> convert to JS getDay(): 0 = Sun, 1 = Mon, ..., 6 = Sat
+    py_weekday = now_ist.weekday()
+    return (py_weekday + 1) % 7
+
 def get_unsubscribed_list():
     """Reads emails that have opted out of the newsletter."""
     if not os.path.exists(UNSUBSCRIBE_FILE):
@@ -25,14 +34,76 @@ def get_unsubscribed_list():
     with open(UNSUBSCRIBE_FILE, "r", encoding="utf-8") as f:
         return set(line.strip().lower() for line in f if line.strip())
 
-def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_email: str) -> str:
-    unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20{recipient_email}"
+def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_email: str, day_of_week: int):
+    unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipient_email}"
     total_count = male_count + female_count
-    return f"""<!DOCTYPE html>
+
+    daily_themes = {
+        0: {
+            "subject": "🌟 Candidates Added This Week: Take a Sneak Peek on Rishta Matrimony",
+            "badge": "Weekend Roundup",
+            "headline": "Meet New Verified Candidates Added This Week",
+            "intro": "Every single week, dozens of serious and verified Muslim candidates join Rishta Matrimony to complete half their deen. Here is your weekly community highlight.",
+            "box_title": f"🌟 Active Community: {total_count}+ Verified Candidates",
+            "box_body": f"With <strong>{male_count}+ verified grooms</strong> and <strong>{female_count}+ verified brides</strong> currently active on our platform, families across India are finding compatible proposals every day."
+        },
+        1: {
+            "subject": "⚡ Find Your Righteous Partner: Register in Under 2 Minutes (100% Free)",
+            "badge": "Fresh Week Start",
+            "headline": "Start Your Matrimonial Journey in Under 2 Minutes",
+            "intro": "Don't delay completing half your deen. Creating your matrimonial profile on Rishta Matrimony is completely free, straightforward, and takes less than 2 minutes.",
+            "box_title": "⚡ Fast, Free & Frictionless Registration",
+            "box_body": "No complex paperwork or hidden charges. Simply provide your basic biodata and partner preferences, and our team will get your profile verified quickly."
+        },
+        2: {
+            "subject": "🛡️ 100% Modest & Privacy-Protected: How Rishta Matrimony Protects You",
+            "badge": "Privacy Guarantee",
+            "headline": "Your Family's Privacy & Modesty Always Comes First",
+            "intro": "In authentic Islamic matchmaking, modesty (haya) and privacy are sacred. Unlike casual dating or open social apps, Rishta Matrimony safeguards every detail.",
+            "box_title": "🔒 Four Pillars of Privacy & Security",
+            "box_body": "• Photos are protected and not publicly broadcast.<br/>• Personal phone numbers are never shared without verification.<br/>• Zero Google indexing — profiles remain private.<br/>• Direct family & wali involvement."
+        },
+        3: {
+            "subject": f"📊 {total_count}+ Verified Grooms & Brides Awaiting Righteous Matches – Rishta Matrimony",
+            "badge": "Community Growth",
+            "headline": "A Growing Community of Serious Muslim Families",
+            "intro": "Finding a compatible life partner requires genuine, verified options. Our verified network connects families across various professions, education levels, and regions.",
+            "box_title": f"📊 Live Community Numbers: {total_count}+ Profiles",
+            "box_body": f"Currently hosting <strong>{male_count}+ Verified Grooms</strong> and <strong>{female_count}+ Verified Brides</strong>, verified personally by our administrative team."
+        },
+        4: {
+            "subject": "📲 Zero Fake Profiles: Personally Verified by Admin on WhatsApp – Rishta Matrimony",
+            "badge": "Verified Trust",
+            "headline": "Authentic Connections: Every Profile Personally Verified",
+            "intro": "Tired of duplicate or inactive profiles on other websites? Rishta Matrimony enforces a strict manual verification policy before any biodata goes live.",
+            "box_title": "✓ Personal WhatsApp Verification Process",
+            "box_body": "Our administrative team reaches out directly on WhatsApp to verify identity, biodata details, and partner expectations. Need help filling your form? Our helpline is available at <strong>+91 9128719875</strong>."
+        },
+        5: {
+            "subject": "🕌 Jumu'ah Reflection: The Sacred Virtues of Nikah in Islam",
+            "badge": "Jumu'ah Mubarak",
+            "headline": "The Noble Sunnah of Completing Half Your Deen",
+            "intro": "On this blessed day of Jumu'ah, take a mindful step towards fulfilling the Prophet's ﷺ noble guidance on marriage, modesty, and righteous partnership.",
+            "box_title": "📖 Hadith on the Sanctity of Marriage",
+            "box_body": "<em>\"When a person marries, they have completed half of their religion, so let them fear Allah regarding the remaining half.\"</em> [Al-Bayhaqi]<br/><br/>May Allah SWT bless your noble intentions and grant you a righteous life partner."
+        },
+        6: {
+            "subject": "💡 Tired of Traditional Marriage Brokers? Discover Transparent Matchmaking",
+            "badge": "Modern & Transparent",
+            "headline": "Dignified, Modern & Transparent Islamic Matchmaking",
+            "intro": "Traditional matchmakers often involve high brokerage fees, long delays, and unclear details. Rishta Matrimony brings transparency, dignity, and direct family access.",
+            "box_title": "🌟 The Rishta Matrimony Advantage",
+            "box_body": "• Direct guardian & family contact access.<br/>• Transparent, affordable plans (starting at just ₹48).<br/>• Self-paced search tailored to your age, education, and maslak."
+        }
+    }
+
+    theme = daily_themes.get(day_of_week, daily_themes[1])
+
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Complete Half Your Deen – Rishta Matrimony</title>
+  <title>{theme['headline']} – Rishta Matrimony</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f7f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f5f0; padding: 30px 10px;">
@@ -52,62 +123,43 @@ def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px;">Assalamu Alaikum wa Rahmatullah,</h2>
+              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
+                {theme['badge']}
+              </div>
+
+              <h2 style="margin-top: 0; color: #1f4037; font-size: 22px; line-height: 1.3;">{theme['headline']}</h2>
               <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
-                Are you or your family looking for a righteous, compatible life partner? Take the noble step of <strong>completing half your deen</strong> on <strong>Rishta Matrimony</strong> — India's trusted platform for authentic Islamic matchmaking.
+                {theme['intro']}
               </p>
 
-              <!-- Live Community Stats Box -->
+              <!-- Daily Thematic Highlight Box -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1.5px solid #86efac; border-radius: 10px; margin: 25px 0;">
                 <tr>
                   <td style="padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 14px;">
-                      <span style="font-size: 22px;">🌟</span>
-                      <strong style="color: #166534; font-size: 16px; display: block; margin-top: 4px;">Live Verified Community ({total_count}+ Profiles)</strong>
+                    <strong style="color: #166534; font-size: 16px; display: block; margin-bottom: 8px;">{theme['box_title']}</strong>
+                    <div style="font-size: 14px; line-height: 1.7; color: #15803d;">
+                      {theme['box_body']}
                     </div>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
-                          <div style="font-size: 22px; font-weight: 800; color: #15803d;">{male_count}+</div>
-                          <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Grooms</div>
-                        </td>
-                        <td width="10"></td>
-                        <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
-                          <div style="font-size: 22px; font-weight: 800; color: #15803d;">{female_count}+</div>
-                          <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Brides</div>
-                        </td>
-                      </tr>
-                    </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- Islamic Trust & Privacy Pillars -->
-              <h3 style="color: #1f4037; font-size: 16px; margin: 25px 0 12px;">Why Families Trust Rishta Matrimony:</h3>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <!-- Community Counts Overview -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
                 <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    🛡️ <strong>100% Modest & Halal:</strong> Governed strictly by authentic Islamic values and family involvement. No casual dating or unsolicited messaging.
+                  <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <div style="font-size: 22px; font-weight: 800; color: #15803d;">{male_count}+</div>
+                    <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Grooms</div>
                   </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    🔒 <strong>Strict Privacy Protection:</strong> Photographs and personal contact details are completely safeguarded and never exposed to search engines.
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    ✓ <strong>WhatsApp Admin Verification:</strong> Every single profile is manually verified on WhatsApp by our team before activation — zero fake accounts.
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
-                    ⚡ <strong>Quick & 100% Free:</strong> Creating your matrimonial profile is completely free and takes less than 2 minutes.
+                  <td width="10"></td>
+                  <td width="50%" align="center" style="padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #bbf7d0;">
+                    <div style="font-size: 22px; font-weight: 800; color: #15803d;">{female_count}+</div>
+                    <div style="font-size: 13px; color: #4a5568; font-weight: 600;">Verified Brides</div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Primary CTA -->
+              <!-- Primary Call To Action -->
               <div style="text-align: center; margin: 35px 0 25px;">
                 <a href="https://rishtamatrimony.vercel.app/register" style="background: linear-gradient(135deg, #1f4037, #2c7a7b); color: #ffffff; text-decoration: none; padding: 15px 36px; font-size: 15px; font-weight: 700; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(31, 64, 55, 0.3);">
                   Register Your Matrimonial Profile (Free) →
@@ -117,8 +169,8 @@ def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_
               <!-- Assistance Note -->
               <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px 18px; text-align: center; margin-top: 25px;">
                 <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">
-                  💬 <strong>Need help filling your biodata?</strong><br/>
-                  Our matrimonial support team is available on WhatsApp to assist you: <strong>+91 9128719875</strong>
+                  💬 <strong>Need help creating your biodata?</strong><br/>
+                  Our support team is available on WhatsApp to assist you or your family: <strong>+91 9128719875</strong>
                 </p>
               </div>
 
@@ -149,13 +201,75 @@ def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_
   </table>
 </body>
 </html>"""
+    return theme["subject"], html
 
-def build_member_digest_html(member: dict, matches: list, recipient_email: str) -> str:
-    unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20{recipient_email}"
+def build_member_digest_html(member: dict, matches: list, recipient_email: str, day_of_week: int):
+    unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipient_email}"
     user_name = member.get("name") or "Respected Member"
     user_gender = (member.get("gender") or "male").lower()
     target_gender_label = "Bride" if user_gender == "male" else "Groom"
     location = member.get("location") or "Your Region"
+
+    daily_member_themes = {
+        0: {
+            "subject": "💎 Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony",
+            "badge": "Sunday Spotlight: Direct Connect",
+            "headline": "Connect Directly with Your Chosen Proposals Today",
+            "intro": "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
+            "tip_title": "💎 Fast-Track Your Matrimonial Search",
+            "tip_body": "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership."
+        },
+        1: {
+            "subject": f"📍 New Verified Matches in {location} – Start Your Week with Rishta Matrimony",
+            "badge": "Regional & Local Focus",
+            "headline": f"Top Recommended {target_gender_label} Proposals in {location} & Nearby",
+            "intro": f"Start your week by exploring compatible proposals located in or around <strong>{location}</strong>. Local connections make family meetings and background verification seamless.",
+            "tip_title": "📍 The Power of Regional Compatibility",
+            "tip_body": "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families."
+        },
+        2: {
+            "subject": "🎓 Top Qualified Matches: Engineers, Doctors & Graduates on Rishta Matrimony",
+            "badge": "Education & Career Spotlight",
+            "headline": f"Highly Educated & Professional {target_gender_label} Candidates",
+            "intro": "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds.",
+            "tip_title": "🎓 Academic & Professional Profiles",
+            "tip_body": "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners."
+        },
+        3: {
+            "subject": "⭐ Who Viewed Your Profile? Active Members Receive 3x More Inquiries – Rishta Matrimony",
+            "badge": "Profile Health & Visibility",
+            "headline": "Boost Your Profile Rank & Check Profile Views",
+            "intro": "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
+            "tip_title": "⭐ Activity Boost Guarantee",
+            "tip_body": "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals."
+        },
+        4: {
+            "subject": "✨ Just Verified: Meet the Newest Candidates Added on Rishta Matrimony",
+            "badge": "Newest Weekly Arrivals",
+            "headline": f"Newly Verified {target_gender_label} Profiles Added This Week",
+            "intro": "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
+            "tip_title": "✨ Fresh Proposals Every Week",
+            "tip_body": "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families."
+        },
+        5: {
+            "subject": f"🕌 Jumu'ah Mubarak {user_name} – Take a Blessed Step Towards Nikah",
+            "badge": "Jumu'ah Mubarak",
+            "headline": "A Blessed Day to Advance Your Noble Intentions of Nikah",
+            "intro": f"Assalamu Alaikum {user_name}. On this blessed Jumu'ah, we present curated, modest <strong>{target_gender_label} proposals</strong> upholding authentic Islamic principles.",
+            "tip_title": "📖 Islamic Principle of Compatibility",
+            "tip_body": "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]"
+        },
+        6: {
+            "subject": "👨‍👩‍👦 Weekend Rishta Review: Curated Matches for You and Your Family – Rishta Matrimony",
+            "badge": "Weekend Family Digest",
+            "headline": "Review Compatible Proposals with Your Family Today",
+            "intro": "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
+            "tip_title": "👨‍👩‍👦 Family Consultation (Mashwarah)",
+            "tip_body": "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision."
+        }
+    }
+
+    theme = daily_member_themes.get(day_of_week, daily_member_themes[1])
 
     match_cards_html = ""
     for m in matches:
@@ -197,11 +311,11 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str) 
           </tr>
         </table>"""
 
-    return f"""<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Your Personalized Daily Matches – Rishta Matrimony</title>
+  <title>{theme['headline']} – Rishta Matrimony</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f7f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f5f0; padding: 30px 10px;">
@@ -221,15 +335,19 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str) 
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px;">Assalamu Alaikum {user_name},</h2>
+              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
+                {theme['badge']}
+              </div>
+
+              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px; line-height: 1.3;">{theme['headline']}</h2>
               <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
-                Here are your latest verified <strong>{target_gender_label} proposals</strong> recommended specifically for your preferences and region (<strong>{location}</strong>):
+                {theme['intro']}
               </p>
 
               <!-- Recommended Matches -->
               <div style="margin: 25px 0 15px;">
                 <h3 style="margin: 0 0 14px; font-size: 16px; color: #166534;">
-                  🎯 Top Recommended {target_gender_label} Matches For You:
+                  🎯 Top Curated {target_gender_label} Matches:
                 </h3>
                 {match_cards_html}
               </div>
@@ -277,11 +395,11 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str) 
                 </tr>
               </table>
 
-              <!-- Active Profile Tip (Why Log In Regularly) -->
+              <!-- Dynamic Daily Tip -->
               <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px; margin: 25px 0 15px;">
-                <strong style="color: #92400e; font-size: 14px;">💡 Increase Your Proposal Inquiries:</strong>
+                <strong style="color: #92400e; font-size: 14px;">💡 {theme['tip_title']}:</strong>
                 <p style="margin: 6px 0 0; font-size: 13px; color: #78350f; line-height: 1.6;">
-                  Profiles that log in regularly are featured higher in daily searches and receive <strong>3x more views and proposals</strong> from interested families. Log in today to check if new families have viewed or shortlisted your profile!
+                  {theme['tip_body']}
                 </p>
               </div>
 
@@ -319,11 +437,13 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str) 
   </table>
 </body>
 </html>"""
+    return theme["subject"], html
 
 def fetch_recipients():
     unsubscribed = get_unsubscribed_list()
     seen = set()
     recipients = []
+    day_of_week = get_ist_day_of_week()
 
     headers = {
         "apikey": SUPABASE_KEY,
@@ -334,7 +454,7 @@ def fetch_recipients():
     # Fetch all profiles
     all_profiles = []
     try:
-        url = f"{SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,email,is_live,verification_status"
+        url = f"{SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at"
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as resp:
             all_profiles = json.loads(resp.read().decode())
@@ -358,7 +478,7 @@ def fetch_recipients():
         else:
             pending_map[email] = p
 
-    # 2. Verified Members: Receive personalized matching digest + ₹48 single unlock & ₹491 plan incentives
+    # 2. Verified Members: Receive personalized matching digest + 7-day dynamic rotation
     for email, member in verified_map.items():
         if email in seen or email in unsubscribed:
             continue
@@ -368,15 +488,39 @@ def fetch_recipients():
         target_gender = "female" if user_gender == "male" else "male"
         candidates = [c for c in live_profiles if (c.get("gender") or "").lower() == target_gender and c.get("id") != member.get("id")]
 
+        # Location matching
         member_loc = (member.get("location") or "").lower().replace(",", " ")
         loc_tokens = [t for t in member_loc.split() if len(t) > 3 and t not in ["near", "india", "road", "city"]]
 
         regional_matches = [c for c in candidates if any(tok in (c.get("location") or "").lower() for tok in loc_tokens)]
-        other_matches = [c for c in candidates if c not in regional_matches]
-        selected_matches = (regional_matches + other_matches)[:3]
 
-        subject = f"✨ New Verified Matches in {member.get('location') or 'Your Region'} – Rishta Matrimony" if regional_matches else "✨ Recommended Verified Matches For You – Rishta Matrimony"
-        html = build_member_digest_html(member, selected_matches, email)
+        # Education / Profession Matching
+        education_keywords = ["doctor", "engineer", "mbbs", "md", "b.tech", "m.tech", "mba", "professor", "teacher", "ca", "software", "graduate"]
+        education_matches = [
+            c for c in candidates
+            if any(k in (c.get("education") or "").lower() or k in (c.get("profession") or "").lower() for k in education_keywords)
+        ]
+
+        # Newest matches
+        newest_matches = sorted(candidates, key=lambda x: x.get("id", 0), reverse=True)
+
+        # Dynamic Matching Sorting based on Day of Week:
+        if day_of_week == 1 and regional_matches:
+            # Monday: Regional priority
+            other = [c for c in candidates if c not in regional_matches]
+            selected_matches = (regional_matches + other)[:3]
+        elif day_of_week == 2 and education_matches:
+            # Tuesday: Qualification priority
+            other = [c for c in candidates if c not in education_matches]
+            selected_matches = (education_matches + other)[:3]
+        elif day_of_week == 4:
+            # Thursday: Newest profiles
+            selected_matches = newest_matches[:3]
+        else:
+            other = [c for c in candidates if c not in regional_matches]
+            selected_matches = (regional_matches + other)[:3]
+
+        subject, html = build_member_digest_html(member, selected_matches, email, day_of_week)
 
         recipients.append({
             "type": "member",
@@ -392,15 +536,17 @@ def fetch_recipients():
             continue
         seen.add(email)
 
+        subject, html = build_visitor_newsletter_html(male_count, female_count, email, day_of_week)
+
         recipients.append({
             "type": "visitor",
             "email": email,
             "name": pending_profile.get("name") or "Valued Member",
-            "subject": f"🌸 Find Your Righteous Partner – {male_count + female_count}+ Verified Profiles on Rishta Matrimony",
-            "html": build_visitor_newsletter_html(male_count, female_count, email)
+            "subject": subject,
+            "html": html
         })
 
-    # Newsletter Subscribers (visitors)
+    # 4. Newsletter Subscribers (visitors)
     try:
         url = f"{SUPABASE_URL}/rest/v1/newsletter_subscribers?select=email&status=eq.active"
         req = urllib.request.Request(url, headers=headers)
@@ -410,12 +556,13 @@ def fetch_recipients():
                 email = (r.get("email") or "").strip().lower()
                 if email and "@" in email and email not in seen and email not in unsubscribed:
                     seen.add(email)
+                    subject, html = build_visitor_newsletter_html(male_count, female_count, email, day_of_week)
                     recipients.append({
                         "type": "visitor",
                         "email": email,
                         "name": "Valued Member",
-                        "subject": f"🌸 Find Your Righteous Partner – {male_count + female_count}+ Verified Profiles on Rishta Matrimony",
-                        "html": build_visitor_newsletter_html(male_count, female_count, email)
+                        "subject": subject,
+                        "html": html
                     })
     except Exception as e:
         print(f"Error reading newsletter_subscribers: {e}")
@@ -423,10 +570,14 @@ def fetch_recipients():
     return recipients
 
 def send_newsletter(is_live=False):
+    day_names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    day_of_week = get_ist_day_of_week()
+    current_day_name = day_names[day_of_week]
+
     recipients = fetch_recipients()
     member_count = sum(1 for r in recipients if r["type"] == "member")
     visitor_count = sum(1 for r in recipients if r["type"] == "visitor")
-    print(f"Found {len(recipients)} recipients ({member_count} Registered Members, {visitor_count} Newsletter Visitors).")
+    print(f"[{current_day_name} IST] Found {len(recipients)} recipients ({member_count} Registered Members, {visitor_count} Newsletter Visitors).")
 
     if not recipients:
         print("No recipients found.")
@@ -435,12 +586,12 @@ def send_newsletter(is_live=False):
     context = ssl.create_default_context()
     
     if not is_live:
-        print(f"TEST RUN MODE: Sending test newsletter only to Admin ({ADMIN_EMAIL})")
+        print(f"TEST RUN MODE: Sending test newsletter only to Admin ({ADMIN_EMAIL}) for {current_day_name}")
         targets = [{
             "type": "member",
             "email": ADMIN_EMAIL,
             "name": "Admin",
-            "subject": f"[TEST] Daily Digest & Recommended Matches",
+            "subject": f"[TEST {current_day_name}] {recipients[0]['subject']}",
             "html": recipients[0]["html"]
         }]
     else:
@@ -468,7 +619,7 @@ def send_newsletter(is_live=False):
             except Exception as e:
                 print(f"Failed to send to {r['email']}: {e}")
 
-    print(f"Newsletter run completed! {success_count}/{len(targets)} emails sent.")
+    print(f"Newsletter run completed! {success_count}/{len(targets)} emails sent for {current_day_name}.")
 
 if __name__ == "__main__":
     is_live = "--live" in sys.argv
