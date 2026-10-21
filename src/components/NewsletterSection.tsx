@@ -15,10 +15,41 @@ export function NewsletterSection() {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
 
-    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+    // Standard RFC regex validation
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: "Invalid Email Address",
+        description: "Please enter a valid, active email address (e.g. name@gmail.com).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const domain = cleanEmail.split("@")[1] || "";
+    const invalidDomains = ["example.com", "test.com", "fake.com", "dummy.com", "mailinator.com", "tempmail.com"];
+    if (invalidDomains.includes(domain)) {
+      toast({
+        title: "Invalid Domain",
+        description: "Please use your genuine personal or family email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Common domain typo catch (e.g. gmial.com, gamil.com)
+    const typoMap: Record<string, string> = {
+      "gmial.com": "gmail.com",
+      "gamil.com": "gmail.com",
+      "gmai.com": "gmail.com",
+      "yaho.com": "yahoo.com",
+      "yaoo.com": "yahoo.com",
+      "hotmial.com": "hotmail.com",
+    };
+    if (typoMap[domain]) {
+      toast({
+        title: "Spelling Correction",
+        description: `Did you mean @${typoMap[domain]}? Please check your email spelling.`,
         variant: "destructive",
       });
       return;

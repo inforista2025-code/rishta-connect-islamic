@@ -2,9 +2,11 @@ import os
 import sys
 import ssl
 import json
+import re
 import smtplib
 import time
 import urllib.request
+import urllib.parse
 from datetime import datetime, timezone, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -18,6 +20,79 @@ SUPABASE_URL = "https://rxlzlkcdszulyetcxxih.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bHpsa2Nkc3p1bHlldGN4eGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2OTAzODIsImV4cCI6MjA3NTI2NjM4Mn0.PXcKNOiJlQr_BSqPZKIGTQYKK-e6Y5obVg7WPJm17hM"
 
 UNSUBSCRIBE_FILE = os.path.join(os.path.dirname(__file__), "unsubscribed.txt")
+
+def is_valid_email_format(email: str) -> bool:
+    if not email or not isinstance(email, str):
+        return False
+    clean = email.strip().lower()
+    email_regex = r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$"
+    if not re.match(email_regex, clean):
+        return False
+    parts = clean.split("@")
+    if len(parts) != 2:
+        return False
+    user, domain = parts
+    if not user or not domain:
+        return False
+    blocked = [
+        "example.com", "example.org", "test.com", "test.in",
+        "dummy.com", "fake.com", "sample.com", "mailinator.com",
+        "tempmail.com", "10minutemail.com", "guerrillamail.com"
+    ]
+    if domain in blocked:
+        return False
+    domain_parts = domain.split(".")
+    if len(domain_parts) < 2 or len(domain_parts[-1]) < 2:
+        return False
+    return True
+
+def is_fatal_bounce_error(err) -> bool:
+    if not err:
+        return False
+    err_str = str(err).lower()
+    bounce_patterns = [
+        "550", "551", "552", "553", "554",
+        "user unknown", "user not found", "does not exist",
+        "no such user", "recipient address rejected", "invalid recipient",
+        "address rejected", "mailbox unavailable", "mailbox not found",
+        "undeliverable", "relay access denied", "domain not found",
+        "host or domain name not found", "bad destination mailbox",
+        "disabled", "inactive user"
+    ]
+    return any(p in err_str for p in bounce_patterns)
+
+def deactivate_newsletter_subscriber(email: str, reason: str):
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/newsletter_subscribers?email=eq.{urllib.parse.quote(email)}"
+        payload = json.dumps({"status": "bounced", "updated_at": datetime.now(timezone.utc).isoformat()}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, method="PATCH", headers={
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Prefer": "return=minimal"
+        })
+        with urllib.request.urlopen(req) as resp:
+            print(f"[Bounce Protector] Successfully deactivated {email} in newsletter_subscribers.")
+    except Exception as e:
+        print(f"[Bounce Protector] Error deactivating {email}: {e}")
+
+def mark_member_email_bounced(profile_id: int, current_notes: str, reason: str):
+    try:
+        clean_reason = reason.replace('"', "'").replace("\n", " ")[:80]
+        note_tag = f"[EMAIL_BOUNCED: {clean_reason}]"
+        updated_notes = f"{current_notes} | {note_tag}" if current_notes else note_tag
+        url = f"{SUPABASE_URL}/rest/v1/profiles_data?id=eq.{profile_id}"
+        payload = json.dumps({"admin_notes": updated_notes, "updated_at": datetime.now(timezone.utc).isoformat()}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, method="PATCH", headers={
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Prefer": "return=minimal"
+        })
+        with urllib.request.urlopen(req) as resp:
+            print(f"[Bounce Protector] Flagged profile #{profile_id} as [EMAIL_BOUNCED].")
+    except Exception as e:
+        print(f"[Bounce Protector] Error flagging profile #{profile_id}: {e}")
 
 def get_ist_day_of_week():
     """Returns day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday) in Indian Standard Time (IST)."""
@@ -454,7 +529,7 @@ def fetch_recipients():
     # Fetch all profiles
     all_profiles = []
     try:
-        url = f"{SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at"
+        url = f"{SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at,admin_notes"
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as resp:
             all_profiles = json.loads(resp.read().decode())
@@ -472,6 +547,16 @@ def fetch_recipients():
         email = (p.get("email") or "").strip().lower()
         if not email or "@" not in email:
             continue
+
+        # Skip previously bounced emails
+        if p.get("admin_notes") and "[EMAIL_BOUNCED]" in p.get("admin_notes"):
+            print(f"[Bounce Protector] Profile #{p.get('id')} ({email}) skipped due to previous bounce.")
+            continue
+
+        if not is_valid_email_format(email):
+            print(f"[Pre-Flight Drop] Profile #{p.get('id')} ({email}) skipped due to invalid email format.")
+            continue
+
         is_verified = (p.get("verification_status") or "").lower() == "verified" and p.get("is_live") is True
         if is_verified:
             verified_map[email] = p
@@ -527,7 +612,9 @@ def fetch_recipients():
             "email": email,
             "name": member.get("name") or "Member",
             "subject": subject,
-            "html": html
+            "html": html,
+            "profile_id": member.get("id"),
+            "admin_notes": member.get("admin_notes")
         })
 
     # 3. Pending/Unverified Profiles: receive visitor newsletter until approved/verified by admin
@@ -543,7 +630,9 @@ def fetch_recipients():
             "email": email,
             "name": pending_profile.get("name") or "Valued Member",
             "subject": subject,
-            "html": html
+            "html": html,
+            "profile_id": pending_profile.get("id"),
+            "admin_notes": pending_profile.get("admin_notes")
         })
 
     # 4. Newsletter Subscribers (visitors)
@@ -554,7 +643,12 @@ def fetch_recipients():
             news_rows = json.loads(resp.read().decode())
             for r in news_rows:
                 email = (r.get("email") or "").strip().lower()
-                if email and "@" in email and email not in seen and email not in unsubscribed:
+                if email and email not in seen and email not in unsubscribed:
+                    if not is_valid_email_format(email):
+                        print(f"[Bounce Protector] Auto-deactivating invalid subscriber email: {email}")
+                        deactivate_newsletter_subscriber(email, "Invalid format/domain")
+                        continue
+
                     seen.add(email)
                     subject, html = build_visitor_newsletter_html(male_count, female_count, email, day_of_week)
                     recipients.append({
@@ -599,6 +693,7 @@ def send_newsletter(is_live=False):
         targets = recipients
 
     success_count = 0
+    bounced_count = 0
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(SENDER_EMAIL, APP_PASSWORD)
         for r in targets:
@@ -617,9 +712,17 @@ def send_newsletter(is_live=False):
                 # Human-like delay between emails to protect sender reputation
                 time.sleep(2.5)
             except Exception as e:
-                print(f"Failed to send to {r['email']}: {e}")
+                err_str = str(e)
+                print(f"Failed to send to {r['email']}: {err_str}")
+                if is_fatal_bounce_error(err_str):
+                    bounced_count += 1
+                    print(f"[Bounce Alert] Fatal bounce detected for {r['email']}. Deactivating...")
+                    if r.get("type") == "visitor":
+                        deactivate_newsletter_subscriber(r["email"], err_str)
+                    elif r.get("type") == "member" and r.get("profile_id"):
+                        mark_member_email_bounced(r["profile_id"], r.get("admin_notes", ""), err_str)
 
-    print(f"Newsletter run completed! {success_count}/{len(targets)} emails sent for {current_day_name}.")
+    print(f"Newsletter run completed! {success_count}/{len(targets)} sent. ({bounced_count} bounced/deactivated) for {current_day_name}.")
 
 if __name__ == "__main__":
     is_live = "--live" in sys.argv

@@ -36,6 +36,7 @@ interface ProfileRecord {
   is_live?: boolean;
   verification_status?: string;
   created_at?: string;
+  admin_notes?: string | null;
 }
 
 interface NewsletterRecipient {
@@ -44,6 +45,131 @@ interface NewsletterRecipient {
   name: string;
   subject: string;
   html: string;
+  profileId?: number;
+  adminNotes?: string | null;
+}
+
+function isValidEmailFormat(email: string): boolean {
+  if (!email || typeof email !== "string") return false;
+  const clean = email.trim().toLowerCase();
+
+  // RFC standard email regex
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  if (!emailRegex.test(clean)) return false;
+
+  const parts = clean.split("@");
+  if (parts.length !== 2) return false;
+  const [user, domain] = parts;
+  if (!user || !domain) return false;
+
+  const blockedDomains = [
+    "example.com",
+    "example.org",
+    "test.com",
+    "test.in",
+    "dummy.com",
+    "fake.com",
+    "sample.com",
+    "mailinator.com",
+    "tempmail.com",
+    "10minutemail.com",
+    "guerrillamail.com",
+  ];
+  if (blockedDomains.includes(domain)) return false;
+
+  const domainParts = domain.split(".");
+  if (domainParts.length < 2) return false;
+  const tld = domainParts[domainParts.length - 1];
+  if (tld.length < 2) return false;
+
+  return true;
+}
+
+function isFatalBounceError(err: any): boolean {
+  if (!err) return false;
+  const message = (err.message || "").toLowerCase();
+  const response = (err.response || "").toLowerCase();
+  const code = err.code || "";
+  const responseCode = err.responseCode;
+
+  // SMTP 5xx permanent rejection codes
+  if (responseCode >= 500 && responseCode <= 559) return true;
+  if (code === "EENVELOPE") return true;
+
+  const bouncePatterns = [
+    "550",
+    "551",
+    "552",
+    "553",
+    "554",
+    "user unknown",
+    "user not found",
+    "does not exist",
+    "no such user",
+    "recipient address rejected",
+    "invalid recipient",
+    "address rejected",
+    "mailbox unavailable",
+    "mailbox not found",
+    "undeliverable",
+    "relay access denied",
+    "domain not found",
+    "host or domain name not found",
+    "bad destination mailbox",
+    "disabled",
+    "inactive user",
+  ];
+
+  return bouncePatterns.some((pattern) => message.includes(pattern) || response.includes(pattern));
+}
+
+async function deactivateNewsletterSubscriber(email: string, reason: string): Promise<void> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers?email=eq.${encodeURIComponent(email)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        status: "bounced",
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    console.log(`[Bounce Protector] Deactivated subscriber ${email}. Status: ${res.status} (Reason: ${reason})`);
+  } catch (deactErr) {
+    console.warn(`[Bounce Protector] Failed to deactivate subscriber ${email}:`, deactErr);
+  }
+}
+
+async function markMemberEmailBounced(
+  profileId: number,
+  currentNotes: string | null | undefined,
+  reason: string
+): Promise<void> {
+  try {
+    const noteTag = `[EMAIL_BOUNCED: ${reason.replace(/["\n\r]/g, " ").slice(0, 80)}]`;
+    const updatedNotes = currentNotes ? `${currentNotes} | ${noteTag}` : noteTag;
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles_data?id=eq.${profileId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        admin_notes: updatedNotes,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    console.log(`[Bounce Protector] Flagged profile #${profileId} as [EMAIL_BOUNCED]. Status: ${res.status}`);
+  } catch (flagErr) {
+    console.warn(`[Bounce Protector] Failed to flag profile #${profileId}:`, flagErr);
+  }
 }
 
 function getISTDayOfWeek(): number {
@@ -543,7 +669,7 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
   let allProfiles: ProfileRecord[] = [];
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at`,
+      `${SUPABASE_URL}/rest/v1/profiles_data?select=id,name,gender,age,location,profession,education,caste,maslak,email,is_live,verification_status,created_at,admin_notes`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -570,6 +696,18 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
   for (const p of allProfiles) {
     const email = (p.email || "").trim().toLowerCase();
     if (!email || !email.includes("@")) continue;
+
+    // Skip previously bounced or invalid member emails to protect sender reputation
+    if (p.admin_notes && p.admin_notes.includes("[EMAIL_BOUNCED]")) {
+      console.log(`[Bounce Protector] Profile #${p.id} (${email}) skipped due to previous bounce flag.`);
+      continue;
+    }
+
+    // Pre-flight syntax and disposable domain check
+    if (!isValidEmailFormat(email)) {
+      console.warn(`[Pre-Flight Drop] Profile #${p.id} (${email}) has invalid syntax/domain. Skipped.`);
+      continue;
+    }
 
     const isVerified = (p.verification_status || "").toLowerCase() === "verified" && p.is_live === true;
     if (isVerified) {
@@ -640,6 +778,8 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
       name: member.name || "Member",
       subject,
       html,
+      profileId: member.id,
+      adminNotes: member.admin_notes,
     });
   }
 
@@ -656,6 +796,8 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
       name: pendingProfile.name || "Valued Member",
       subject,
       html,
+      profileId: pendingProfile.id,
+      adminNotes: pendingProfile.admin_notes,
     });
   }
 
@@ -671,7 +813,14 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
       const rows = await res.json();
       for (const r of rows) {
         const email = (r.email || "").trim().toLowerCase();
-        if (email && email.includes("@") && !seenEmails.has(email)) {
+        if (email && !seenEmails.has(email)) {
+          // Pre-flight check: if subscriber email has invalid format/domain, auto-deactivate immediately
+          if (!isValidEmailFormat(email)) {
+            console.warn(`[Bounce Protector] Deactivating malformed subscriber email: ${email}`);
+            deactivateNewsletterSubscriber(email, "Invalid syntax/domain");
+            continue;
+          }
+
           seenEmails.add(email);
           const { subject, html } = buildVisitorNewsletterHtml(maleCount, femaleCount, email, dayOfWeek);
           recipients.push({
@@ -710,6 +859,7 @@ export default async function handler(req: any, res: any) {
 
     let successCount = 0;
     const errors: string[] = [];
+    const bouncedList: { email: string; type: string; reason: string }[] = [];
     const startTime = Date.now();
 
     // Paced sending: batches of 2 with a 2-second delay between them
@@ -735,7 +885,24 @@ export default async function handler(req: any, res: any) {
             });
             successCount++;
           } catch (err: any) {
-            errors.push(`${rec.email}: ${err.message}`);
+            const errMsg = err?.message || String(err);
+            errors.push(`${rec.email}: ${errMsg}`);
+
+            // Automatically detect hard bounces / invalid mailboxes and deactivate them in Supabase
+            if (isFatalBounceError(err)) {
+              console.warn(`[Bounce Detected] Fatal bounce for ${rec.email} (${rec.type}): ${errMsg}`);
+              bouncedList.push({
+                email: rec.email,
+                type: rec.type,
+                reason: errMsg,
+              });
+
+              if (rec.type === "visitor") {
+                await deactivateNewsletterSubscriber(rec.email, errMsg);
+              } else if (rec.type === "member" && rec.profileId) {
+                await markMemberEmailBounced(rec.profileId, rec.adminNotes, errMsg);
+              }
+            }
           }
         })
       );
@@ -751,19 +918,70 @@ export default async function handler(req: any, res: any) {
       await transporter.sendMail({
         from: `Rishta Matrimony Automation <${SENDER_EMAIL}>`,
         to: ADMIN_EMAIL,
-        subject: `📊 [${currentDayName}] Daily Matrimonial Dispatch: ${successCount}/${recipients.length} Delivered`,
+        subject: `📊 [${currentDayName}] Daily Matrimonial Dispatch: ${successCount}/${recipients.length} Delivered (${bouncedList.length} Bounced/Cleaned)`,
         html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2 style="color: #1f4037;">Daily Matrimonial Newsletter Report (${currentDayName})</h2>
-            <p><strong>Status:</strong> Completed</p>
-            <p><strong>Scheduled Day:</strong> ${currentDayName} (IST)</p>
-            <p><strong>Total Recipients:</strong> ${recipients.length}</p>
-            <p><strong>Verified Members Delivered:</strong> ${memberCount}</p>
-            <p><strong>Visitors / Pending Delivered:</strong> ${visitorCount}</p>
-            <p><strong>Successfully Delivered:</strong> ${successCount}</p>
-            <p><strong>Failed:</strong> ${errors.length}</p>
-            ${errors.length > 0 ? `<p><strong>Errors:</strong><br/>${errors.join("<br/>")}</p>` : ""}
-            <p style="color: #718096; font-size: 13px;">Automated 7-day dynamic rotation by Vercel Cloud Cron at 9:00 AM IST.</p>
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #2d3748;">
+            <h2 style="color: #1f4037; margin-top: 0;">Daily Matrimonial Newsletter Report (${currentDayName})</h2>
+            <p style="margin: 4px 0;"><strong>Execution Status:</strong> Completed</p>
+            <p style="margin: 4px 0;"><strong>Scheduled Day:</strong> ${currentDayName} (IST)</p>
+            <p style="margin: 4px 0;"><strong>Total Qualified Recipients:</strong> ${recipients.length}</p>
+            <p style="margin: 4px 0;"><strong>Verified Members Delivered:</strong> ${memberCount}</p>
+            <p style="margin: 4px 0;"><strong>Visitors / Pending Delivered:</strong> ${visitorCount}</p>
+            <p style="margin: 4px 0;"><strong>Successfully Delivered:</strong> <span style="color: #15803d; font-weight: bold;">${successCount}</span></p>
+            <p style="margin: 4px 0;"><strong>Total Errors/Rejections:</strong> ${errors.length}</p>
+            <p style="margin: 4px 0;"><strong>Auto-Deactivated Bounced Addresses:</strong> <span style="color: ${bouncedList.length > 0 ? '#b91c1c' : '#15803d'}; font-weight: bold;">${bouncedList.length}</span></p>
+
+            ${
+              bouncedList.length > 0
+                ? `
+              <div style="margin: 20px 0; padding: 16px; background-color: #fef2f2; border: 1.5px solid #f87171; border-radius: 8px;">
+                <strong style="color: #991b1b; font-size: 14px; display: block; margin-bottom: 6px;">
+                  🛡️ Auto-Deactivated & Blacklisted Bounces (${bouncedList.length}):
+                </strong>
+                <p style="margin: 0 0 10px; font-size: 12px; color: #7f1d1d; line-height: 1.5;">
+                  These addresses caused permanent delivery errors (such as Mailbox does not exist). The system has automatically deactivated them in Supabase to permanently protect your Gmail account (<strong>${SENDER_EMAIL}</strong>) from spam penalties or bans:
+                </p>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="6" border="0" style="background: #ffffff; border-radius: 6px; font-size: 12px; border: 1px solid #fecaca;">
+                  <tr style="background: #fee2e2; color: #991b1b; font-weight: bold;">
+                    <th align="left" style="padding: 6px 10px;">Email</th>
+                    <th align="left" style="padding: 6px 10px;">Type</th>
+                    <th align="left" style="padding: 6px 10px;">Reason</th>
+                  </tr>
+                  ${bouncedList
+                    .map(
+                      (b) => `
+                    <tr style="border-bottom: 1px solid #fecaca;">
+                      <td style="padding: 6px 10px; color: #1f2937; font-weight: 600;">${b.email}</td>
+                      <td style="padding: 6px 10px; color: #4b5563;">${b.type}</td>
+                      <td style="padding: 6px 10px; color: #b91c1c;">${b.reason}</td>
+                    </tr>
+                  `
+                    )
+                    .join("")}
+                </table>
+              </div>
+            `
+                : `
+              <div style="margin: 15px 0; padding: 12px; background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; color: #166534; font-size: 13px;">
+                ✓ <strong>Sender Reputation Healthy:</strong> Zero permanent bounces detected today! All email addresses are clean and responsive.
+              </div>
+            `
+            }
+
+            ${
+              errors.length > bouncedList.length
+                ? `
+              <div style="margin-top: 15px; font-size: 12px;">
+                <strong>Temporary Errors (${errors.length - bouncedList.length}):</strong><br/>
+                <span style="color: #6b7280;">${errors.filter((e) => !bouncedList.some((b) => e.startsWith(b.email))).join("<br/>")}</span>
+              </div>
+            `
+                : ""
+            }
+
+            <p style="color: #718096; font-size: 12px; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+              Automated 7-day dynamic rotation & bounce protection by Vercel Cloud Cron at 9:00 AM IST.
+            </p>
           </div>
         `,
       });
@@ -774,12 +992,14 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       success: true,
       day: currentDayName,
-      message: `Dispatched ${successCount} emails (${memberCount} Members, ${visitorCount} Visitors)`,
+      message: `Dispatched ${successCount} emails (${memberCount} Members, ${visitorCount} Visitors). Auto-deactivated ${bouncedList.length} bounced addresses.`,
       totalRecipients: recipients.length,
       memberCount,
       visitorCount,
       successCount,
       failedCount: errors.length,
+      bouncedCount: bouncedList.length,
+      bouncedList,
     });
   } catch (err: any) {
     console.error("Cron dispatcher fatal error:", err);
