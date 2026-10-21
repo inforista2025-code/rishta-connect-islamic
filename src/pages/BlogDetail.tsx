@@ -5,10 +5,11 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Calendar, ArrowLeft, User } from 'lucide-react';
+import { Loader2, Calendar, ArrowLeft, User, Share2, Copy, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { LanguageSwitch, Language } from '@/components/blog/LanguageSwitch';
+import { BlogShareButton } from '@/components/blog/BlogShareButton';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BlogDetail() {
@@ -129,6 +130,32 @@ export default function BlogDetail() {
   const formattedDate = format(new Date(blog.published_date), 'dd MMMM, yyyy');
   const displayTitle = translatedContent?.title || blog.title;
   const displayContent = translatedContent?.content || blog.content;
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://rishtamatrimony.vercel.app/blog/${blog.slug}`;
+
+  const handleDirectCopy = () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(currentUrl);
+      } else {
+        const input = document.createElement('input');
+        input.value = currentUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      toast({
+        title: '✅ Link Copied!',
+        description: 'Article link copied to clipboard. Share it with friends and family!',
+      });
+    } catch {
+      toast({
+        title: '❌ Copy failed',
+        description: 'Please copy link directly from browser address bar.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <>
@@ -186,14 +213,19 @@ export default function BlogDetail() {
                   </span>
                 ) : displayTitle}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formattedDate}</span>
+              <div className="flex flex-wrap items-center justify-between gap-4 text-muted-foreground pt-3 border-t border-border/60">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <span>{formattedDate}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    <span>Rishta Matrimony Team</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  <span>Rishta Matrimony Team</span>
+                  <BlogShareButton blogSlug={blog.slug} blogTitle={displayTitle} />
                 </div>
               </div>
             </header>
@@ -211,20 +243,67 @@ export default function BlogDetail() {
               />
             )}
 
+            {/* Share Article Section */}
+            <div className="mt-10 p-5 sm:p-6 bg-gradient-to-r from-primary/5 via-muted/40 to-primary/5 border border-primary/20 rounded-2xl shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                    <Share2 className="w-5 h-5 text-primary" />
+                    Share this Islamic Guidance
+                  </h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                    Spread knowledge and benefit family and friends looking for halal nikah guidance.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* WhatsApp Quick Share Button */}
+                  <Button
+                    asChild
+                    size="sm"
+                    className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium rounded-xl shadow-sm"
+                  >
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Read this article on Rishta Matrimony: "${displayTitle}"\n\n${currentUrl}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </Button>
+
+                  {/* Copy Link Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDirectCopy}
+                    className="rounded-xl border-border/80 hover:border-primary/50 flex items-center gap-1.5"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>Copy Link</span>
+                  </Button>
+
+                  {/* Full Share Dropdown */}
+                  <BlogShareButton blogSlug={blog.slug} blogTitle={displayTitle} />
+                </div>
+              </div>
+            </div>
+
             {/* CTA Section */}
-            <div className="mt-12 p-6 bg-primary/10 rounded-lg text-center">
+            <div className="mt-8 p-6 bg-primary/10 rounded-2xl text-center border border-primary/20">
               <h3 className="text-xl font-semibold mb-2">Looking for Your Life Partner?</h3>
               <p className="text-muted-foreground mb-4">
                 Register today and find your perfect match with Islamic values.
               </p>
-              <Button asChild>
-                <Link to="/register">Register Now</Link>
+              <Button asChild className="rounded-xl">
+                <Link to="/register">Register Free Now</Link>
               </Button>
             </div>
 
             {/* Related Articles CTA */}
             <div className="mt-8 text-center">
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="rounded-xl">
                 <Link to="/blog">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Read More Articles

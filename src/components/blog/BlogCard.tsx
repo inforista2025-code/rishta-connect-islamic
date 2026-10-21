@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
+import { BlogShareButton } from '@/components/blog/BlogShareButton';
 
 interface BlogCardProps {
   id: string;
@@ -31,9 +32,11 @@ export function BlogCard({ title, slug, excerpt, featured_image, published_date 
         />
       </div>
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-1.5">
-          <Calendar className="w-3.5 h-3.5" />
-          <span>{formattedDate}</span>
+        <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground mb-1.5">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{formattedDate}</span>
+          </div>
         </div>
         <h3 className="text-lg sm:text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors duration-200">
           <Link to={`/blog/${slug}`}>{title}</Link>
@@ -44,13 +47,14 @@ export function BlogCard({ title, slug, excerpt, featured_image, published_date 
           {excerpt || 'Read this insightful article about Islamic marriage and finding your perfect life partner...'}
         </p>
       </CardContent>
-      <CardFooter className="pt-0">
-        <Button asChild variant="outline" className="w-full rounded-xl border-primary/30 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200">
+      <CardFooter className="pt-0 flex items-center gap-2">
+        <Button asChild variant="outline" className="flex-1 rounded-xl border-primary/30 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200">
           <Link to={`/blog/${slug}`}>
             <span>Read More</span>
             <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
         </Button>
+        <BlogShareButton blogSlug={slug} blogTitle={title} />
       </CardFooter>
     </Card>
   );
