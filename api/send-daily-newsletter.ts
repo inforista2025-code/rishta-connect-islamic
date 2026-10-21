@@ -182,8 +182,12 @@ function buildVisitorNewsletterHtml(
   maleCount: number,
   femaleCount: number,
   recipientEmail: string,
-  dayOfWeek: number
+  dayOfWeek: number,
+  recipientName?: string
 ): { subject: string; html: string } {
+  const isNamed = !!(recipientName && recipientName !== "Valued Member" && recipientName !== "Member");
+  const greetingName = isNamed ? recipientName!.trim() : "";
+  const namePrefix = greetingName ? `${greetingName}, ` : "";
   const unsubMailto = `mailto:${SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipientEmail}`;
   const totalCount = maleCount + femaleCount;
 
@@ -201,7 +205,7 @@ function buildVisitorNewsletterHtml(
   > = {
     0: {
       // Sunday
-      subject: "🌟 Candidates Added This Week: Take a Sneak Peek on Rishta Matrimony",
+      subject: `🌟 ${namePrefix}Candidates Added This Week: Take a Sneak Peek on Rishta Matrimony`,
       badge: "Weekend Roundup",
       headline: "Meet New Verified Candidates Added This Week",
       introParagraph:
@@ -211,7 +215,7 @@ function buildVisitorNewsletterHtml(
     },
     1: {
       // Monday
-      subject: "⚡ Find Your Righteous Partner: Register in Under 2 Minutes (100% Free)",
+      subject: `⚡ ${namePrefix}Find Your Righteous Partner: Register in Under 2 Minutes (100% Free)`,
       badge: "Fresh Week Start",
       headline: "Start Your Matrimonial Journey in Under 2 Minutes",
       introParagraph:
@@ -410,78 +414,78 @@ function buildMemberDigestHtml(
   > = {
     0: {
       // Sunday
-      subject: `💎 Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony`,
+      subject: `💎 ${userName}, Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony`,
       badge: "Sunday Spotlight: Direct Connect",
       headline: "Connect Directly with Your Chosen Proposals Today",
       introNote:
-        "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
+        `Assalamu Alaikum <strong>${userName}</strong>. Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.`,
       tipTitle: "💎 Fast-Track Your Matrimonial Search",
       tipBody:
         "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership.",
     },
     1: {
       // Monday
-      subject: `📍 New Verified Matches in ${location} – Start Your Week with Rishta Matrimony`,
+      subject: `📍 ${userName}, Top Recommended ${targetGenderLabel} Matches in ${location} – Rishta Matrimony`,
       badge: "Regional & Local Focus",
       headline: `Top Recommended ${targetGenderLabel} Proposals in ${location} & Nearby`,
       introNote:
-        `Start your week by exploring compatible proposals located in or around <strong>${location}</strong>. Local connections make family meetings and background verification seamless.`,
+        `Assalamu Alaikum <strong>${userName}</strong>. Start your week by exploring compatible proposals located in or around <strong>${location}</strong>. Local connections make family meetings and background verification seamless.`,
       tipTitle: "📍 The Power of Regional Compatibility",
       tipBody:
         "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families.",
     },
     2: {
       // Tuesday
-      subject: `🎓 Top Qualified Matches: Engineers, Doctors & Graduates on Rishta Matrimony`,
+      subject: `🎓 ${userName}, Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony`,
       badge: "Education & Career Spotlight",
       headline: `Highly Educated & Professional ${targetGenderLabel} Candidates`,
       introNote:
-        "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds.",
+        `Assalamu Alaikum <strong>${userName}</strong>. Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.`,
       tipTitle: "🎓 Academic & Professional Profiles",
       tipBody:
         "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners.",
     },
     3: {
       // Wednesday
-      subject: `⭐ Who Viewed Your Profile? Active Members Receive 3x More Inquiries – Rishta Matrimony`,
+      subject: `⭐ ${userName}, Profile Activity & Views: Boost Your Visibility – Rishta Matrimony`,
       badge: "Profile Health & Visibility",
       headline: "Boost Your Profile Rank & Check Profile Views",
       introNote:
-        "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
+        `Assalamu Alaikum <strong>${userName}</strong>. Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.`,
       tipTitle: "⭐ Activity Boost Guarantee",
       tipBody:
         "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals.",
     },
     4: {
       // Thursday
-      subject: `✨ Just Verified: Meet the Newest Candidates Added on Rishta Matrimony`,
+      subject: `✨ ${userName}, Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony`,
       badge: "Newest Weekly Arrivals",
       headline: `Newly Verified ${targetGenderLabel} Profiles Added This Week`,
       introNote:
-        "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
+        `Assalamu Alaikum <strong>${userName}</strong>. Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.`,
       tipTitle: "✨ Fresh Proposals Every Week",
       tipBody:
         "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families.",
     },
     5: {
       // Friday
-      subject: `🕌 Jumu'ah Mubarak ${userName} – Take a Blessed Step Towards Nikah`,
+      subject: `🕌 Jumu'ah Mubarak ${userName}! Curated Proposals for a Blessed Nikah – Rishta Matrimony`,
       badge: "Jumu'ah Mubarak",
       headline: "A Blessed Day to Advance Your Noble Intentions of Nikah",
       introNote:
-        `Assalamu Alaikum ${userName}. On this blessed Jumu'ah, we present curated, modest <strong>${targetGenderLabel} proposals</strong> upholding authentic Islamic principles.`,
+        `Assalamu Alaikum <strong>${userName}</strong>. On this blessed Jumu'ah, we present curated, modest <strong>${targetGenderLabel} proposals</strong> upholding authentic Islamic principles.`,
       tipTitle: "📖 Islamic Principle of Compatibility",
       tipBody:
         "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]",
     },
     6: {
       // Saturday
-      subject: `👨‍👩‍👦 Weekend Rishta Review: Curated Matches for You and Your Family – Rishta Matrimony`,
+      subject: `👨‍👩‍👧‍👦 ${userName}, Weekend Family Review: Curated Matches for You – Rishta Matrimony`,
       badge: "Weekend Family Digest",
       headline: "Review Compatible Proposals with Your Family Today",
       introNote:
-        "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
-      tipTitle: "👨‍👩‍👦 Family Consultation (Mashwarah)",
+        `Assalamu Alaikum <strong>${userName}</strong>. Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.`,
+      tipTitle: "👨‍👩‍👧‍👦 Family Consultation (Mashwarah)",
       tipBody:
         "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision.",
     },
@@ -554,6 +558,12 @@ function buildMemberDigestHtml(
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
+              <!-- Personalized Member Header Card -->
+              <div style="background-color: #f8fafc; border-left: 4px solid #1f4037; padding: 13px 18px; margin-bottom: 22px; border-radius: 0 8px 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="font-size: 16px; font-weight: 700; color: #1f4037;">Assalamu Alaikum, ${userName}</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 3px;">Personalized matrimonial recommendations curated for your verified profile</div>
+              </div>
+
               <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
                 ${currentTheme.badge}
               </div>
@@ -788,12 +798,13 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
     if (seenEmails.has(email)) continue;
     seenEmails.add(email);
 
-    const { subject, html } = buildVisitorNewsletterHtml(maleCount, femaleCount, email, dayOfWeek);
+    const pendingName = pendingProfile.name || "Valued Member";
+    const { subject, html } = buildVisitorNewsletterHtml(maleCount, femaleCount, email, dayOfWeek, pendingName);
 
     recipients.push({
       type: "visitor",
       email,
-      name: pendingProfile.name || "Valued Member",
+      name: pendingName,
       subject,
       html,
       profileId: pendingProfile.id,
@@ -874,9 +885,13 @@ export default async function handler(req: any, res: any) {
       await Promise.allSettled(
         batch.map(async (rec) => {
           try {
+            const recipientToHeader = rec.name && rec.name !== "Valued Member" && rec.name !== "Member" && rec.name !== "Respected Member"
+              ? `"${rec.name.replace(/[<>"']/g, "").trim()}" <${rec.email}>`
+              : rec.email;
+
             await transporter.sendMail({
               from: `Rishta Matrimony <${SENDER_EMAIL}>`,
-              to: rec.email,
+              to: recipientToHeader,
               subject: rec.subject,
               html: rec.html,
               headers: {

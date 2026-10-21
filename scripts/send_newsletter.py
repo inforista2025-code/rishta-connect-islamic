@@ -287,65 +287,62 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str, 
 
     daily_member_themes = {
         0: {
-            "subject": "💎 Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony",
+            "subject": f"💎 {user_name}, Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony",
             "badge": "Sunday Spotlight: Direct Connect",
             "headline": "Connect Directly with Your Chosen Proposals Today",
-            "intro": "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
             "tip_title": "💎 Fast-Track Your Matrimonial Search",
             "tip_body": "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership."
         },
         1: {
-            "subject": f"📍 New Verified Matches in {location} – Start Your Week with Rishta Matrimony",
+            "subject": f"📍 {user_name}, Top Recommended {target_gender_label} Matches in {location} – Rishta Matrimony",
             "badge": "Regional & Local Focus",
             "headline": f"Top Recommended {target_gender_label} Proposals in {location} & Nearby",
-            "intro": f"Start your week by exploring compatible proposals located in or around <strong>{location}</strong>. Local connections make family meetings and background verification seamless.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Start your week by exploring compatible proposals located in or around <strong>{location}</strong>. Local connections make family meetings and background verification seamless.",
             "tip_title": "📍 The Power of Regional Compatibility",
             "tip_body": "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families."
         },
         2: {
-            "subject": "🎓 Top Qualified Matches: Engineers, Doctors & Graduates on Rishta Matrimony",
+            "subject": f"🎓 {user_name}, Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony",
             "badge": "Education & Career Spotlight",
             "headline": f"Highly Educated & Professional {target_gender_label} Candidates",
-            "intro": "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.",
             "tip_title": "🎓 Academic & Professional Profiles",
             "tip_body": "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners."
         },
         3: {
-            "subject": "⭐ Who Viewed Your Profile? Active Members Receive 3x More Inquiries – Rishta Matrimony",
+            "subject": f"⭐ {user_name}, Profile Activity & Views: Boost Your Visibility – Rishta Matrimony",
             "badge": "Profile Health & Visibility",
             "headline": "Boost Your Profile Rank & Check Profile Views",
-            "intro": "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
             "tip_title": "⭐ Activity Boost Guarantee",
             "tip_body": "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals."
         },
         4: {
-            "subject": "✨ Just Verified: Meet the Newest Candidates Added on Rishta Matrimony",
+            "subject": f"✨ {user_name}, Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony",
             "badge": "Newest Weekly Arrivals",
             "headline": f"Newly Verified {target_gender_label} Profiles Added This Week",
-            "intro": "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
             "tip_title": "✨ Fresh Proposals Every Week",
             "tip_body": "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families."
         },
         5: {
-            "subject": f"🕌 Jumu'ah Mubarak {user_name} – Take a Blessed Step Towards Nikah",
+            "subject": f"🕌 Jumu'ah Mubarak {user_name}! Curated Proposals for a Blessed Nikah – Rishta Matrimony",
             "badge": "Jumu'ah Mubarak",
             "headline": "A Blessed Day to Advance Your Noble Intentions of Nikah",
-            "intro": f"Assalamu Alaikum {user_name}. On this blessed Jumu'ah, we present curated, modest <strong>{target_gender_label} proposals</strong> upholding authentic Islamic principles.",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. On this blessed Jumu'ah, we present curated, modest <strong>{target_gender_label} proposals</strong> upholding authentic Islamic principles.",
             "tip_title": "📖 Islamic Principle of Compatibility",
             "tip_body": "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]"
         },
         6: {
-            "subject": "👨‍👩‍👦 Weekend Rishta Review: Curated Matches for You and Your Family – Rishta Matrimony",
+            "subject": f"👨‍👩‍👧‍👦 {user_name}, Weekend Family Review: Curated Matches for You – Rishta Matrimony",
             "badge": "Weekend Family Digest",
             "headline": "Review Compatible Proposals with Your Family Today",
-            "intro": "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
-            "tip_title": "👨‍👩‍👦 Family Consultation (Mashwarah)",
+            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
+            "tip_title": "👨‍👩‍👧‍👦 Family Consultation (Mashwarah)",
             "tip_body": "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision."
         }
     }
-
-    theme = daily_member_themes.get(day_of_week, daily_member_themes[1])
-
     match_cards_html = ""
     for m in matches:
         m_name = m.get("name") or "Verified Candidate"
@@ -623,12 +620,13 @@ def fetch_recipients():
             continue
         seen.add(email)
 
-        subject, html = build_visitor_newsletter_html(male_count, female_count, email, day_of_week)
+        pending_name = pending_profile.get("name") or "Valued Member"
+        subject, html = build_visitor_newsletter_html(male_count, female_count, email, day_of_week, recipient_name=pending_name)
 
         recipients.append({
             "type": "visitor",
             "email": email,
-            "name": pending_profile.get("name") or "Valued Member",
+            "name": pending_name,
             "subject": subject,
             "html": html,
             "profile_id": pending_profile.get("id"),
@@ -701,7 +699,7 @@ def send_newsletter(is_live=False):
                 msg = MIMEMultipart("alternative")
                 msg["Subject"] = r["subject"]
                 msg["From"] = f"Rishta Matrimony <{SENDER_EMAIL}>"
-                msg["To"] = r["email"]
+                msg["To"] = f'"{r["name"]}" <{r["email"]}>' if r.get("name") and r["name"] not in ["Valued Member", "Member", "Respected Member"] else r["email"]
                 msg["List-Unsubscribe"] = f"<mailto:{SENDER_EMAIL}?subject=Unsubscribe>"
                 msg.attach(MIMEText(r["html"], "html"))
                 
