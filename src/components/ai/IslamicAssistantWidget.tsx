@@ -30,8 +30,8 @@ export function IslamicAssistantWidget() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Hide on Admin Dashboard routes to prevent obstruction
-  if (location.pathname.startsWith('/admin')) {
+  // ONLY render the AI Assistant on the Home Page ('/')
+  if (location.pathname !== '/') {
     return null;
   }
 
