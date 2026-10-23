@@ -114,7 +114,9 @@ export function AIKnowledgeManager() {
   const [faqs, setFaqs] = useState<CustomFAQ[]>(DEFAULT_FAQS);
   const [docs, setDocs] = useState<KnowledgeDoc[]>([]);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return localStorage.getItem('gemini_api_key') || '';
+  });
   const [showApiKey, setShowApiKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingKey, setIsTestingKey] = useState(false);
@@ -332,7 +334,7 @@ export function AIKnowledgeManager() {
     setTestResult(null);
 
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey.trim()}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey.trim()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
