@@ -198,6 +198,42 @@ export const verifiedMatrimonialProfiles = [
 export async function searchProfilesForAssistant(queryText: string) {
   try {
     const q = queryText.toLowerCase();
+
+    // Check if query is looking for a specific profile ID (e.g. "profile 29", "#33", "id 60")
+    const idMatch = q.match(/(?:profile|id|rm-gr-|rm-br-|#)\s*(\d+)/i) || (q.includes("profile") ? q.match(/\b(\d{1,4})\b/) : null);
+    if (idMatch && idMatch[1]) {
+      const targetId = parseInt(idMatch[1], 10);
+      try {
+        const { data } = await supabase
+          .from('profiles_data')
+          .select('id, name, gender, age, location, education, profession, maslak')
+          .eq('id', targetId)
+          .eq('is_live', true)
+          .eq('verification_status', 'verified');
+
+        if (data && data.length > 0) {
+          const p = data[0];
+          return {
+            matches: [{
+              id: p.id,
+              name: p.name,
+              gender: p.gender,
+              age: p.age,
+              city: p.location,
+              education: p.education,
+              profession: p.profession,
+              maslak: p.maslak,
+            }],
+            searchedTerm: `Profile #${targetId}`,
+            hasKeyword: true,
+            genderFilter: p.gender,
+          };
+        }
+      } catch (err) {
+        console.warn('Direct profile ID lookup error in assistant:', err);
+      }
+    }
+
     let genderFilter: string | null = null;
     if (
       q.includes('female') || q.includes('dulhan') || q.includes('bride') || 
@@ -754,14 +790,19 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     const { matches, searchedTerm, hasKeyword, genderFilter } = searchRes;
 
     if (matches && matches.length > 0) {
-      const targetLabel = genderFilter === 'Female' ? 'Brides (Dulhan)' : genderFilter === 'Male' ? 'Grooms (Dulha)' : 'Proposals';
+      const targetLabel = genderFilter === 'Female' ? 'ladkiyon (Dulhan)' : genderFilter === 'Male' ? 'ladkon (Dulha)' : 'verified rishton';
+      const listItems = matches.map((p, idx) => {
+        const code = `RM-${p.gender === 'Female' ? 'BR' : 'GR'}-${p.id}`;
+        return `${idx + 1}. **Profile #${p.id} (${code}):** ${p.name} — Umar ${p.age} saal, ${p.city} | Education: ${p.education} | Profession: ${p.profession}`;
+      }).join('\n\n');
+
       return {
-        text: `Alhamdulillah! Hamare database me aapke liye matching verified **${targetLabel}** daryaft hue hain${searchedTerm ? ` ("${searchedTerm}")` : ''} 👰🤵\n\nNeeche diye gaye profile card par click karke aap direct profile page par jaakar us card ko view kar sakte hain:\n\n💬 *Kya aap inme se kisi profile ki education, profession ya family details ke bare me aur jan-na chahte hain?*`,
+        text: `Haan ji! Hamare paas ${targetLabel} ki ye verified profiles uplabdh hain:\n\n${listItems}\n\n⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh dono khandano ki safety aur privacy ke liye platform ka zaroori niyam hai).\n\n👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar le, do minute lagega:**\nhttps://rishtamatrimony.vercel.app/register\n\n💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
         profileMatches: matches,
       };
     } else if (hasKeyword) {
       return {
-        text: `Filhal hamare platform par **"${searchedTerm}"** se koi naya verified profile live nahi hai 🌸\n\n• Aap **Free Biodata Register** kar sakte hain taaki ${searchedTerm} aur aas-paas ke naye rishte aane par aapko direct notify kiya jaye.\n• Ya aap baaki shehron ke verified rishte explore kar sakte hain.\n\n💬 *Kya aap kisi doosri nearby city (jaise Patna, Ranchi, Dhanbad, Delhi) ke rishte dekhna chahenge?*`,
+        text: `Filhaal hamare platform par **"${searchedTerm}"** se direct profile live nahi hai, lekin doosre shehron jaise Ranchi, Patna, Delhi, Mumbai, Bihar, UP wagaira se verified rishte maujood hain 🌸\n\n⚠️ **Zaroori Jankari:** Hamare platform par kisi bhi rishte ka contact number aur photo dekhne ke liye pehle apna profile register karna hota hai.\n\n👉 **Agar aap chahte hain ki jaise hi matching rishta aaye hamari team aapse direct rabta kare, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**\nhttps://rishtamatrimony.vercel.app/register\n\n💬 *Kya aap kisi doosri nearby city ke verified rishte dekhna chahenge?*`,
         profileMatches: [],
       };
     }

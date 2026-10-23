@@ -115,6 +115,9 @@ export function IslamicAssistantWidget() {
           if (data && data.reply) {
             replyText = data.reply;
             actions = data.suggestedActions;
+            if (data.profileMatches && Array.isArray(data.profileMatches) && data.profileMatches.length > 0) {
+              profileMatches = data.profileMatches;
+            }
           }
         }
       } catch (apiErr) {
@@ -293,12 +296,20 @@ export function IslamicAssistantWidget() {
       if (mdMatch) {
         const label = mdMatch[1];
         const linkUrl = mdMatch[2];
+        const isInternal = linkUrl.startsWith('/');
         return (
           <a
             key={i}
             href={linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={isInternal ? undefined : "_blank"}
+            rel={isInternal ? undefined : "noopener noreferrer"}
+            onClick={(e) => {
+              if (isInternal) {
+                e.preventDefault();
+                setIsOpen(false);
+                navigate(linkUrl);
+              }
+            }}
             className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-900 underline decoration-emerald-500/60 hover:decoration-emerald-700 transition-colors"
           >
             <span>{label}</span>
