@@ -346,6 +346,7 @@ function generateSmartFallback(
 • **Taleem (Education):** ${p.education}
 • **Pesha (Profession):** ${p.profession}
 • **Status:** ${p.marital_status || 'Single'}${p.maslak ? ` • Maslak: ${p.maslak}` : ''}
+• **Profile Link:** [👉 View Profile #${p.id} on Page](/profiles?id=${p.id}&gender=${p.gender})
 
 ⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh genuine parivaron ki safety aur privacy ke liye platform ka zaroori niyam hai).
 
@@ -381,7 +382,7 @@ function generateSmartFallback(
       const listItems = matchedProfiles.map((p, idx) => {
         const code = `RM-${p.gender === 'Female' ? 'BR' : 'GR'}-${p.id}`;
         const status = p.marital_status || 'Single';
-        return `${idx + 1}. **Profile #${p.id} (${code}):** ${p.name} — Umar ${p.age} saal, ${p.location} | Education: ${p.education} | Profession: ${p.profession} (${status})`;
+        return `${idx + 1}. **Profile #${p.id} (${code}):** ${p.name} — Umar ${p.age} saal, ${p.location} | Education: ${p.education} | Profession: ${p.profession} (${status})\n   [👉 View Profile #${p.id} on Page](/profiles?id=${p.id}&gender=${p.gender})`;
       }).join('\n\n');
 
       return {
@@ -684,7 +685,11 @@ CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
      Aap pehle 2 minute nikaal kar apna profile register kar lijiye taaki jaise hi matching rishta aaye hamari team aapse direct rabta kare:
      👉 [👉 Register Free Biodata (Sirf 2 Minute)](/register)"
 4. NEVER dump a generic list of policy bullet points when a user asked a specific question. Answer their exact concern first, then explain briefly with warmth.
-5. CLICKABLE LINKS: Whenever you suggest viewing profiles or registering, provide full URLs (e.g. [👉 View Verified Profiles](/profiles) or [👉 Register Free Biodata (Sirf 2 Minute)](/register)) on their own line so visitors can click directly to open that page.
+5. CLICKABLE LINKS (SAME TAB NAVIGATION):
+   - For specific profiles: You can provide internal links like "[👉 View Profile #29](/profiles?id=29)" which smoothly shifts the user on the same tab.
+   - For general profiles: "[👉 View Verified Profiles](/profiles)".
+   - For registration: ALWAYS provide "[👉 Register Free Biodata (Sirf 2 Minute)](/register)" or simply "/register".
+   - All links will navigate in-place on the same web tab without opening any new tabs.
 6. Conclude with a helpful, friendly follow-up question.
 
 --- VERIFIED ACTIVE PROFILES ON WEBSITE ---

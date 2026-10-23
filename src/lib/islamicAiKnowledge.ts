@@ -793,7 +793,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
       const targetLabel = genderFilter === 'Female' ? 'ladkiyon (Dulhan)' : genderFilter === 'Male' ? 'ladkon (Dulha)' : 'verified rishton';
       const listItems = matches.map((p, idx) => {
         const code = `RM-${p.gender === 'Female' ? 'BR' : 'GR'}-${p.id}`;
-        return `${idx + 1}. **Profile #${p.id} (${code}):** ${p.name} — Umar ${p.age} saal, ${p.city} | Education: ${p.education} | Profession: ${p.profession}`;
+        return `${idx + 1}. **Profile #${p.id} (${code}):** ${p.name} — Umar ${p.age} saal, ${p.city} | Education: ${p.education} | Profession: ${p.profession}\n   [👉 View Profile #${p.id} on Page](/profiles?id=${p.id}&gender=${p.gender})`;
       }).join('\n\n');
 
       return {

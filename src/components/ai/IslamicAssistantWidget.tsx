@@ -213,6 +213,85 @@ export function IslamicAssistantWidget() {
     ]);
   };
 
+  // Smart Link Interceptor: Navigates on the SAME web tab (no new tabs, no 404s)
+  const handleSmartLinkClick = (rawUrl: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    const lower = (rawUrl || '').toLowerCase().trim();
+
+    // 1. Register links (e.g. /register or any full URL containing register) -> shift on same tab
+    if (lower.includes('register')) {
+      setIsOpen(false);
+      navigate('/register');
+      return;
+    }
+
+    // 2. Profiles links (e.g. /profiles or /profiles?id=29) -> shift on same tab
+    if (lower.includes('profiles') || lower.includes('profile')) {
+      setIsOpen(false);
+      const queryIdx = rawUrl.indexOf('?');
+      const targetPath = queryIdx !== -1 ? `/profiles${rawUrl.substring(queryIdx)}` : '/profiles';
+      navigate(targetPath);
+      return;
+    }
+
+    // 3. Known routes -> shift on same tab
+    if (lower.includes('pricing')) {
+      setIsOpen(false);
+      navigate('/pricing');
+      return;
+    }
+    if (lower.includes('login')) {
+      setIsOpen(false);
+      navigate('/member/login');
+      return;
+    }
+    if (lower.includes('contact')) {
+      setIsOpen(false);
+      navigate('/contact');
+      return;
+    }
+
+    // 4. Relative paths -> shift on same tab
+    if (rawUrl.startsWith('/')) {
+      setIsOpen(false);
+      navigate(rawUrl);
+      return;
+    }
+
+    // 5. If the URL points to our website domain (e.g. vercel.app or same hostname) -> extract path and shift on same tab
+    try {
+      if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+        const parsed = new URL(rawUrl);
+        if (parsed.hostname.includes('vercel.app') || parsed.hostname === window.location.hostname) {
+          setIsOpen(false);
+          const fullPath = parsed.pathname + parsed.search + parsed.hash;
+          navigate(fullPath || '/');
+          return;
+        }
+      }
+    } catch (urlErr) {
+      console.warn('URL parse error:', urlErr);
+    }
+
+    // 6. External WhatsApp link
+    if (lower.includes('wa.me') || lower.includes('whatsapp.com')) {
+      window.location.href = rawUrl;
+      return;
+    }
+
+    // Fallback on same tab
+    if (rawUrl.startsWith('http')) {
+      window.location.href = rawUrl;
+    } else {
+      setIsOpen(false);
+      navigate(rawUrl);
+    }
+  };
+
   // Helper to format text cleanly without markdown clutter
   const renderCleanText = (text: string, isStreaming?: boolean) => {
     const lines = text.split('\n');
@@ -526,7 +605,7 @@ export function IslamicAssistantWidget() {
 
                       <button
                         type="button"
-                        onClick={() => navigate('/register')}
+                        onClick={() => { setIsOpen(false); navigate('/register'); }}
                         className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded transition-colors"
                       >
                         <span>Free Biodata (/register)</span>
