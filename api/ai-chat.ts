@@ -33,7 +33,13 @@ const FALLBACK_PROFILES: LiveProfileSummary[] = [
 
 let cachedProfiles: LiveProfileSummary[] = [];
 let lastProfilesFetch = 0;
-const PROFILES_CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache
+const PROFILES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache
+
+let cachedKnowledge: string = "";
+let lastKnowledgeFetch = 0;
+const KNOWLEDGE_CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache
+
+let geminiRateLimitedUntil = 0;
 
 async function fetchVerifiedProfiles(): Promise<LiveProfileSummary[]> {
   const now = Date.now();
@@ -131,6 +137,11 @@ const DEFAULT_KNOWLEDGE = `
 
 // Helper to fetch dynamic Knowledge Base from Supabase
 async function fetchAdminKnowledgeBase(): Promise<string> {
+  const now = Date.now();
+  if (cachedKnowledge && now - lastKnowledgeFetch < KNOWLEDGE_CACHE_TTL) {
+    return cachedKnowledge;
+  }
+
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/about_us_content?language=eq.ai_knowledge_base&select=content`,
@@ -142,7 +153,11 @@ async function fetchAdminKnowledgeBase(): Promise<string> {
       }
     );
 
-    if (!res.ok) return DEFAULT_KNOWLEDGE;
+    if (!res.ok) {
+      cachedKnowledge = DEFAULT_KNOWLEDGE;
+      lastKnowledgeFetch = now;
+      return DEFAULT_KNOWLEDGE;
+    }
 
     const data = await res.json();
     if (data && data.length > 0 && data[0].content) {
@@ -180,6 +195,8 @@ async function fetchAdminKnowledgeBase(): Promise<string> {
     console.warn("Could not load dynamic knowledge base from Supabase:", err);
   }
 
+  cachedKnowledge = DEFAULT_KNOWLEDGE;
+  lastKnowledgeFetch = now;
   return DEFAULT_KNOWLEDGE;
 }
 
@@ -654,6 +671,27 @@ Aap niche diye gaye link se direct join kar sakte hain:
     };
   }
 
+  // 13. POLITE COURTESIES & GREETINGS
+  if (q.includes("jazakallah") || q.includes("shukriya") || q.includes("thank")) {
+    return {
+      reply: `Wa iyyakum! Khushi hui aapki madad karke 😊🌸
+
+Agar aapko kisi verified rishte ki details dekhni hon ya free biodata register karne me koi sawaal ho, toh zaroor batayein!
+
+👉 [👉 Register Free Biodata (Sirf 2 Minute)](/register)`,
+    };
+  }
+
+  if (q.includes("kaise ho") || q.includes("kya haal") || q.includes("kese ho") || q.includes("how are you")) {
+    return {
+      reply: `Alhamdulillah, Allah ka shukr hai! Aap sunaiye, aap aur aapka khandan kaisa hai? 😊🌸
+
+Rishta Matrimony par main aapke ya aapke parivar ke liye behtareen rishta dhoondhne me poori madad karne ke liye hazir hoon.
+
+💬 *Bataiye, kis shehar ya qualification ke rishte dekhna chahte hain?*`,
+    };
+  }
+
   // 14. GENERAL CONVERSATIONAL CATCH-ALL
   return {
     reply: `Assalamu Alaikum! 🌸✨
@@ -765,16 +803,82 @@ Aap niche diye gaye link se direct join kar sakte hain:
       });
     }
 
-    // 1. Fetch dynamic knowledge base and live verified profiles in parallel
+    // 1. Fetch dynamic knowledge base and live verified profiles in parallel (cached)
     const [knowledgeBase, liveProfiles] = await Promise.all([
       fetchAdminKnowledgeBase(),
       fetchVerifiedProfiles(),
     ]);
 
-    // Check if query matches profiles directly
+    // 2. HIGH-SPEED ENGINE: Check profile queries & direct platform FAQs first
+    // For profile searches, city searches, or platform rules, answer IMMEDIATELY (<10ms) without waiting for external API latency!
     const profileSearch = findMatchingProfiles(userQuery, liveProfiles);
+    if (profileSearch.isProfileQuery) {
+      const fastResult = generateSmartFallback(userQuery, knowledgeBase, liveProfiles);
+      return res.status(200).json({
+        success: true,
+        reply: fastResult.reply,
+        profileMatches: fastResult.profileMatches,
+        source: "fast_profile_engine",
+        suggestedActions: [
+          { label: "Register Free (2 Mins)", url: "/register" },
+          { label: "View Verified Profiles", url: "/profiles" },
+          {
+            label: "Chat on WhatsApp",
+            url: `https://wa.me/919128719875?text=${encodeURIComponent("Assalamu Alaikum! Maine website AI se rishton ke bare me inquiry ki thi.")}`,
+            isExternal: true,
+          },
+        ],
+      });
+    }
 
-    // 2. Identify Gemini API Key
+    const isDirectFaq =
+      qLower.includes("photo") ||
+      qLower.includes("tasveer") ||
+      qLower.includes("pic") ||
+      qLower.includes("free") ||
+      qLower.includes("muft") ||
+      qLower.includes("kitna paisa") ||
+      qLower.includes("kya charge") ||
+      qLower.includes("fees") ||
+      qLower.includes("charges") ||
+      qLower.includes("plan") ||
+      qLower.includes("price") ||
+      qLower.includes("parent") ||
+      qLower.includes("walidain") ||
+      qLower.includes("jahez") ||
+      qLower.includes("dowry") ||
+      qLower.includes("verify") ||
+      qLower.includes("verification") ||
+      qLower.includes("contact") ||
+      qLower.includes("phone") ||
+      qLower.includes("admin") ||
+      qLower.includes("helpline") ||
+      qLower.includes("jazakallah") ||
+      qLower.includes("shukriya") ||
+      qLower.includes("thank") ||
+      qLower.includes("kaise ho") ||
+      qLower.includes("kya haal");
+
+    if (isDirectFaq) {
+      const fastFaqResult = generateSmartFallback(userQuery, knowledgeBase, liveProfiles);
+      return res.status(200).json({
+        success: true,
+        reply: fastFaqResult.reply,
+        profileMatches: fastFaqResult.profileMatches,
+        source: "fast_faq_engine",
+        suggestedActions: [
+          { label: "Register Free (2 Mins)", url: "/register" },
+          { label: "View Verified Profiles", url: "/profiles" },
+          {
+            label: "Chat on WhatsApp",
+            url: `https://wa.me/919128719875?text=${encodeURIComponent("Assalamu Alaikum! Maine website par inquiry ki thi, kripya madad karein.")}`,
+            isExternal: true,
+          },
+        ],
+      });
+    }
+
+    // 3. Identify Gemini API Key
     const defaultKey = Buffer.from(
       "QVEuQWI4Uk42TFNBUWpIRzZFaGRCbk5QaUFwZzRpOEt3NzItSWllODdtU0pMN1ZpNnFKUXc=",
       "base64"
@@ -786,8 +890,8 @@ Aap niche diye gaye link se direct join kar sakte hain:
       process.env.VITE_GEMINI_API_KEY ||
       defaultKey;
 
-    // 3. If Gemini API key is available, call Gemini 2.5 Flash with strict conversational grounding
-    if (apiKey && apiKey.trim().length > 10) {
+    // 4. For open-ended questions: call Gemini if not in rate-limit cooldown
+    if (apiKey && apiKey.trim().length > 10 && Date.now() > geminiRateLimitedUntil) {
       try {
         const profilesDirectory = formatProfilesDirectoryForPrompt(liveProfiles);
 
@@ -874,39 +978,46 @@ ${knowledgeBase}
           parts: [{ text: userQuery }],
         });
 
-        // Try primary model (gemini-2.5-flash) and fallback models if needed
-        const candidateModels = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-1.5-flash"];
         let candidateText: string | null = null;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5s maximum timeout
 
-        for (const modelName of candidateModels) {
-          try {
-            const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey.trim()}`;
-            const geminiRes = await fetch(geminiEndpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                systemInstruction: {
-                  parts: [{ text: systemInstruction }],
-                },
-                contents: formattedContents,
-                generationConfig: {
-                  temperature: 0.35,
-                  topP: 0.85,
-                  maxOutputTokens: 800,
-                },
-              }),
-            });
+          const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`;
+          const geminiRes = await fetch(geminiEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: systemInstruction }],
+              },
+              contents: formattedContents,
+              generationConfig: {
+                temperature: 0.35,
+                topP: 0.85,
+                maxOutputTokens: 600,
+              },
+            }),
+          });
+          clearTimeout(timeoutId);
 
-            if (geminiRes.ok) {
-              const geminiData = await geminiRes.json();
-              const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (text && text.trim().length > 0) {
-                candidateText = text.trim();
-                break;
-              }
+          if (geminiRes.status === 429) {
+            // Rate limit / Quota exceeded on free tier - set cooldown for 15 minutes to prevent latency
+            geminiRateLimitedUntil = Date.now() + 15 * 60 * 1000;
+            console.warn("[Gemini 429] Free-tier daily quota exhausted; activated 15-minute speed cooldown.");
+          } else if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text && text.trim().length > 0) {
+              candidateText = text.trim();
             }
-          } catch (modelErr) {
-            console.warn(`Model ${modelName} fetch error:`, modelErr);
+          }
+        } catch (fetchErr: any) {
+          if (fetchErr.name === "AbortError") {
+            console.warn("[Gemini Timeout] Request aborted after 2.5s for instant fallback.");
+          } else {
+            console.warn("[Gemini Fetch Error]:", fetchErr);
           }
         }
 

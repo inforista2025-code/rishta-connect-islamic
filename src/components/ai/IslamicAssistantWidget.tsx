@@ -149,10 +149,11 @@ export function IslamicAssistantWidget() {
 
       setMessages((prev) => [...prev, initialBotMsg]);
 
-      // Stream text chunk by chunk (typewriter effect)
+      // Fast, fluid streaming animation (completes smoothly in ~300ms to 450ms)
       let currentIdx = 0;
-      const chunkSize = 3;
-      const tickSpeed = 16;
+      const totalLen = fullText.length;
+      const chunkSize = Math.max(14, Math.ceil(totalLen / 28));
+      const tickSpeed = 12;
 
       streamingIntervalRef.current = setInterval(() => {
         currentIdx += chunkSize;
