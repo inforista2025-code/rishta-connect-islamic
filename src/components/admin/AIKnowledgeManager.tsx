@@ -64,6 +64,12 @@ interface KnowledgeDoc {
 
 const DEFAULT_FAQS: CustomFAQ[] = [
   {
+    id: 'faq-0',
+    question: 'Photo submit karna compulsory hai kya?',
+    answer: 'Haan ji, registration form submit karte waqt kam se kam 2 clear photos upload karna zaroori (compulsory) hota hai taaki genuine aur verified profile ban sake. Lekin aap befikr rahein — aapki privacy aur parda 100% mehfooz rehta hai aur photos open social media par display nahi hoti hain.',
+    keywords: 'photo, compulsory, zaroori, mandatory, bina photo, tasveer, upload'
+  },
+  {
     id: 'faq-1',
     question: 'How much does it cost to register a profile?',
     answer: 'Biodata registration is 100% FREE for both brides and grooms at /register. You can fill the form, submit your details, and our admin team will verify it within 24-48 hours.',

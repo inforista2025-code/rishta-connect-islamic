@@ -595,13 +595,77 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   }
 
   // ==========================================
-  // 4. CONTACTS, PRICING, & ₹491 PREMIUM PLAN
+  // 4. PHOTO COMPULSORY & PRIVACY QUESTIONS
+  const isPhotoMentioned = q.includes('photo') || q.includes('tasveer') || q.includes('pic') || q.includes('image') || q.includes('dp');
+  const isCompulsoryAsked = 
+    q.includes('compulsory') || 
+    q.includes('zaroori') || 
+    q.includes('jaruri') || 
+    q.includes('mandatory') || 
+    q.includes('bina photo') || 
+    q.includes('photo ke bina') || 
+    q.includes('dalna padega') || 
+    q.includes('dena padega') || 
+    q.includes('upload karna padega') || 
+    q.includes('chahiye kya');
+
+  if (isPhotoMentioned && isCompulsoryAsked) {
+    return {
+      text: `Haan ji, registration form submit karte waqt kam se kam **2 clear photos** upload karna zaroori (compulsory) hota hai 🌸\n\nIska maqsad yeh hai ki:\n• Hamare platform par sirf **genuine aur verified rishte** hi jud sakein aur kisi bhi fake account se bacha ja sake.\n• Dono khandano ko tasalli aur aitbaar ho sake.\n\n**Lekin aap befikr rahein — aapki Privacy aur Parda 100% mehfooz hai:**\n• Aapki photo kisi bhi open social media ya Google search par show nahi hoti.\n• Behenon ke liye Parda/Hijab ka pura ehtram kiya jata hai aur photo confidential rehti hai.\n\n💬 *Kya aapko photo upload karne ya biodata form bharne me koi dikkat aa rahi hai? Main poori madad karunga!*`
+    };
+  }
+
+  const isPhotoPrivacyAsked = 
+    q.includes('parda') || 
+    q.includes('hijab') || 
+    q.includes('privacy') || 
+    q.includes('safe') || 
+    q.includes('surakshit') || 
+    q.includes('mehfooz') || 
+    q.includes('kaun dekhega') || 
+    q.includes('kon dekhega') || 
+    q.includes('public');
+
+  if (isPhotoMentioned && isPhotoPrivacyAsked) {
+    return {
+      text: `Ji bilkul! Rishta Matrimony par photo aur personal details **100% safe aur confidential** rehti hain 🌸\n\n• **Parda Respect:** Behenon ke Islami Parda aur Hijab ka pura ahtram kiya jata hai.\n• **No Open Public Display:** Aapki photos kisi bhi social media, Google ya open web par bina marzi display nahi ki jaati hain.\n• **Manual Verification:** Sirf verified aur serious rishta dhoondhne wale khandano ko hi review ke baad profile contact unlock karne ki ijazat milti hai.\n\n💬 *Kya aap apna free biodata register karna chahte hain?*`
+    };
+  }
+
+  // 4b. REGISTRATION FREE & PARENTS REGISTERING
+  const isFreeAsked = q.includes('free') || q.includes('muft') || q.includes('bina paise') || q.includes('koi charge');
+  const isPriceAsked = q.includes('kitna paisa') || q.includes('kya charge') || q.includes('fees') || q.includes('charges') || q.includes('plan') || q.includes('price') || q.includes('cost') || q.includes('paisa lagega');
+
+  if (isFreeAsked || (q.includes('register') && isPriceAsked)) {
+    return {
+      text: `Haan ji bilkul! Rishta Matrimony par apna **Matrimonial Biodata register karna 100% Free (₹0)** hai 🌸\n\n• Dulha (Groom) ya Dulhan (Bride) ya unke Walidain bilkul muft me form bhar sakte hain.\n• Charges sirf tab aate hain jab aap kisi verified rishte ke walidain ka **direct phone number unlock** karna chahein (Sirf ₹48 single profile unlock, ya ₹491 me 2 mahine ka unlimited plan).\n\n👉 *Aap abhi direct website ke top par 'Register Free' (/register) par jaakar biodata submit kar sakte hain.*\n\n💬 *Kya aap apna biodata register karne me madad chahte hain?*`
+    };
+  }
+
+  if (
+    q.includes('parent') || 
+    q.includes('walidain') || 
+    q.includes('abbu') || 
+    q.includes('ammi') || 
+    q.includes('mata') || 
+    q.includes('pita') || 
+    q.includes('beta') || 
+    q.includes('beti') || 
+    q.includes('bache') || 
+    q.includes('guardian')
+  ) {
+    return {
+      text: `Haan ji, bilkul! Parents (Mata-Pita), bhai ya koi bhi guardian apne bete ya beti ke liye biodata register kar sakte hain 🌸\n\nBalke hamare platform par **zyadatar rishte walidain hi manage karte hain**, taaki shariat aur ba-adab tareeqe se baat aage badhe aur donon khandano me barkat rahe.\n\n💬 *Bataiye, aap apne bete ke liye rishta dekh rahe hain ya beti ke liye? Kis city me dekh rahe hain?*`
+    };
+  }
+
+  // 4c. CONTACTS, PRICING, & ₹491 PREMIUM PLAN
   // ==========================================
   if (
     q.includes('contact') || 
     q.includes('number') || 
     q.includes('phone') || 
-    q.includes('photo') || 
+    q.includes('photo_unlock') || 
     q.includes('unlock') || 
     q.includes('paid') || 
     q.includes('price') || 
