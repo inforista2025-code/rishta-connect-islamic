@@ -24,15 +24,6 @@ interface ExtendedChatMessage extends ChatMessage {
   showLeadCard?: boolean;
 }
 
-const quickPrompts = [
-  "💍 Register Free Biodata",
-  "💰 Plans (₹48 & ₹491)",
-  "🔍 Search Brides (Dulhan)",
-  "🔍 Search Grooms (Dulha)",
-  "🛡️ Photo Parda Policy",
-  "🤲 Istikhara Dua",
-  "🚫 Dowry (Jahez) Hadith",
-];
 
 export function IslamicAssistantWidget() {
   const location = useLocation();
@@ -422,21 +413,6 @@ export function IslamicAssistantWidget() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-          </div>
-
-          {/* Quick Prompts Bar */}
-          <div className="bg-muted/40 border-b border-border/50 px-2.5 py-1.5 overflow-x-auto scrollbar-none flex items-center gap-1.5 shrink-0">
-            {quickPrompts.map((prompt, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleSend(prompt)}
-                disabled={loading}
-                className="text-[10px] sm:text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full bg-background hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-border text-muted-foreground transition-all duration-150 active:scale-95 shrink-0"
-              >
-                {prompt}
-              </button>
-            ))}
           </div>
 
           {/* Messages Scroll Area */}
