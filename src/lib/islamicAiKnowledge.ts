@@ -695,6 +695,35 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     };
   }
 
+  // 4b. WHATSAPP GROUP, TELEGRAM & INSTAGRAM
+  // ==========================================
+  if (
+    q.includes('whatsapp group') || 
+    q.includes('wa group') || 
+    q.includes('whatsapp grp') || 
+    q.includes('wa grp') || 
+    q.includes('whatsapp grup') || 
+    q.includes('wa grup') || 
+    ((q.includes('whatsapp') || q.includes('wa')) && (q.includes('group') || q.includes('grp') || q.includes('grup') || q.includes('groop'))) ||
+    ((q.includes('group') || q.includes('grp') || q.includes('grup') || q.includes('groop')) && (q.includes('link') || q.includes('add') || q.includes('join') || q.includes('bhejo') || q.includes('karo') || q.includes('hai') || q.includes('ka') || q.includes('kya')))
+  ) {
+    return {
+      text: `Assalamu Alaikum! 🌸\n\nHamara **WhatsApp Group nahi hai**, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati hain ✨\n\nAap niche diye gaye dono links se jud sakte hain:\n\n1. 👥 **WhatsApp Community (Join karein):**\n   [👉 Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)\n\n2. 📢 **WhatsApp Channel (Follow karein):**\n   [👉 Follow WhatsApp Channel](https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B)\n\n💬 *Aap dono me se kisme judna chahenge? Ya kya aap apna free biodata bhi register karna chahte hain?*`,
+    };
+  }
+
+  if (q.includes('telegram') || q.includes('tg channel') || q.includes('tele gram')) {
+    return {
+      text: `Assalamu Alaikum! 🌸\n\nJi haan! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨\n\nAap is link se Telegram channel join kar sakte hain:\n✈️ [👉 Click Here to Join Telegram Channel (@Rishtamatrimony)](https://t.me/Rishtamatrimony)\n\n💬 *Kya aapko kisi specific city ya qualification ke rishte dekhne hain?*`,
+    };
+  }
+
+  if (q.includes('instagram') || q.includes('insta ') || q.endsWith('insta') || q.includes('insta page') || q.includes('insta id') || q.includes('insta link')) {
+    return {
+      text: `Assalamu Alaikum! 🌸\n\nJi haan! Aap humein **Instagram** par follow kar sakte hain daily verified proposals aur marriage guidance stories ke liye 🌸✨\n\n📸 [👉 Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)\n\n💬 *Aap humse Instagram par bhi connect ho sakte hain! Kya aap apna free biodata bhi register karna chahte hain?*`,
+    };
+  }
+
   // 4c. CONTACTS, PRICING, & ₹491 PREMIUM PLAN
   // ==========================================
   if (

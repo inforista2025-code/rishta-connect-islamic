@@ -117,6 +117,16 @@ const DEFAULT_KNOWLEDGE = `
 - Step 1: Register free biodata at [👉 Register Free Biodata (Sirf 2 Minute)](/register) (Takes 2 minutes).
 - Step 2: Browse verified proposals at [👉 View Verified Profiles](/profiles)
 - Step 3: For any help or queries, message our official WhatsApp at +91 9128719875
+
+8. SOCIAL MEDIA, WHATSAPP COMMUNITY & CHANNELS (CRITICAL RULE):
+- Question: Do you have a WhatsApp group? (WhatsApp group link do / group me add karo?)
+  Answer: NO. We do NOT have a regular WhatsApp group. Instead, we have an official WhatsApp Community and WhatsApp Channel where daily verified rishton ki updates aati hain.
+  * WhatsApp Community: https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t
+  * WhatsApp Channel: https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B
+- Question: Do you have Telegram? (Telegram link do?)
+  Answer: YES. Our official Telegram Channel is: https://t.me/Rishtamatrimony
+- Question: Do you have Instagram? (Instagram link / ID do?)
+  Answer: YES. Our official Instagram Profile is: https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==
 `;
 
 // Helper to fetch dynamic Knowledge Base from Supabase
@@ -582,7 +592,60 @@ Balke hamare platform par **zyadatar rishte walidain hi manage karte hain**, taa
     };
   }
 
-  // 10. CONTACT / WHATSAPP / HELPLINE
+  // 10. WHATSAPP GROUP QUERY -> Must clarify it is WhatsApp Community & WhatsApp Channel
+  if (
+    q.includes("whatsapp group") || 
+    q.includes("wa group") || 
+    (q.includes("whatsapp") && q.includes("group")) ||
+    (q.includes("group") && (q.includes("link") || q.includes("add") || q.includes("join") || q.includes("bhejo") || q.includes("karo") || q.includes("hai kya")))
+  ) {
+    return {
+      reply: `Assalamu Alaikum! 🌸
+
+Hamara **WhatsApp Group nahi hai**, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati hain ✨
+
+Aap niche diye gaye dono links se jud sakte hain:
+
+1. 👥 **WhatsApp Community (Join karein):**
+   [👉 Click Here to Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)
+
+2. 📢 **WhatsApp Channel (Follow karein):**
+   [👉 Click Here to Follow WhatsApp Channel](https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B)
+
+💬 *Aap dono me se kisme judna chahenge? Ya kya aap apna free biodata bhi register karna chahte hain?*`,
+    };
+  }
+
+  // 11. TELEGRAM QUERY
+  if (q.includes("telegram") || q.includes("tg channel") || q.includes("tele gram")) {
+    return {
+      reply: `Assalamu Alaikum! 🌸
+
+Ji haan! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
+
+Aap niche diye gaye link se jud sakte hain:
+✈️ **Telegram Channel:**
+[👉 Click Here to Join Telegram Channel (@Rishtamatrimony)](https://t.me/Rishtamatrimony)
+
+💬 *Kya aapko kisi specific city ya qualification ke rishte dekhne hain?*`,
+    };
+  }
+
+  // 12. INSTAGRAM QUERY
+  if (q.includes("instagram") || q.includes("insta ") || q.endsWith("insta") || q.includes("insta page") || q.includes("insta id") || q.includes("insta link")) {
+    return {
+      reply: `Assalamu Alaikum! 🌸
+
+Ji haan! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
+
+📸 **Instagram Profile:**
+[👉 Click Here to Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)
+
+💬 *Aap humse Instagram par bhi connect ho sakte hain! Kya aap apna free biodata bhi register karna chahte hain?*`,
+    };
+  }
+
+  // 13. CONTACT / WHATSAPP / HELPLINE
   if (q.includes("contact") || q.includes("whatsapp") || q.includes("phone") || q.includes("admin") || q.includes("number") || q.includes("helpline")) {
     return {
       reply: `Assalamu Alaikum! Hamari team se direct rabta karne ke liye:
@@ -595,7 +658,7 @@ Balke hamare platform par **zyadatar rishte walidain hi manage karte hain**, taa
     };
   }
 
-  // 11. GENERAL CONVERSATIONAL CATCH-ALL
+  // 14. GENERAL CONVERSATIONAL CATCH-ALL
   return {
     reply: `Assalamu Alaikum! 🌸✨
 
@@ -633,6 +696,84 @@ export default async function handler(req: any, res: any) {
     }
 
     const userQuery = message.trim();
+    const qLower = userQuery.toLowerCase();
+
+    // 0. IMMEDIATE DETERMINISTIC HANDLER FOR WHATSAPP GROUP, TELEGRAM & INSTAGRAM
+    const isWaGroupQuery =
+      qLower.includes("whatsapp group") ||
+      qLower.includes("wa group") ||
+      qLower.includes("whatsapp grp") ||
+      qLower.includes("wa grp") ||
+      qLower.includes("whatsapp grup") ||
+      qLower.includes("wa grup") ||
+      ((qLower.includes("whatsapp") || qLower.includes("wa")) && (qLower.includes("group") || qLower.includes("grp") || qLower.includes("grup") || qLower.includes("groop"))) ||
+      ((qLower.includes("group") || qLower.includes("grp") || qLower.includes("grup") || qLower.includes("groop")) && (qLower.includes("link") || qLower.includes("add") || qLower.includes("join") || qLower.includes("bhejo") || qLower.includes("karo") || qLower.includes("hai") || qLower.includes("ka") || qLower.includes("kya")));
+
+    if (isWaGroupQuery) {
+      return res.status(200).json({
+        success: true,
+        source: "community_rule",
+        reply: `Assalamu Alaikum! 🌸
+
+Hamara **WhatsApp Group nahi hai**, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati hain ✨
+
+Aap niche diye gaye dono links se jud sakte hain:
+
+1. 👥 **WhatsApp Community (Join karein):**
+   [👉 Click Here to Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)
+
+2. 📢 **WhatsApp Channel (Follow karein):**
+   [👉 Click Here to Follow WhatsApp Channel](https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B)
+
+💬 *Aap dono me se kisme judna chahenge? Ya kya aap apna free biodata bhi register karna chahte hain?*`,
+        suggestedActions: [
+          { label: "Join WhatsApp Community", url: "https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t", isExternal: true },
+          { label: "Follow WhatsApp Channel", url: "https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B", isExternal: true },
+          { label: "Register Free (2 Mins)", url: "/register" }
+        ]
+      });
+    }
+
+    const isTelegramQuery = qLower.includes("telegram") || qLower.includes("tg channel") || qLower.includes("tele gram");
+    if (isTelegramQuery) {
+      return res.status(200).json({
+        success: true,
+        source: "community_rule",
+        reply: `Assalamu Alaikum! 🌸
+
+Ji haan! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
+
+Aap niche diye gaye link se jud sakte hain:
+✈️ **Telegram Channel:**
+[👉 Click Here to Join Telegram Channel (@Rishtamatrimony)](https://t.me/Rishtamatrimony)
+
+💬 *Kya aapko kisi specific city ya qualification ke rishte dekhne hain?*`,
+        suggestedActions: [
+          { label: "Join Telegram Channel", url: "https://t.me/Rishtamatrimony", isExternal: true },
+          { label: "Register Free (2 Mins)", url: "/register" }
+        ]
+      });
+    }
+
+    const isInstagramQuery = qLower.includes("instagram") || qLower.includes("insta ") || qLower.endsWith("insta") || qLower.includes("insta page") || qLower.includes("insta id") || qLower.includes("insta link");
+    if (isInstagramQuery) {
+      return res.status(200).json({
+        success: true,
+        source: "community_rule",
+        reply: `Assalamu Alaikum! 🌸
+
+Ji haan! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
+
+📸 **Instagram Profile:**
+[👉 Click Here to Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)
+
+💬 *Aap humse Instagram par bhi connect ho sakte hain! Kya aap apna free biodata bhi register karna chahte hain?*`,
+        suggestedActions: [
+          { label: "Follow on Instagram", url: "https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==", isExternal: true },
+          { label: "Register Free (2 Mins)", url: "/register" }
+        ]
+      });
+    }
 
     // 1. Fetch dynamic knowledge base and live verified profiles in parallel
     const [knowledgeBase, liveProfiles] = await Promise.all([
@@ -690,7 +831,22 @@ CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
    - For general profiles: "[👉 View Verified Profiles](/profiles)".
    - For registration: ALWAYS provide "[👉 Register Free Biodata (Sirf 2 Minute)](/register)" or simply "/register".
    - All links will navigate in-place on the same web tab without opening any new tabs.
-6. Conclude with a helpful, friendly follow-up question.
+
+6. WHATSAPP GROUP, TELEGRAM & INSTAGRAM RULES (STRICT MANDATORY):
+   - IF A USER ASKS FOR "WHATSAPP GROUP" (e.g. "whatsapp group link", "group me add karo", "whatsapp group hai kya", "group link do"):
+     * MANDATORY FIRST SENTENCE: Clearly tell them that we do NOT have a WhatsApp group, but instead we have an official WhatsApp Community and WhatsApp Channel:
+       "Hamara WhatsApp group nahi hai, balki hamari official WhatsApp Community aur WhatsApp Channel hai jahan daily verified rishton ki updates aati hain."
+     * Provide BOTH links clearly:
+       - 👥 [👉 Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)
+       - 📢 [👉 Follow WhatsApp Channel](https://www.whatsapp.com/channel/0029Vb6AIqPC1FuDwWaJVx0B)
+   - IF A USER ASKS ABOUT "TELEGRAM" (e.g. "telegram link", "telegram channel", "telegram pe ho"):
+     * Provide the official Telegram link:
+       - ✈️ [👉 Join Telegram Channel](https://t.me/Rishtamatrimony)
+   - IF A USER ASKS ABOUT "INSTAGRAM" (e.g. "insta id", "instagram page", "instagram link"):
+     * Provide the official Instagram link:
+       - 📸 [👉 Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)
+
+7. Conclude with a helpful, friendly follow-up question.
 
 --- VERIFIED ACTIVE PROFILES ON WEBSITE ---
 ${profilesDirectory}
