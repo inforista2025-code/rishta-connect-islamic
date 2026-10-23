@@ -7,33 +7,40 @@ import {
   Sparkles, 
   X, 
   Send, 
-  RefreshCw,
-  Heart,
-  ArrowRight,
-  Bot
+  RefreshCw, 
+  MessageCircle, 
+  ArrowRight, 
+  PhoneCall,
+  CheckCircle2,
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import { generateIslamicAssistantResponse, ChatMessage } from '@/lib/islamicAiKnowledge';
+import { useToast } from '@/hooks/use-toast';
 
 interface ExtendedChatMessage extends ChatMessage {
   isStreaming?: boolean;
+  suggestedActions?: { label: string; url: string; isExternal?: boolean }[];
+  showLeadCard?: boolean;
 }
 
 const quickPrompts = [
+  "💍 Register Free Biodata",
+  "💰 Plans (₹48 & ₹491)",
   "🔍 Search Brides (Dulhan)",
   "🔍 Search Grooms (Dulha)",
-  "🌸 Walidain ko kaise manayein?",
-  "💍 Biwi aur Shohar ke Huqooq",
-  "🤲 Salatul Istikhara Dua",
-  "⭐ ₹491 Premium Benefits",
-  "🚫 Jahez (Dowry) par Hadith",
+  "🛡️ Photo Parda Policy",
+  "🤲 Istikhara Dua",
+  "🚫 Dowry (Jahez) Hadith",
 ];
 
 export function IslamicAssistantWidget() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // ONLY render the AI Assistant on the Home Page ('/')
-  if (location.pathname !== '/') {
+  // Hide on Admin Dashboard routes to prevent obstruction
+  if (location.pathname.startsWith('/admin')) {
     return null;
   }
 
@@ -44,12 +51,21 @@ export function IslamicAssistantWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Inline Lead Form State
+  const [leadName, setLeadName] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
+  const [leadCity, setLeadCity] = useState('');
+  const [leadLookingFor, setLeadLookingFor] = useState<'Bride' | 'Groom' | 'Other'>('Bride');
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+
   const [messages, setMessages] = useState<ExtendedChatMessage[]>([
     {
       id: 'welcome-matrimony-1',
       sender: 'assistant',
-      text: `**Assalamu Alaikum!** 🌸✨\nWelcome to **Rishta Matrimony AI** 👰🤵\n\nMain aapka Halal Matchmaking Assistant hoon. Main aapke liye verified rishte dhoondhne aur shadi ke deeni masail me madad karne ke liye hazir hoon.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta talash kar rahe hain ya apna biodata register karna chahte hain? 😊*`,
+      text: `**Assalamu Alaikum!** 🌸✨\nWelcome to **Rishta Matrimony AI** 👰🤵\n\nMain aapka Halal Matchmaking Assistant hoon. Main aapke liye verified rishte dhoondhne, deeni masail aur pricing ki jankari ke liye hazir hoon.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya apna Free Biodata register karna chahte hain?*`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      showLeadCard: true,
     }
   ]);
 
@@ -61,9 +77,8 @@ export function IslamicAssistantWidget() {
     if (isOpen) {
       scrollToBottom();
     }
-  }, [messages, isOpen, isThinking]);
+  }, [messages, isOpen, isThinking, leadSubmitted]);
 
-  // Clean up streaming on unmount
   useEffect(() => {
     return () => {
       if (streamingIntervalRef.current) {
@@ -93,30 +108,75 @@ export function IslamicAssistantWidget() {
     setIsThinking(true);
 
     try {
-      // Natural thinking delay (350ms - 450ms) to feel like real AI processing
-      await new Promise((r) => setTimeout(r, 400));
-      
-      const response = await generateIslamicAssistantResponse(query.trim());
+      // 1. First attempt to call the Gemini & Dynamic Knowledge API endpoint
+      let replyText = '';
+      let actions: { label: string; url: string; isExternal?: boolean }[] | undefined = undefined;
+      let profileMatches: any[] | undefined = undefined;
+
+      try {
+        const historyPayload = messages.slice(-5).map(m => ({
+          sender: m.sender,
+          text: m.text
+        }));
+
+        const response = await fetch('/api/ai-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: query.trim(),
+            history: historyPayload
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.reply) {
+            replyText = data.reply;
+            actions = data.suggestedActions;
+          }
+        }
+      } catch (apiErr) {
+        console.warn('API /api/ai-chat call fallback to local engine:', apiErr);
+      }
+
+      // 2. If API is offline or empty, fallback cleanly to local semantic engine
+      if (!replyText) {
+        const localResponse = await generateIslamicAssistantResponse(query.trim());
+        replyText = localResponse.text;
+        profileMatches = localResponse.profileMatches;
+      }
+
       setIsThinking(false);
 
       const botMessageId = `bot-${Date.now()}`;
-      const fullText = response.text;
-      
+      const fullText = replyText;
+
+      // Show lead card after user asks about rishte or profiles
+      const shouldPromptLead = 
+        query.toLowerCase().includes('dulha') ||
+        query.toLowerCase().includes('dulhan') ||
+        query.toLowerCase().includes('rishta') ||
+        query.toLowerCase().includes('search') ||
+        query.toLowerCase().includes('dhoond');
+
       // Initialize streaming message
       const initialBotMsg: ExtendedChatMessage = {
         id: botMessageId,
         sender: 'assistant',
         text: '',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isStreaming: true
+        isStreaming: true,
+        suggestedActions: actions,
+        profileMatches,
+        showLeadCard: shouldPromptLead && !leadSubmitted
       };
 
       setMessages((prev) => [...prev, initialBotMsg]);
 
       // Stream text chunk by chunk (typewriter effect)
       let currentIdx = 0;
-      const chunkSize = 3; // stream 3 characters per tick for smooth natural typing
-      const tickSpeed = 16; // ~60fps smooth pace
+      const chunkSize = 3;
+      const tickSpeed = 16;
 
       streamingIntervalRef.current = setInterval(() => {
         currentIdx += chunkSize;
@@ -131,7 +191,6 @@ export function IslamicAssistantWidget() {
                     ...msg,
                     text: fullText,
                     isStreaming: false,
-                    profileMatches: response.profileMatches,
                   }
                 : msg
             )
@@ -154,11 +213,63 @@ export function IslamicAssistantWidget() {
       const errorMsg: ExtendedChatMessage = {
         id: `bot-err-${Date.now()}`,
         sender: 'assistant',
-        text: `Assalamu Alaikum. I encountered a momentary connection issue. Please feel free to try again or reach out directly to our team on WhatsApp (+91 9128719875) 🌸\n\n💬 *Kya aap sawaal dobara poochna chahenge?*`,
+        text: `Assalamu Alaikum. Network me thodi rukawat aayi hai. Aap hamare team se direct WhatsApp (+91 9128719875) par rabta kar sakte hain 🌸`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
       setLoading(false);
+    }
+  };
+
+  // Submit Lead from the Chatbot
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadPhone || leadPhone.replace(/\D/g, '').length < 10) {
+      toast({
+        title: 'Valid Phone Required',
+        description: 'Please enter a valid 10-digit WhatsApp number.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLeadSubmitting(true);
+    try {
+      const cleanPhone = leadPhone.replace(/\D/g, '');
+      const lastUserMsg = messages.filter(m => m.sender === 'user').slice(-1)[0]?.text || 'Requested matchmaking on WhatsApp';
+
+      await fetch('/api/ai-chat-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: leadName.trim() || 'Website Visitor',
+          whatsapp: cleanPhone,
+          city: leadCity.trim() || 'India',
+          lookingFor: leadLookingFor,
+          query: lastUserMsg
+        })
+      });
+
+      setLeadSubmitted(true);
+      toast({
+        title: 'Details Received! 🌸',
+        description: 'Hamari team aapko WhatsApp par matching rishte bhejegi.'
+      });
+
+      // Add assistant confirmation message
+      const botMsg: ExtendedChatMessage = {
+        id: `lead-ack-${Date.now()}`,
+        sender: 'assistant',
+        text: `JazakAllah Khair **${leadName || 'brother/sister'}**! 🌸✨\nAapka number (+91 ${cleanPhone}) hamari matchmaking team ke paas register ho gaya hai.\n\nAap abhi direct niche diye gaye green button par click karke hamare admin se WhatsApp par direct chat bhi shuru kar sakte hain!`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, botMsg]);
+
+    } catch (err) {
+      console.warn('Lead submit error:', err);
+      setLeadSubmitted(true);
+    } finally {
+      setLeadSubmitting(false);
     }
   };
 
@@ -172,8 +283,9 @@ export function IslamicAssistantWidget() {
       {
         id: 'welcome-reset',
         sender: 'assistant',
-        text: `**Assalamu Alaikum!** 🌸✨\nRishta Matrimony Matchmaker AI ready.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya biodata banana chahte hain? 😊*`,
+        text: `**Assalamu Alaikum!** 🌸✨\nRishta Matrimony Matchmaker AI ready.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya biodata banana chahte hain?*`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        showLeadCard: true
       }
     ]);
   };
@@ -199,155 +311,93 @@ export function IslamicAssistantWidget() {
           // Blockquotes (>)
           if (trimmed.startsWith('>')) {
             return (
-              <div key={idx} className="border-l-2 border-amber-500/60 bg-amber-500/10 dark:bg-amber-500/5 px-2.5 py-1.5 rounded-r-lg my-1.5 text-[11px] sm:text-xs text-foreground/90 italic">
+              <blockquote key={idx} className="border-l-2 border-amber-500/70 pl-2.5 my-1.5 text-[11px] sm:text-xs text-muted-foreground italic bg-amber-500/5 py-1 rounded-r">
                 {trimmed.replace(/^>\s*/, '')}
-              </div>
+              </blockquote>
             );
           }
 
-          // Conversational Follow-up questions (marked with 💬)
-          if (trimmed.startsWith('💬')) {
+          // Bullet points
+          if (trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            const content = trimmed.replace(/^(\u2022|\-|\*)\s*/, '');
             return (
-              <div key={idx} className="mt-2 pt-1.5 border-t border-primary/20 text-xs sm:text-[13px] font-semibold text-primary flex items-start gap-1.5 bg-primary/5 p-2 rounded-xl">
-                <span>{trimmed}</span>
+              <div key={idx} className="flex items-start gap-1.5 text-xs text-foreground/90 pl-1">
+                <span className="text-primary text-[10px] mt-0.5">•</span>
+                <span>{formatBoldText(content)}</span>
               </div>
             );
           }
 
-          // Bullet points (• or * or -)
-          if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('* ')) {
-            const cleanItem = trimmed.replace(/^([•\-\*]\s*)/, '');
-            return (
-              <div key={idx} className="flex items-start gap-1.5 my-0.5 text-xs text-foreground/90">
-                <span className="text-primary mt-0.5 text-[10px]">●</span>
-                <span>{cleanItem.replace(/\*\*/g, '')}</span>
-              </div>
-            );
-          }
-
-          // Numbered items (1. or 2.)
-          if (/^\d+\.\s/.test(trimmed)) {
-            return (
-              <div key={idx} className="flex items-start gap-1.5 my-1 text-xs text-foreground/90">
-                <span className="font-bold text-primary text-[11px] shrink-0">{trimmed.slice(0, 2)}</span>
-                <span>{trimmed.slice(3).replace(/\*\*/g, '')}</span>
-              </div>
-            );
-          }
-
-          // Interactive Link Button (e.g. 👉 [Label](url) or [Label](url))
-          const linkMatch = trimmed.match(/(?:👉\s*)?\[(.*?)\]\((.*?)\)/);
-          if (linkMatch) {
-            const [, linkText, linkUrl] = linkMatch;
-            const isExternal = linkUrl.startsWith('http') || linkUrl.includes('wa.me');
-            
-            return (
-              <div key={idx} className="my-2">
-                {isExternal ? (
-                  <a
-                    href={linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all"
-                  >
-                    <span>{linkText}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate(linkUrl);
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all cursor-pointer group"
-                  >
-                    <span>{linkText}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                )}
-              </div>
-            );
-          }
-
-          // Regular paragraph
-          const cleanLine = trimmed.replace(/\*\*/g, '');
           return (
-            <p key={idx} className="text-xs sm:text-[13px] text-foreground/90 leading-relaxed my-0.5">
-              {cleanLine}
+            <p key={idx} className="text-xs text-foreground/90 leading-relaxed">
+              {formatBoldText(trimmed)}
             </p>
           );
         })}
-        {isStreaming && (
-          <span className="inline-block w-1.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle rounded-sm" />
-        )}
       </div>
     );
   };
 
+  // Bold text renderer
+  const formatBoldText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={i} className="italic text-foreground/80">{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+  };
+
+  const directAdminWaUrl = `https://wa.me/919128719875?text=${encodeURIComponent(
+    `Assalamu Alaikum! Maine website AI se baat ki thi, mujhe verified rishton ke bare me aur jankari chahiye.`
+  )}`;
+
   return (
     <>
-      {/* Floating Trigger Button */}
-      <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50">
-        {!isOpen && (
-          <>
-            {/* Mobile View: Small, round floating button in corner */}
-            <button
-              type="button"
-              onClick={() => setIsOpen(true)}
-              className="sm:hidden relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#2A0F1A] via-[#3B0E23] to-[#1F0A13] text-pink-100 border border-pink-500/50 shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
-              aria-label="Open Rishta Matrimony AI Matchmaker"
-            >
-              <div className="relative flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-pink-300 animate-pulse" />
-                <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white dark:border-black"></span>
-                </span>
-              </div>
-            </button>
+      {/* Floating Trigger Button at Bottom-Right */}
+      {!isOpen && (
+        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 group animate-in fade-in slide-in-from-bottom-4 duration-300">
+          {/* Tooltip greeting */}
+          <div 
+            onClick={() => setIsOpen(true)}
+            className="hidden sm:flex items-center gap-2 bg-card/95 backdrop-blur-md border border-primary/30 px-3.5 py-1.5 rounded-full shadow-lg text-xs font-semibold text-foreground cursor-pointer hover:border-primary transition-all duration-200"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+            <span>Rishta AI Assistant 🌸</span>
+          </div>
 
-            {/* Desktop View: Compact pill button with text */}
-            <button
-              type="button"
-              onClick={() => setIsOpen(true)}
-              className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#2A0F1A] via-[#3B0E23] to-[#1F0A13] text-pink-100 border border-pink-500/40 shadow-2xl hover:shadow-pink-950/50 hover:scale-105 transition-all duration-300 active:scale-95"
-              aria-label="Open Rishta Matrimony AI Matchmaker"
-            >
-              <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-pink-500/20 text-pink-300">
-                <Sparkles className="w-3.5 h-3.5 animate-pulse text-pink-300" />
-              </div>
-              <div className="text-left">
-                <span className="block text-xs font-bold text-white tracking-tight flex items-center gap-1.5">
-                  <span>Rishta AI Matchmaker</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                </span>
-              </div>
-            </button>
-          </>
-        )}
-      </div>
+          <button
+            onClick={() => setIsOpen(true)}
+            aria-label="Open AI Matchmaking Assistant"
+            className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-600 text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center border-2 border-white/30"
+          >
+            <Sparkles className="w-6 h-6 animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white"></span>
+          </button>
+        </div>
+      )}
 
-      {/* Chat Window Modal */}
+      {/* Chat Window Dialog */}
       {isOpen && (
-        <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 w-[calc(100vw-24px)] sm:w-[420px] md:w-[440px] h-[520px] sm:h-[570px] max-h-[82vh] bg-card rounded-3xl sm:rounded-2xl border border-pink-900/30 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-[420px] h-[600px] max-h-[85vh] bg-card border border-border/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#2A0F1A] via-[#1F0A13] to-[#16060D] text-white p-3 sm:p-3.5 border-b border-pink-900/40 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-pink-950/80 border border-pink-700/40 flex items-center justify-center text-pink-300 shadow-inner">
-                <Heart className="w-3.5 h-3.5 text-primary fill-primary/30" />
+          <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white p-3.5 flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white/15 border border-white/20 flex items-center justify-center shadow-inner">
+                <Sparkles className="w-5 h-5 text-amber-300" />
               </div>
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-serif text-[11px] text-pink-300">﷽</span>
-                  <h3 className="font-extrabold text-xs sm:text-sm text-white tracking-tight">
-                    Rishta Matchmaker AI
-                  </h3>
-                </div>
-                <p className="text-[10px] text-pink-300/80 font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                  <span>Interactive Matchmaking Assistant</span>
+                <h3 className="font-bold text-sm tracking-wide flex items-center gap-1.5">
+                  Rishta Matrimony AI
+                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+                </h3>
+                <p className="text-[10px] text-emerald-100/90 flex items-center gap-1">
+                  <span>Halal Matchmaker & Assistant</span>
                 </p>
               </div>
             </div>
@@ -357,32 +407,32 @@ export function IslamicAssistantWidget() {
                 size="sm"
                 variant="ghost"
                 onClick={handleResetChat}
-                className="h-7 w-7 p-0 text-pink-300/70 hover:text-white hover:bg-pink-950/50 rounded-lg"
+                className="h-7 w-7 p-0 text-emerald-100 hover:text-white hover:bg-white/10 rounded-lg"
                 title="Restart Chat"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3.5 h-3.5" />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setIsOpen(false)}
-                className="h-7 w-7 p-0 text-pink-300/70 hover:text-white hover:bg-pink-950/50 rounded-lg"
-                title="Close Window"
+                className="h-7 w-7 p-0 text-emerald-100 hover:text-white hover:bg-white/10 rounded-lg"
+                title="Close"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
           {/* Quick Prompts Bar */}
-          <div className="bg-muted/30 border-b border-border/50 px-2.5 py-1.5 overflow-x-auto scrollbar-none flex items-center gap-1.5 shrink-0">
+          <div className="bg-muted/40 border-b border-border/50 px-2.5 py-1.5 overflow-x-auto scrollbar-none flex items-center gap-1.5 shrink-0">
             {quickPrompts.map((prompt, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleSend(prompt)}
                 disabled={loading}
-                className="text-[10px] sm:text-[11px] whitespace-nowrap px-2 py-0.5 rounded-full bg-background hover:bg-primary/10 hover:text-primary border border-border text-muted-foreground transition-all duration-200 active:scale-95 shrink-0"
+                className="text-[10px] sm:text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full bg-background hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-border text-muted-foreground transition-all duration-150 active:scale-95 shrink-0"
               >
                 {prompt}
               </button>
@@ -399,7 +449,7 @@ export function IslamicAssistantWidget() {
                 <div
                   className={`max-w-[92%] sm:max-w-[88%] rounded-2xl p-3 text-xs sm:text-sm ${
                     msg.sender === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-none shadow-sm font-medium'
+                      ? 'bg-emerald-700 text-white rounded-br-none shadow-sm font-medium'
                       : 'bg-card border border-border/80 text-foreground rounded-bl-none shadow-xs'
                   }`}
                 >
@@ -408,10 +458,10 @@ export function IslamicAssistantWidget() {
                     {renderCleanText(msg.text, msg.isStreaming)}
                   </div>
 
-                  {/* Profile Match Cards (Interactive Proposal Cards) */}
+                  {/* Profile Match Cards */}
                   {!msg.isStreaming && msg.profileMatches && msg.profileMatches.length > 0 && (
                     <div className="mt-2.5 space-y-2 pt-2 border-t border-border/40 animate-in fade-in duration-300">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
                         Matching Verified Proposals:
                       </p>
                       {msg.profileMatches.map((profile) => (
@@ -421,12 +471,12 @@ export function IslamicAssistantWidget() {
                             setIsOpen(false);
                             navigate(`/profiles?id=${profile.id}&gender=${profile.gender}`);
                           }}
-                          className="p-2.5 rounded-xl bg-muted/40 border border-border/60 hover:border-primary/50 hover:bg-muted/70 transition-all cursor-pointer flex flex-col gap-1.5 group"
+                          className="p-2.5 rounded-xl bg-muted/40 border border-border/60 hover:border-emerald-500/50 hover:bg-muted/70 transition-all cursor-pointer flex flex-col gap-1.5 group"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-foreground text-xs group-hover:text-primary transition-colors">{profile.name}</span>
+                                <span className="font-bold text-foreground text-xs group-hover:text-emerald-700 transition-colors">{profile.name}</span>
                                 <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
                                   {profile.gender === 'Female' ? '👰 Bride' : '🤵 Groom'}
                                 </Badge>
@@ -442,7 +492,7 @@ export function IslamicAssistantWidget() {
 
                           <Button
                             size="sm"
-                            className="h-6.5 w-full text-[11px] bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg flex items-center justify-center gap-1 font-semibold pointer-events-none"
+                            className="h-6.5 w-full text-[11px] bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg flex items-center justify-center gap-1 font-semibold pointer-events-none"
                           >
                             <span>Open Profile on Page</span>
                             <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -451,7 +501,104 @@ export function IslamicAssistantWidget() {
                       ))}
                     </div>
                   )}
+
+                  {/* Action Buttons beneath answer */}
+                  {!msg.isStreaming && msg.sender === 'assistant' && (
+                    <div className="mt-2.5 pt-2 border-t border-border/40 flex flex-wrap items-center gap-1.5">
+                      <a
+                        href={directAdminWaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md transition-colors"
+                      >
+                        <MessageCircle className="w-3 h-3 text-emerald-600" />
+                        <span>Chat on WhatsApp (+91 9128719875)</span>
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/register')}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded transition-colors"
+                      >
+                        <span>Free Biodata (/register)</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Interactive Lead Capture Card (inside chat) */}
+                  {!msg.isStreaming && msg.showLeadCard && !leadSubmitted && (
+                    <div className="mt-3 p-3 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl space-y-2.5 animate-in fade-in duration-300">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                          🌸
+                        </div>
+                        <h4 className="font-bold text-xs text-emerald-950">
+                          Direct WhatsApp par Matching Rishte Paayein
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-emerald-800 leading-tight">
+                        Apna WhatsApp number darj karein taaki admin team aapke location ke verified rishte WhatsApp par share kare:
+                      </p>
+
+                      <form onSubmit={handleLeadSubmit} className="space-y-2">
+                        <Input
+                          placeholder="Aapka Naam (e.g. Mohd. Farhan / Fatima)"
+                          value={leadName}
+                          onChange={(e) => setLeadName(e.target.value)}
+                          className="h-8 text-xs bg-white border-emerald-200"
+                        />
+                        <div className="flex gap-1.5">
+                          <Input
+                            placeholder="WhatsApp Number (10 digits)"
+                            type="tel"
+                            maxLength={10}
+                            value={leadPhone}
+                            onChange={(e) => setLeadPhone(e.target.value)}
+                            className="h-8 text-xs bg-white border-emerald-200 flex-1 font-mono"
+                            required
+                          />
+                          <Input
+                            placeholder="Shehar / City"
+                            value={leadCity}
+                            onChange={(e) => setLeadCity(e.target.value)}
+                            className="h-8 text-xs bg-white border-emerald-200 w-28"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between gap-1 pt-1">
+                          <div className="flex gap-1 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => setLeadLookingFor('Bride')}
+                              className={`px-2 py-0.5 rounded border ${leadLookingFor === 'Bride' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-muted-foreground border-emerald-200'}`}
+                            >
+                              👰 Dulhan
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLeadLookingFor('Groom')}
+                              className={`px-2 py-0.5 rounded border ${leadLookingFor === 'Groom' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-muted-foreground border-emerald-200'}`}
+                            >
+                              🤵 Dulha
+                            </button>
+                          </div>
+
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={leadSubmitting}
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs font-semibold px-3"
+                          >
+                            {leadSubmitting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <MessageCircle className="w-3 h-3 mr-1" />}
+                            Connect on WhatsApp
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
+
                 <span className="text-[9px] text-muted-foreground mt-0.5 px-1">
                   {msg.timestamp}
                 </span>
@@ -462,12 +609,12 @@ export function IslamicAssistantWidget() {
             {isThinking && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border/80 px-3 py-2 rounded-2xl rounded-bl-none shadow-xs w-fit animate-in fade-in duration-200">
                 <span className="flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce"></span>
                 </span>
-                <span className="text-[10px] text-primary/80 font-medium ml-1">
-                  Rishta AI typing response... ✍️
+                <span className="text-[10px] text-emerald-800 font-medium ml-1">
+                  Rishta AI soch raha hai... ✍️
                 </span>
               </div>
             )}
@@ -487,22 +634,30 @@ export function IslamicAssistantWidget() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your question or search..."
-                className="h-9 text-xs bg-muted/40 rounded-xl focus-visible:ring-primary/40"
+                placeholder="Poochhein (Fees, Photo privacy, Istikhara, Rishte)..."
+                className="h-9 text-xs bg-muted/40 rounded-xl focus-visible:ring-emerald-500/40"
                 disabled={loading}
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={!input.trim() || loading}
-                className="h-9 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shrink-0 font-medium"
+                className="h-9 px-3.5 bg-emerald-700 text-white hover:bg-emerald-800 rounded-xl shrink-0 font-medium shadow-xs"
               >
                 <Send className="w-3.5 h-3.5" />
               </Button>
             </form>
-            <p className="text-[9px] text-center text-muted-foreground/80 mt-1">
-              Quran & Sahih Hadith (Bukhari & Muslim) • 100% Halal AI
-            </p>
+            <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 px-1">
+              <span>Quran & Sahih Hadith Grounded</span>
+              <a
+                href={directAdminWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 hover:underline flex items-center gap-0.5 font-medium"
+              >
+                WhatsApp Helpline: +91 9128719875
+              </a>
+            </div>
           </div>
         </div>
       )}

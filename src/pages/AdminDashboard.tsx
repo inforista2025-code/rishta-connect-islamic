@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText, Shield, GitPullRequest, Activity } from 'lucide-react';
+import { Loader2, BookOpen, Users, Settings, LogOut, Info, ClipboardList, FileText, Shield, GitPullRequest, Activity, Sparkles } from 'lucide-react';
+import { AIKnowledgeManager } from '@/components/admin/AIKnowledgeManager';
 import { BlogManager } from '@/components/admin/BlogManager';
 import { AboutUsManager } from '@/components/admin/AboutUsManager';
 import { RegistrationsManager } from '@/components/admin/RegistrationsManager';
@@ -62,6 +63,10 @@ export default function AdminDashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 flex-wrap h-auto gap-1">
+            <TabsTrigger value="ai-knowledge" className="flex items-center gap-2 bg-emerald-50 text-emerald-900 border border-emerald-300 font-semibold shadow-sm">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              AI Knowledge & Leads
+            </TabsTrigger>
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Registrations
@@ -99,6 +104,10 @@ export default function AdminDashboard() {
               Settings
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="ai-knowledge">
+            <AIKnowledgeManager />
+          </TabsContent>
 
           <TabsContent value="registrations">
             <RegistrationsManager />
