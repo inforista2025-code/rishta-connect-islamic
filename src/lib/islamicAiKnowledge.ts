@@ -379,6 +379,11 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   
   // Normalize variations in Hinglish / Hindi spelling
   const q = rawQ.toLowerCase()
+    .replace(/\b(registr|regestr|ragister|registar|rejister|rejistr|rigister|rigistr|rejistre)\b/gi, 'register')
+    .replace(/\b(krna|krni|karna|karni)\b/gi, 'karna')
+    .replace(/\b(chahie|chahiye|chahte|chahti|chahata|chahta)\b/gi, 'chahiye')
+    .replace(/\b(dhoond|dhoondo|dhund|dhundo)\b/gi, 'dhoond')
+    .replace(/\b(bhejo|dikhao|batao|dekhna)\b/gi, 'dikhao')
     .replace(/kaese/g, 'kaise')
     .replace(/kese/g, 'kaise')
     .replace(/kaisey/g, 'kaise')
@@ -388,8 +393,6 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     .replace(/shadi/g, 'shaadi')
     .replace(/walden/g, 'walidain')
     .replace(/duha/g, 'dulha')
-    .replace(/ragister/g, 'register')
-    .replace(/registar/g, 'register')
     .replace(/mahr/g, 'mehr');
 
   // ==========================================
@@ -823,7 +826,15 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   // 8. SEARCHING PROFILES & MATCHMAKING
   // (Triggered ONLY when user explicitly searches)
   // ==========================================
-  const isExplicitSearch = 
+  const isRegistrationIntent = 
+    q.includes('register') || 
+    q.includes('registration') || 
+    q.includes('apna profile') || 
+    q.includes('apni profile') || 
+    q.includes('biodata banana') || 
+    q.includes('form bharna');
+
+  const isExplicitSearch = !isRegistrationIntent && (
     q.includes('dhoondo') || 
     q.includes('dhoond') || 
     q.includes('search') || 
@@ -846,7 +857,8 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
     q.includes('lucknow') || 
     q.includes('dhanbad') || 
     q.includes('jharkhand') || 
-    q.includes('up');
+    q.includes('up')
+  );
 
   if (isExplicitSearch) {
     const searchRes = await searchProfilesForAssistant(userPrompt);
@@ -887,7 +899,7 @@ GUIDELINES:
 4. Do NOT output generic promotional button links. Instead, always conclude with an engaging, natural follow-up question tailored to the conversation.
 5. Keep paragraphs readable with neat bullet points.`;
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.trim()}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey.trim()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

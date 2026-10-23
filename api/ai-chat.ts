@@ -201,10 +201,58 @@ async function fetchAdminKnowledgeBase(): Promise<string> {
 }
 
 // Find matching profiles for search queries
+// Normalization helper for Hindi/Urdu/Hinglish matrimonial terminology and typos
+export function normalizeMatrimonialQuery(raw: string): string {
+  let q = (raw || '').toLowerCase().trim();
+  q = q.replace(/\b(registr|regestr|ragister|registar|rejister|rejistr|rigister|rigistr|rejistre)\b/gi, 'register');
+  q = q.replace(/\b(krna|krni|karna|karni)\b/gi, 'karna');
+  q = q.replace(/\b(chahie|chahiye|chahte|chahti|chahata|chahta)\b/gi, 'chahiye');
+  q = q.replace(/\b(dhoond|dhoondo|dhund|dhundo)\b/gi, 'dhoond');
+  q = q.replace(/\b(bhejo|dikhao|batao|dekhna)\b/gi, 'dikhao');
+  return q;
+}
+
+// User wants to register their own profile / account / biodata
+export function isRegistrationIntent(rawQ: string): boolean {
+  const q = normalizeMatrimonialQuery(rawQ);
+
+  const hasRegWord = /\b(register|registration|signup|sign up)\b/i.test(q);
+  const mentionsSelfProfile = 
+    q.includes('apna profile') || 
+    q.includes('apni profile') || 
+    q.includes('apna biodata') || 
+    q.includes('apni biodata') || 
+    q.includes('apna account') ||
+    q.includes('mera profile') ||
+    q.includes('meri profile') ||
+    q.includes('khud ka rishta') ||
+    q.includes('apna rishta');
+
+  const creationAction = 
+    /\b(banana|banani|create|submit|dalna|daalna|bharna)\b/i.test(q) &&
+    /\b(profile|biodata|form|account|rishta)\b/i.test(q);
+
+  const howToRegister = 
+    /\b(kaise|kaha|kahan)\b/i.test(q) &&
+    /\b(register|juden|jude|judna|submit|form)\b/i.test(q);
+
+  if (hasRegWord || mentionsSelfProfile || creationAction || howToRegister) {
+    const isSearchForRegisteredPeople = 
+      /\b(ladka|ladki|dulha|dulhan|grooms|brides|log|profiles)\b/i.test(q) &&
+      /\b(dikhao|dhoond|chahiye|batao|search)\b/i.test(q) &&
+      !mentionsSelfProfile;
+
+    if (!isSearchForRegisteredPeople) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Smart Matchmaking Direction Resolver
 // "agar koi ladki ka rishta dhund raha hai toh usko ladke ka profile dikhana hai, aur agar koi ladke ka dhund raha hai toh usko ladki ka dikhana hai"
 export function detectTargetGender(q: string): 'Male' | 'Female' | null {
-  const cleanQ = q.toLowerCase();
+  const cleanQ = normalizeMatrimonialQuery(q);
 
   // A. Explicit target desire ("ladka chahiye", "dulha chahiye", "ladki chahiye", "dulhan chahiye", etc.)
   const wantsMaleExplicit = 
@@ -270,9 +318,31 @@ export function findMatchingProfiles(
   singleProfileMatched: LiveProfileSummary | null;
   isProfileQuery: boolean;
 } {
-  const q = query.toLowerCase().trim();
+  const q = normalizeMatrimonialQuery(query);
 
-  // 1. Check for specific profile ID: "profile 29", "id 33", "#60", "rc-29", "rm-gr-29"
+  // CRITICAL: Registration queries MUST NEVER be treated as searching for other profiles!
+  if (isRegistrationIntent(query)) {
+    return {
+      matchedProfiles: [],
+      cityMatched: null,
+      genderMatched: null,
+      singleProfileMatched: null,
+      isProfileQuery: false,
+    };
+  }
+
+  // Account management questions (edit/delete/status/login) are NOT searches
+  if (/\b(delete|hatao|remove|edit|update|login|signin|password|status|approve|approval)\b/i.test(q) && !q.includes("chahiye")) {
+    return {
+      matchedProfiles: [],
+      cityMatched: null,
+      genderMatched: null,
+      singleProfileMatched: null,
+      isProfileQuery: false,
+    };
+  }
+
+  // 1. Check for specific profile ID: "profile 29", "id 33", "#60", "rm-gr-29"
   const idMatch = q.match(/(?:profile|id|rm-gr-|rm-br-|#)\s*(\d+)/i) || (q.includes("profile") ? q.match(/\b(\d{1,4})\b/) : null);
   if (idMatch && idMatch[1]) {
     const targetId = parseInt(idMatch[1], 10);
@@ -305,7 +375,7 @@ export function findMatchingProfiles(
   // 3. Detect target gender filter with intelligent bidirectional matching
   const genderMatched: string | null = detectTargetGender(q);
 
-  // 4. Detect common cities / states (using word boundary check to prevent false positives like "up" in "upload")
+  // 4. Detect common cities / states
   const commonCities = [
     "mumbai", "ranchi", "patna", "delhi", "new delhi", "saharanpur", "udaipur", 
     "lucknow", "dhanbad", "bihar", "jharkhand", "uttar pradesh", "kolkata", 
@@ -313,8 +383,7 @@ export function findMatchingProfiles(
   ];
   let cityMatched: string | null = null;
   for (const city of commonCities) {
-    const regex = new RegExp(`\\b${city}\\b`, "i");
-    if (regex.test(q)) {
+    if (new RegExp(`\\b${city}\\b`, "i").test(q)) {
       cityMatched = city;
       break;
     }
@@ -323,7 +392,7 @@ export function findMatchingProfiles(
     cityMatched = "up";
   }
 
-  // Dynamic city regex: e.g. "kashmir se", "jaipur se", "aligarh se"
+  // Dynamic city regex: e.g. "kashmir se", "jaipur se"
   if (!cityMatched) {
     const dynamicMatch = q.match(/([a-zA-Z]{3,})\s+se\b/);
     if (dynamicMatch && dynamicMatch[1]) {
@@ -335,18 +404,16 @@ export function findMatchingProfiles(
     }
   }
 
-  // Determine if there is actual intent to search profiles/matches
-  const isProfileIntent = 
-    idMatch !== null ||
-    cityMatched !== null ||
-    genderMatched !== null ||
-    q.includes('profile') || 
-    q.includes('rishta') || 
-    q.includes('rishte') || 
-    q.includes('matches') ||
-    (q.includes('chahiye') && (q.includes('dulha') || q.includes('dulhan') || q.includes('ladka') || q.includes('ladki') || q.includes('biodata')));
+  // Search trigger verbs / words
+  const hasSearchVerbs = /\b(chahiye|dhoond|dikhao|search|find|available|proposals|matches|biodata|rishte|rishta)\b/i.test(q);
 
-  if (!isProfileIntent) {
+  const isExplicitSearch = 
+    (genderMatched !== null && hasSearchVerbs) ||
+    (cityMatched !== null && hasSearchVerbs) ||
+    (genderMatched !== null && cityMatched !== null) ||
+    (/\b(verified profiles|rishte dikhao|proposals dikhao|matches dikhao|profiles dikhao)\b/i.test(q));
+
+  if (!isExplicitSearch) {
     return {
       matchedProfiles: [],
       cityMatched: null,
@@ -361,16 +428,13 @@ export function findMatchingProfiles(
     if (genderMatched && p.gender.toLowerCase() !== genderMatched.toLowerCase()) {
       return false;
     }
-    if (cityMatched) {
-      const loc = p.location.toLowerCase();
-      if (!loc.includes(cityMatched)) {
-        return false;
-      }
+    if (cityMatched && !p.location.toLowerCase().includes(cityMatched)) {
+      return false;
     }
     return true;
   });
 
-  // Also check profession if mentioned (e.g. "engineer", "doctor", "lawyer", "manager")
+  // Check profession if mentioned
   const profKeywords = ["doctor", "engineer", "b.tech", "teacher", "business", "manager", "lawyer", "iti", "graduate"];
   const matchedProf = profKeywords.find(k => q.includes(k));
   if (matchedProf) {
@@ -831,6 +895,37 @@ Aap niche diye gaye link se direct join kar sakte hain:
       fetchVerifiedProfiles(),
     ]);
 
+    // 1b. USER WANTS TO REGISTER (HIGHEST PRIORITY)
+    // If the user wants to register their own profile/biodata, NEVER search or show other people's proposals!
+    if (isRegistrationIntent(userQuery)) {
+      return res.status(200).json({
+        success: true,
+        source: "registration_intent",
+        reply: `Haan ji bilkul! Rishta Matrimony par aap apna **Matrimonial Biodata 100% Free (₹0)** me register kar sakte hain, isme sirf 2 minute ka waqt lagta hai 🌸
+
+👉 **Apna Free Biodata Banane Ke Liye Niche Diye Gaye Link Par Click Karein:**
+[👉 Register Free Biodata (Sirf 2 Minute)](/register)
+
+**Registration ke Aasan Steps:**
+1. **Basic Details:** Apna Naam, Umar (Age), Shahr (Location), Education aur Profession bharein.
+2. **Photos:** Kam se kam 2 clear photos upload karein (Aapki privacy aur parda 100% mehfooz rehta hai).
+3. **Submit:** Form submit kar dein.
+
+Aapka form submit hote hi hamari team profile verify kar degi aur aapko aapki pasand ke mutabiq rishte milna shuru ho jayenge!
+
+💬 *Kya aapko registration form bharne me koi dikkat ya sawal hai? Main poori madad karunga.*`,
+        suggestedActions: [
+          { label: "Register Free (2 Mins)", url: "/register" },
+          { label: "View Verified Profiles", url: "/profiles" },
+          {
+            label: "Help on WhatsApp",
+            url: `https://wa.me/919128719875?text=${encodeURIComponent("Assalamu Alaikum! Mujhe apna profile register karne me madad chahiye.")}`,
+            isExternal: true,
+          },
+        ],
+      });
+    }
+
     // 2. HIGH-SPEED ENGINE: Check profile queries & direct platform FAQs first
     // For profile searches, city searches, or platform rules, answer IMMEDIATELY (<10ms) without waiting for external API latency!
     const profileSearch = findMatchingProfiles(userQuery, liveProfiles);
@@ -919,6 +1014,12 @@ Aap niche diye gaye link se direct join kar sakte hain:
         const systemInstruction = `You are the polite, trustworthy, culturally sensitive human-like Relationship Manager for "Rishta Matrimony" (https://rishtamatrimony.vercel.app), a premier Islamic matrimonial service.
 
 CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
+0. REGISTERING USER'S OWN PROFILE (STRICT NO-PROFILES RULE):
+   - If the user says they want to register their own profile, create their biodata, or ask how to join/register (e.g. "mujhe apna profile registr krna h", "apna biodata banana hai", "registration kaise karein", "form kahan hai"):
+     * YOU MUST NEVER suggest or list other people's profiles.
+     * Tell them warmly and directly that registering a biodata on Rishta Matrimony is 100% Free (₹0) and takes only 2 minutes.
+     * Provide the direct link: [👉 Register Free Biodata (Sirf 2 Minute)](/register)
+     * List the 3 simple steps: 1) Basic details (name, age, city, education, profession), 2) Upload 2 clear photos (kept 100% confidential and parda-friendly), 3) Submit form for verification.
 1. BE PRECISE & DIRECT (NO FLUFF): Answer ONLY what the user asked directly and concisely. Do NOT talk off-topic or give generic essays.
 2. GENDER MATCHMAKING RULE (EXTREMELY IMPORTANT):
    - In matchmaking: If someone says "ladki ka rishta dhund rahe hain" or "ladki ke liye rishta chahiye" (candidate is a girl), they need a GROOM (Male / Ladka). Recommend MALE verified profiles.
@@ -1006,45 +1107,54 @@ ${knowledgeBase}
         });
 
         let candidateText: string | null = null;
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5s maximum timeout
+        const candidateModels = [
+          "gemini-2.5-flash-lite",
+          "gemini-3.5-flash-lite",
+          "gemini-flash-lite-latest",
+          "gemini-2.5-flash"
+        ];
 
-          const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`;
-          const geminiRes = await fetch(geminiEndpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            signal: controller.signal,
-            body: JSON.stringify({
-              systemInstruction: {
-                parts: [{ text: systemInstruction }],
-              },
-              contents: formattedContents,
-              generationConfig: {
-                temperature: 0.35,
-                topP: 0.85,
-                maxOutputTokens: 600,
-              },
-            }),
-          });
-          clearTimeout(timeoutId);
+        for (const modelName of candidateModels) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s timeout per model
 
-          if (geminiRes.status === 429) {
-            // Rate limit / Quota exceeded on free tier - set cooldown for 15 minutes to prevent latency
-            geminiRateLimitedUntil = Date.now() + 15 * 60 * 1000;
-            console.warn("[Gemini 429] Free-tier daily quota exhausted; activated 15-minute speed cooldown.");
-          } else if (geminiRes.ok) {
-            const geminiData = await geminiRes.json();
-            const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text && text.trim().length > 0) {
-              candidateText = text.trim();
+            const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey.trim()}`;
+            const geminiRes = await fetch(geminiEndpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              signal: controller.signal,
+              body: JSON.stringify({
+                systemInstruction: {
+                  parts: [{ text: systemInstruction }],
+                },
+                contents: formattedContents,
+                generationConfig: {
+                  temperature: 0.35,
+                  topP: 0.85,
+                  maxOutputTokens: 600,
+                },
+              }),
+            });
+            clearTimeout(timeoutId);
+
+            if (geminiRes.status === 429) {
+              console.warn(`[Gemini 429] Model ${modelName} quota exhausted, trying next model...`);
+              continue;
+            } else if (geminiRes.ok) {
+              const geminiData = await geminiRes.json();
+              const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text && text.trim().length > 0) {
+                candidateText = text.trim();
+                break; // Found successful answer!
+              }
             }
-          }
-        } catch (fetchErr: any) {
-          if (fetchErr.name === "AbortError") {
-            console.warn("[Gemini Timeout] Request aborted after 2.5s for instant fallback.");
-          } else {
-            console.warn("[Gemini Fetch Error]:", fetchErr);
+          } catch (fetchErr: any) {
+            if (fetchErr.name === "AbortError") {
+              console.warn(`[Gemini Timeout] Model ${modelName} aborted after 4.5s.`);
+            } else {
+              console.warn(`[Gemini Error] Model ${modelName}:`, fetchErr.message);
+            }
           }
         }
 
