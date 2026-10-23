@@ -455,31 +455,30 @@ export function IslamicAssistantWidget() {
           </div>
 
           {/* Footer Input Form */}
-          <div className="p-2.5 bg-card border-t border-border/60 shrink-0">
+          <div className="p-3 bg-card border-t border-border/60 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-2"
             >
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Poochhein (Fees, Photo privacy, Istikhara, Rishte)..."
-                className="h-9 text-xs bg-muted/40 rounded-xl focus-visible:ring-emerald-500/40"
+                className="h-11 sm:h-12 text-sm bg-muted/40 rounded-xl px-3.5 border-emerald-200/80 focus-visible:ring-emerald-500/50 placeholder:text-muted-foreground/70"
                 disabled={loading}
               />
               <Button
                 type="submit"
-                size="sm"
                 disabled={!input.trim() || loading}
-                className="h-9 px-3.5 bg-emerald-700 text-white hover:bg-emerald-800 rounded-xl shrink-0 font-medium shadow-xs"
+                className="h-11 sm:h-12 px-4 bg-emerald-700 text-white hover:bg-emerald-800 rounded-xl shrink-0 font-medium shadow-xs"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-4 h-4" />
               </Button>
             </form>
-            <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 px-1">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 mt-1.5 px-1">
               <span>Quran & Sahih Hadith Grounded</span>
               <a
                 href={directAdminWaUrl}
