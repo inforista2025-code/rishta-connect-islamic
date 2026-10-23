@@ -596,15 +596,15 @@ Balke hamare platform par **zyadatar rishte walidain hi manage karte hain**, taa
   if (
     q.includes("whatsapp group") || 
     q.includes("wa group") || 
-    (q.includes("whatsapp") && q.includes("group")) ||
-    (q.includes("group") && (q.includes("link") || q.includes("add") || q.includes("join") || q.includes("bhejo") || q.includes("karo") || q.includes("hai kya")))
+    q.includes("whatsapp grp") ||
+    q.includes("wa grp") ||
+    (q.includes("whatsapp") && (q.includes("group") || q.includes("grp"))) ||
+    ((q.includes("group") || q.includes("grp")) && (q.includes("link") || q.includes("add") || q.includes("join") || q.includes("bhejo") || q.includes("karo") || q.includes("hai") || q.includes("ka") || q.includes("kya")))
   ) {
     return {
-      reply: `Assalamu Alaikum! 🌸
+      reply: `Hamara WhatsApp group toh nahi hai, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati rehti hain 😊
 
-Hamara **WhatsApp Group nahi hai**, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati hain ✨
-
-Aap niche diye gaye dono links se jud sakte hain:
+Aap niche diye gaye dono links se direct jud sakte hain:
 
 1. 👥 **WhatsApp Community (Join karein):**
    [👉 Click Here to Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)
@@ -619,11 +619,9 @@ Aap niche diye gaye dono links se jud sakte hain:
   // 11. TELEGRAM QUERY
   if (q.includes("telegram") || q.includes("tg channel") || q.includes("tele gram")) {
     return {
-      reply: `Assalamu Alaikum! 🌸
+      reply: `Ji bilkul! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
 
-Ji haan! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
-
-Aap niche diye gaye link se jud sakte hain:
+Aap niche diye gaye link se direct join kar sakte hain:
 ✈️ **Telegram Channel:**
 [👉 Click Here to Join Telegram Channel (@Rishtamatrimony)](https://t.me/Rishtamatrimony)
 
@@ -634,9 +632,7 @@ Aap niche diye gaye link se jud sakte hain:
   // 12. INSTAGRAM QUERY
   if (q.includes("instagram") || q.includes("insta ") || q.endsWith("insta") || q.includes("insta page") || q.includes("insta id") || q.includes("insta link")) {
     return {
-      reply: `Assalamu Alaikum! 🌸
-
-Ji haan! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
+      reply: `Ji bilkul! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
 
 📸 **Instagram Profile:**
 [👉 Click Here to Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)
@@ -713,11 +709,9 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         source: "community_rule",
-        reply: `Assalamu Alaikum! 🌸
+        reply: `Hamara WhatsApp group toh nahi hai, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati rehti hain 😊
 
-Hamara **WhatsApp Group nahi hai**, balki hamare paas official **WhatsApp Community** aur **WhatsApp Channel** hai jahan daily verified rishton ki updates aati hain ✨
-
-Aap niche diye gaye dono links se jud sakte hain:
+Aap niche diye gaye dono links se direct jud sakte hain:
 
 1. 👥 **WhatsApp Community (Join karein):**
    [👉 Click Here to Join WhatsApp Community](https://chat.whatsapp.com/F0Sdw8mYaZ550w7vpcqqLi?mode=ems_wa_t)
@@ -739,11 +733,9 @@ Aap niche diye gaye dono links se jud sakte hain:
       return res.status(200).json({
         success: true,
         source: "community_rule",
-        reply: `Assalamu Alaikum! 🌸
+        reply: `Ji bilkul! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
 
-Ji haan! Hamara official **Telegram Channel** maujood hai jahan daily verified rishton ke alerts aur updates aate hain ✨
-
-Aap niche diye gaye link se jud sakte hain:
+Aap niche diye gaye link se direct join kar sakte hain:
 ✈️ **Telegram Channel:**
 [👉 Click Here to Join Telegram Channel (@Rishtamatrimony)](https://t.me/Rishtamatrimony)
 
@@ -760,9 +752,7 @@ Aap niche diye gaye link se jud sakte hain:
       return res.status(200).json({
         success: true,
         source: "community_rule",
-        reply: `Assalamu Alaikum! 🌸
-
-Ji haan! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
+        reply: `Ji bilkul! Aap humein **Instagram** par follow kar sakte hain daily verified proposals, updates aur Islamic marriage guidance ke liye 🌸✨
 
 📸 **Instagram Profile:**
 [👉 Click Here to Follow on Instagram (@rishtamatrimony786)](https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==)
@@ -805,13 +795,19 @@ Ji haan! Aap humein **Instagram** par follow kar sakte hain daily verified propo
 
 CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
 1. MATCH CUSTOMER'S EXACT TONE & STYLE: Speak in the customer's exact language and conversational style (natural Hinglish, Hindi, Urdu, or English). Speak like an empathetic, friendly, and respectful human relationship manager, NEVER like a robot or a dry policy document.
-2. DIRECT ANSWER IN THE FIRST LINE (MANDATORY):
+2. NO REPEATING SALAM / GREETINGS MID-CHAT (EXTREMELY IMPORTANT):
+   - In the middle of an ongoing conversation or when answering follow-up queries (e.g. user asks about WhatsApp group, price, city, photos, etc.), NEVER greet them again with "Assalamu Alaikum" or formal robotic greetings. Real humans talk continuously without greeting at every turn.
+   - Only say "Assalamu Alaikum" if:
+     a) It is the very first message of the entire session, OR
+     b) The user explicitly greeted you first in their current message (e.g. "Salam", "Assalamu Alaikum", "Slm").
+   - For all mid-chat questions, jump straight into the natural answer like a warm human relationship manager (e.g. "Hamara WhatsApp group toh nahi hai, balki...", "Ji bilkul...", "Haan ji...", "Aap befikr rahein...").
+3. DIRECT ANSWER IN THE FIRST LINE (MANDATORY):
    - When a customer asks a direct question (e.g. "photo submit karna compulsory hai kya?", "kya registration free hai?", "kitna paisa lagta hai?"), you MUST give the direct, honest answer in the VERY FIRST SENTENCE:
      * If asked if photo is compulsory: "Haan ji, registration form bharte waqt kam se kam 2 clear photos upload karna zaroori (compulsory) hota hai taaki genuine profile ban sake aur fake account se bacha ja sake. Lekin aap befikr rahein, aapki privacy aur parda 100% mehfooz rehta hai..."
      * If asked if registration is free: "Haan ji bilkul! Rishta Matrimony par biodata register karna 100% Free (₹0) hai..."
      * If asked about dowry: "Nahi bilkul nahi! Hamare platform par Jahez (Dowry) demand karna sakht mana hai..."
      * If asked if parents can register: "Haan ji bilkul! Walidain (parents), bhai ya koi bhi guardian apne bache ke liye form bhar sakte hain..."
-3. PROFILE INQUIRIES & CITY SEARCHES (MOST CRITICAL RULE):
+4. PROFILE INQUIRIES & CITY SEARCHES (MOST CRITICAL RULE):
    - When a user asks about profiles from a specific city (e.g. "Ranchi se ladka", "Mumbai se ladki", "Delhi se rishta", "falane shehar se chahiye"), by gender ("ladki ki profile", "dulha chahiye"), or asks about a specific profile or person (e.g. "Profile 29", "Ayesha perween"):
      a. FIRST SENTENCE: Directly state whether we have matching profiles and list them. E.g. "Haan ji! Ranchi se hamare paas ye verified rishte uplabdh hain:"
      b. BASIC DETAILS ONLY: Provide the basic details available from the verified profiles list below (Profile Code / ID, Name, Age, City, Education, Profession, Marital Status). DO NOT invent fake profiles—use the actual verified profiles listed below.
