@@ -133,9 +133,35 @@ const DEFAULT_KNOWLEDGE = `
   Answer: YES. Our official Telegram Channel is: https://t.me/Rishtamatrimony
 - Question: Do you have Instagram? (Instagram link / ID do?)
   Answer: YES. Our official Instagram Profile is: https://www.instagram.com/rishtamatrimony786?stkn=MXBjajltZWFwMXdrdQ==
+
+9. TERMS & CONDITIONS (RULES & GUIDELINES) - OFFICIAL POLICY:
+- Profiles must be submitted ONLY through official website (/register). Direct posting in groups is prohibited.
+- Sisters must NOT share personal contact numbers publicly. Provide Wali (guardian) or trusted elder family member's contact for communication to uphold modesty and Islamic safety.
+- Islamic adab and manners are mandatory. Polite decline if not interested (Surah Al-Baqarah 2:83).
+- Strict confidentiality: Sharing profile details, photos, or screenshots outside platform is strictly prohibited. Violators are permanently banned.
+- Admins are facilitators to verify profiles and maintain Islamic boundaries, not personal matchmakers.
+- Users must inform admins when married or engaged so their profile is removed.
+- Full terms URL: /terms
+
+10. PRIVACY POLICY - OFFICIAL POLICY:
+- We collect profile info, contact info, photos, and basic ID confirmation solely for matrimonial authenticity and community safety.
+- ID Verification Policy: ID verification is done only to prevent fake profiles. We do NOT store, save, or share any ID documents. Full ID numbers are never required (users can mask/hide numbers).
+- We do NOT sell user data, do NOT display phone numbers publicly, and do NOT allow forwarding of private details.
+- Photos are confidential, respect parda/hijab, and are never shown on public search engines or open social media.
+- Users can update or delete/remove their profile anytime by contacting admin.
+- Full privacy policy URL: /privacy-policy
 `;
 
 // Helper to fetch dynamic Knowledge Base from Supabase
+function cleanHtml(raw: string): string {
+  return (raw || '')
+    .replace(/<[^>]*>?/gm, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function fetchAdminKnowledgeBase(): Promise<string> {
   const now = Date.now();
   if (cachedKnowledge && now - lastKnowledgeFetch < KNOWLEDGE_CACHE_TTL) {
@@ -143,54 +169,75 @@ async function fetchAdminKnowledgeBase(): Promise<string> {
   }
 
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/about_us_content?language=eq.ai_knowledge_base&select=content`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
+    const [aboutRes, termsRes, privacyRes] = await Promise.all([
+      fetch(
+        `${SUPABASE_URL}/rest/v1/about_us_content?language=eq.ai_knowledge_base&select=content`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/terms_content?select=content&limit=1`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/privacy_policy_content?select=content&limit=1`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      )
+    ]);
 
-    if (!res.ok) {
-      cachedKnowledge = DEFAULT_KNOWLEDGE;
-      lastKnowledgeFetch = now;
-      return DEFAULT_KNOWLEDGE;
-    }
+    let dynamicContext = DEFAULT_KNOWLEDGE;
 
-    const data = await res.json();
-    if (data && data.length > 0 && data[0].content) {
-      try {
-        const parsed = JSON.parse(data[0].content);
-        let dynamicContext = DEFAULT_KNOWLEDGE + "\n\n--- ADMIN CUSTOM TRAINING & FAQS ---\n";
-
-        if (Array.isArray(parsed.faqs) && parsed.faqs.length > 0) {
-          parsed.faqs.forEach((faq: any, idx: number) => {
-            if (faq.question && faq.answer) {
-              dynamicContext += `Q${idx + 1}: ${faq.question}\nA${idx + 1}: ${faq.answer}\n`;
-            }
-          });
-        }
-
-        if (Array.isArray(parsed.documents) && parsed.documents.length > 0) {
-          dynamicContext += "\n--- ADMIN UPLOADED DOCUMENTS & POLICIES ---\n";
-          parsed.documents.forEach((doc: any) => {
-            if (doc.content) {
-              dynamicContext += `[Document: ${doc.title || "Policy"}]\n${doc.content}\n\n`;
-            }
-          });
-        }
-
-        if (parsed.customPrompt) {
-          dynamicContext += `\nADMIN SPECIAL INSTRUCTION: ${parsed.customPrompt}\n`;
-        }
-
-        return dynamicContext;
-      } catch (jsonErr) {
-        return DEFAULT_KNOWLEDGE + "\n\n" + data[0].content;
+    if (termsRes.ok) {
+      const termsData = await termsRes.json();
+      if (termsData && termsData[0]?.content) {
+        const cleanTerms = cleanHtml(termsData[0].content);
+        dynamicContext += `\n\n--- OFFICIAL TERMS & CONDITIONS (DATABASE) ---\n${cleanTerms}\n--- END TERMS & CONDITIONS ---\n`;
       }
     }
+
+    if (privacyRes.ok) {
+      const privacyData = await privacyRes.json();
+      if (privacyData && privacyData[0]?.content) {
+        const cleanPrivacy = cleanHtml(privacyData[0].content);
+        dynamicContext += `\n\n--- OFFICIAL PRIVACY POLICY (DATABASE) ---\n${cleanPrivacy}\n--- END PRIVACY POLICY ---\n`;
+      }
+    }
+
+    if (aboutRes.ok) {
+      const data = await aboutRes.json();
+      if (data && data.length > 0 && data[0].content) {
+        try {
+          const parsed = JSON.parse(data[0].content);
+          dynamicContext += "\n--- ADMIN CUSTOM TRAINING & FAQS ---\n";
+
+          if (Array.isArray(parsed.faqs) && parsed.faqs.length > 0) {
+            parsed.faqs.forEach((faq: any, idx: number) => {
+              if (faq.question && faq.answer) {
+                dynamicContext += `Q${idx + 1}: ${faq.question}\nA${idx + 1}: ${faq.answer}\n`;
+              }
+            });
+          }
+
+          if (Array.isArray(parsed.documents) && parsed.documents.length > 0) {
+            dynamicContext += "\n--- ADMIN UPLOADED DOCUMENTS & POLICIES ---\n";
+            parsed.documents.forEach((doc: any) => {
+              if (doc.content) {
+                dynamicContext += `[Document: ${doc.title || "Policy"}]\n${doc.content}\n\n`;
+              }
+            });
+          }
+
+          if (parsed.customPrompt) {
+            dynamicContext += `\nADMIN SPECIAL INSTRUCTION: ${parsed.customPrompt}\n`;
+          }
+        } catch (jsonErr) {
+          dynamicContext += "\n\n" + data[0].content;
+        }
+      }
+    }
+
+    cachedKnowledge = dynamicContext;
+    lastKnowledgeFetch = now;
+    return dynamicContext;
   } catch (err) {
     console.warn("Could not load dynamic knowledge base from Supabase:", err);
   }
@@ -247,6 +294,36 @@ export function isRegistrationIntent(rawQ: string): boolean {
     }
   }
   return false;
+}
+
+// User asks about Terms & Conditions / Rules / Guidelines
+export function isTermsQuery(rawQ: string): boolean {
+  const q = normalizeMatrimonialQuery(rawQ);
+  const hasTermsWord = 
+    /\b(terms|condition|conditions|t&c|tnc|rules|regulations|niyam|sharte|shartein|shart|quwaid|zabte)\b/i.test(q);
+
+  const isPartnerDemand = 
+    /\b(ladka|ladki|dulha|dulhan|family|khandan)\s*(ki|ke|ka)\s*(koi\s+)?(shart|demand)\b/i.test(q);
+
+  return hasTermsWord && !isPartnerDemand;
+}
+
+// User asks about Privacy Policy / Data Safety / Gopniyata Niti
+export function isPrivacyPolicyQuery(rawQ: string): boolean {
+  const q = normalizeMatrimonialQuery(rawQ);
+  return (
+    q.includes("privacy policy") ||
+    q.includes("privacy-policy") ||
+    q.includes("gopniyata") ||
+    q.includes("data privacy") ||
+    q.includes("data safe") ||
+    q.includes("data security") ||
+    q.includes("data protect") ||
+    q.includes("privacy rules") ||
+    q.includes("privacy kya") ||
+    q.includes("privacy ke niyam") ||
+    (q.includes("privacy") && (q.includes("policy") || q.includes("link") || q.includes("kya") || q.includes("batao") || q.includes("rules") || q.includes("shart")))
+  );
 }
 
 // Smart Matchmaking Direction Resolver
@@ -895,6 +972,82 @@ Aap niche diye gaye link se direct join kar sakte hain:
       fetchVerifiedProfiles(),
     ]);
 
+    // 1c. USER ASKS ABOUT TERMS & CONDITIONS (RULES / NIYAM / POLICIES)
+    if (isTermsQuery(userQuery)) {
+      return res.status(200).json({
+        success: true,
+        source: "terms_and_conditions_intent",
+        reply: `Rishta Matrimony ke ahem **Terms & Conditions (Niyam wa Shartein)** ye hain:
+
+1. **Profile Registration Policy:**
+   • Sabhi profiles sirf hamari official website (/register) se hi submit ki ja sakti hain. Kisi bhi WhatsApp group ya channel mein direct profile post karna mana hai.
+   • Incomplete ya galat information wali profile reject kar di jaati hai. Genuine rishton ke liye admin verification zaroori hai.
+
+2. **Sisters (Behenon) ki Modesty & Safety:**
+   • Behenon ke personal contact numbers publicly share nahi kiye jaate.
+   • Islami parda aur hifazat ke madd-e-nazar, communication ke liye unke Wali (Guardian) ya ghar ke buzurg ka number hi provide kiya jata hai.
+
+3. **Islamic Manners (Adab wa Akhlaq):**
+   • Tamam baat-cheet ba-adab, sanjeeda aur sincere honi chahiye.
+   • Agar koi rishta pasand na aaye, toh shishta aur adab se inkaar karein (Surah Al-Baqarah 2:83).
+
+4. **Privacy & Strict Action Policy:**
+   • Kisi bhi member ki profile details, photos ya screenshots platform se bahar share karna sakht mana hai.
+   • Rules ya privacy violate karne par profile turant permanently ban kar di jaati hai.
+
+5. **Profile Updates & Removal:**
+   • Rishta tay ho jane (engagement/nikah) par admin ko zaroor inform karein taaki profile hata di jaye.
+
+👉 **Puri detail aur kanuni shartein padhne ke liye aap Terms page dekh sakte hain:**
+[👉 View Complete Terms & Conditions](/terms)
+
+💬 *Kya aapko kisi specific niyam ya rule ke bare me aur janna hai?*`,
+        suggestedActions: [
+          { label: "View Terms & Conditions", url: "/terms" },
+          { label: "View Privacy Policy", url: "/privacy-policy" },
+          { label: "Register Free (2 Mins)", url: "/register" },
+        ],
+      });
+    }
+
+    // 1d. USER ASKS ABOUT PRIVACY POLICY / DATA SAFETY / GOPNIYATA NITI
+    if (isPrivacyPolicyQuery(userQuery)) {
+      return res.status(200).json({
+        success: true,
+        source: "privacy_policy_intent",
+        reply: `Rishta Matrimony par aapki **Privacy Policy (Gopniyata aur Hifazat)** ke ahem niyam ye hain:
+
+1. **Contact Numbers ki Hifazat:**
+   • Kisi bhi member (khas taur par behenon) ka personal phone number public web ya open chats me show nahi kiya jata.
+   • Contact details sirf serious aur verified khandano ko hi admin verification process ke zariye share ki jaati hain.
+
+2. **Photos & Parda Respect:**
+   • Photos kisi bhi open social media ya Google search par display nahi hoti hain.
+   • Hijab aur parda ka pura ehtram kiya jata hai aur photos strictly confidential rehti hain.
+
+3. **ID Verification Policy (Safety Note):**
+   • Verification sirf fake accounts ko rokne aur platform ko safe rakhne ke liye ki jaati hai.
+   • Hamare platform par **kisi bhi ID document ko store ya save nahi kiya jata**, aur na hi full ID number ki zaroorat hoti hai. Users apna sensitive number mask/hide karke share kar sakte hain.
+
+4. **Hamara Sakht Niyam (What We Do NOT Do):**
+   • Hum kabhi bhi kisi user ka personal data kisi third party ko bechte (sell) nahi hain.
+   • Screenshots ya details ko bahar forward karna sakht mana hai.
+
+5. **Data Update & Profile Removal:**
+   • Aap jab chahein apni profile ko update karwa sakte hain ya rishta tay hone par complete delete/remove karwa sakte hain.
+
+👉 **Puri detail padhne ke liye aap hamari official Privacy Policy dekh sakte hain:**
+[👉 View Complete Privacy Policy](/privacy-policy)
+
+💬 *Kya aapko photo, contact ya data privacy se juda koi sawal poochna hai?*`,
+        suggestedActions: [
+          { label: "View Privacy Policy", url: "/privacy-policy" },
+          { label: "View Terms & Conditions", url: "/terms" },
+          { label: "Register Free (2 Mins)", url: "/register" },
+        ],
+      });
+    }
+
     // 1b. USER WANTS TO REGISTER (HIGHEST PRIORITY)
     // If the user wants to register their own profile/biodata, NEVER search or show other people's proposals!
     if (isRegistrationIntent(userQuery)) {
@@ -1015,6 +1168,11 @@ Aapka form submit hote hi hamari team profile verify kar degi aur aapko aapki pa
 
 CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
 0. REGISTERING USER'S OWN PROFILE (STRICT NO-PROFILES RULE):
+0b. TERMS & CONDITIONS AND PRIVACY POLICY QUERIES (CRITICAL):
+    - When a user asks about Terms & Conditions, rules, regulations, or policies (e.g. "terms kya hain", "rules kya hain", "niyam shartein", "T&C"):
+      Answer directly using our official Terms & Conditions (Official website submission only, sisters' Wali contact for modesty, polite Islamic communication, strict ban on screenshots/leakage, reporting upon engagement/marriage). Always provide the link [👉 View Complete Terms & Conditions](/terms).
+    - When a user asks about Privacy Policy, data safety, or photo/ID policies (e.g. "privacy policy kya hai", "data safe hai kya", "details kaun dekhta hai"):
+      Answer directly using our official Privacy Policy (No public display of phone numbers, 100% confidential photos, no saving of ID documents, we NEVER sell data, right to delete profile anytime). Always provide the link [👉 View Complete Privacy Policy](/privacy-policy).
    - If the user says they want to register their own profile, create their biodata, or ask how to join/register (e.g. "mujhe apna profile registr krna h", "apna biodata banana hai", "registration kaise karein", "form kahan hai"):
      * YOU MUST NEVER suggest or list other people's profiles.
      * Tell them warmly and directly that registering a biodata on Rishta Matrimony is 100% Free (₹0) and takes only 2 minutes.

@@ -431,6 +431,41 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
   }
 
   // ==========================================
+  // 1b. TERMS & CONDITIONS (RULES & GUIDELINES)
+  // ==========================================
+  const isTerms = 
+    /\b(terms|condition|conditions|t&c|tnc|rules|regulations|niyam|sharte|shartein|shart|quwaid|zabte)\b/i.test(q) &&
+    !/\b(ladka|ladki|dulha|dulhan|family|khandan)\s*(ki|ke|ka)\s*(koi\s+)?(shart|demand)\b/i.test(q);
+
+  if (isTerms) {
+    return {
+      text: `Rishta Matrimony ke ahem **Terms & Conditions (Niyam wa Shartein)** ye hain:\n\n1. **Profile Registration Policy:**\n   • Sabhi profiles sirf hamari official website (/register) se hi submit ki ja sakti hain. Direct groups/channels me post karna mana hai.\n   • Incomplete ya misleading profiles reject kar di jaati hain. ID verification zaroori hai.\n\n2. **Sisters (Behenon) ki Modesty & Safety:**\n   • Behenon ke personal contact numbers publicly share nahi kiye jaate.\n   • Islami parda aur hifazat ke liye unke Wali (Guardian) ya ghar ke buzurg ka number hi liya jata hai.\n\n3. **Islamic Manners (Adab wa Akhlaq):**\n   • Tamam baat-cheet ba-adab aur sincere honi chahiye. Inkaar karte waqt bhi narm aur polite tareeqa apnayein (Surah Al-Baqarah 2:83).\n\n4. **Privacy & Strict Action Policy:**\n   • Profile details, photos ya screenshots platform se bahar share karna sakht mana hai. Violation par permanent ban lagta hai.\n\n5. **Profile Updates & Removal:**\n   • Rishta tay hone par admin ko zaroor inform karein taaki profile hata di jaye.\n\n👉 **Puri detail padhne ke liye aap hamara official Terms page dekh sakte hain:**\n[👉 View Complete Terms & Conditions](/terms)\n\n💬 *Kya aapko kisi specific niyam ya rule ke bare me aur janna hai?*`,
+    };
+  }
+
+  // ==========================================
+  // 1c. PRIVACY POLICY & DATA SECURITY
+  // ==========================================
+  const isPrivacy = 
+    q.includes("privacy policy") ||
+    q.includes("privacy-policy") ||
+    q.includes("gopniyata") ||
+    q.includes("data privacy") ||
+    q.includes("data safe") ||
+    q.includes("data security") ||
+    q.includes("data protect") ||
+    q.includes("privacy rules") ||
+    q.includes("privacy kya") ||
+    q.includes("privacy ke niyam") ||
+    (q.includes("privacy") && (q.includes("policy") || q.includes("link") || q.includes("kya") || q.includes("batao") || q.includes("rules") || q.includes("shart")));
+
+  if (isPrivacy) {
+    return {
+      text: `Rishta Matrimony par aapki **Privacy Policy (Gopniyata aur Hifazat)** ke ahem niyam ye hain:\n\n1. **Contact Numbers ki Hifazat:**\n   • Personal phone numbers public search ya open chats par kabhi show nahi hote.\n   • Verified rishton ke walidain se contact sirf serious aur verified users ko admin process ke zariye diya jata hai.\n\n2. **Photos & Parda Respect:**\n   • Photos kisi bhi open social media ya Google search par display nahi hoti hain.\n   • Parda aur hijab ka pura ahtram kiya jata hai.\n\n3. **ID Verification Policy (Safety Note):**\n   • Verification sirf fake profiles rokne ke liye hoti hai.\n   • Hamare platform par **kisi bhi ID document ko store ya save nahi kiya jata**, aur na hi full ID number ki zaroorat hoti hai.\n\n4. **Hamara Sakht Niyam (What We Do NOT Do):**\n   • Hum kabhi bhi kisi user ka personal data sell nahi karte aur na hi details bahar forward karne ki ijazat dete hain.\n\n5. **Profile Update & Deletion:**\n   • Rishta hone par ya marzi ke mutabiq profile ko kisi bhi waqt admin se bolkar completely delete/remove karwaya ja sakta hai.\n\n👉 **Puri detail padhne ke liye aap hamari official Privacy Policy dekh sakte hain:**\n[👉 View Complete Privacy Policy](/privacy-policy)\n\n💬 *Kya aapko photo, contact ya data privacy se juda koi sawal poochna hai?*`,
+    };
+  }
+
+  // ==========================================
   // 2. CASUAL CHAT & HUMAN-LIKE INTERACTIONS
   // ==========================================
 

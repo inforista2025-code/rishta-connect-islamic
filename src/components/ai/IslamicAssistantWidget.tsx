@@ -239,6 +239,20 @@ export function IslamicAssistantWidget() {
       return;
     }
 
+    // Terms & Conditions link
+    if (lower.includes('terms')) {
+      setIsOpen(false);
+      navigate('/terms');
+      return;
+    }
+
+    // Privacy Policy link
+    if (lower.includes('privacy')) {
+      setIsOpen(false);
+      navigate('/privacy-policy');
+      return;
+    }
+
     // 3. Known routes -> shift on same tab
     if (lower.includes('pricing')) {
       setIsOpen(false);
