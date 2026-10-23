@@ -797,12 +797,12 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
       }).join('\n\n');
 
       return {
-        text: `Haan ji! Hamare paas ${targetLabel} ki ye verified profiles uplabdh hain:\n\n${listItems}\n\n⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh dono khandano ki safety aur privacy ke liye platform ka zaroori niyam hai).\n\n👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar le, do minute lagega:**\nhttps://rishtamatrimony.vercel.app/register\n\n💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
+        text: `Haan ji! Hamare paas ${targetLabel} ki ye verified profiles uplabdh hain:\n\n${listItems}\n\n⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh dono khandano ki safety aur privacy ke liye platform ka zaroori niyam hai).\n\n👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar le, do minute lagega:**\n[👉 Register Free Biodata (Sirf 2 Minute)](/register)\n\n💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
         profileMatches: matches,
       };
     } else if (hasKeyword) {
       return {
-        text: `Filhaal hamare platform par **"${searchedTerm}"** se direct profile live nahi hai, lekin doosre shehron jaise Ranchi, Patna, Delhi, Mumbai, Bihar, UP wagaira se verified rishte maujood hain 🌸\n\n⚠️ **Zaroori Jankari:** Hamare platform par kisi bhi rishte ka contact number aur photo dekhne ke liye pehle apna profile register karna hota hai.\n\n👉 **Agar aap chahte hain ki jaise hi matching rishta aaye hamari team aapse direct rabta kare, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**\nhttps://rishtamatrimony.vercel.app/register\n\n💬 *Kya aap kisi doosri nearby city ke verified rishte dekhna chahenge?*`,
+        text: `Filhaal hamare platform par **"${searchedTerm}"** se direct profile live nahi hai, lekin doosre shehron jaise Ranchi, Patna, Delhi, Mumbai, Bihar, UP wagaira se verified rishte maujood hain 🌸\n\n⚠️ **Zaroori Jankari:** Hamare platform par kisi bhi rishte ka contact number aur photo dekhne ke liye pehle apna profile register karna hota hai.\n\n👉 **Agar aap chahte hain ki jaise hi matching rishta aaye hamari team aapse direct rabta kare, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**\n[👉 Register Free Biodata (Sirf 2 Minute)](/register)\n\n💬 *Kya aap kisi doosri nearby city ke verified rishte dekhna chahenge?*`,
         profileMatches: [],
       };
     }

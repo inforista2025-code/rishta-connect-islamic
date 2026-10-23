@@ -240,22 +240,35 @@ export function IslamicAssistantWidget() {
             );
           }
 
-          // Check if line is purely a URL
-          if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-            const match = trimmed.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?)([.,!?;:)]*)$/);
+          // Check if line is purely a URL or route
+          if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/register') || trimmed.startsWith('/profiles')) {
+            const match = trimmed.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?|\/[^\s]+?)([.,!?;:)]*)$/);
             const cleanUrl = match ? match[1] : trimmed;
             const trailing = match ? match[2] : '';
+            const isRegister = cleanUrl.toLowerCase().includes('register');
+            const isProfiles = cleanUrl.toLowerCase().includes('profiles');
+
+            let buttonLabel = cleanUrl;
+            if (isRegister) {
+              buttonLabel = '👉 Register Free Biodata (Sirf 2 Minute)';
+            } else if (isProfiles) {
+              buttonLabel = '👉 Browse Verified Profiles';
+            }
+
             return (
               <div key={idx} className="my-1.5">
-                <a
-                  href={cleanUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-semibold text-xs transition-colors break-all shadow-xs"
+                <button
+                  type="button"
+                  onClick={(e) => handleSmartLinkClick(cleanUrl, e)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                    isRegister
+                      ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
+                  }`}
                 >
-                  <span>{cleanUrl}</span>
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
-                </a>
+                  <span>{buttonLabel}</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                </button>
                 {trailing}
               </div>
             );
@@ -282,10 +295,10 @@ export function IslamicAssistantWidget() {
     );
   };
 
-  // Rich text renderer: Handles Bold, Italic, Markdown Links, and inline Raw URLs
+  // Rich text renderer: Handles Bold, Italic, Markdown Links, and inline Raw URLs with Smart Navigation
   const formatRichText = (text: string) => {
-    // Matches markdown links [text](url), raw URLs http(s)://..., bold **...**, or italic *...*
-    const regex = /(\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s]+|\*\*.*?\*\*|\*.*?\*)/g;
+    // Matches markdown links [text](url), raw URLs http(s)://..., relative routes /register or /profiles, bold **...**, or italic *...*
+    const regex = /(\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s]+|\/(?:register|profiles)[^\s]*|\*\*.*?\*\*|\*.*?\*)/g;
     const parts = text.split(regex);
 
     return parts.map((part, i) => {
@@ -296,45 +309,54 @@ export function IslamicAssistantWidget() {
       if (mdMatch) {
         const label = mdMatch[1];
         const linkUrl = mdMatch[2];
-        const isInternal = linkUrl.startsWith('/');
+        const isRegister = linkUrl.toLowerCase().includes('register') || label.toLowerCase().includes('register');
+
         return (
-          <a
+          <button
             key={i}
-            href={linkUrl}
-            target={isInternal ? undefined : "_blank"}
-            rel={isInternal ? undefined : "noopener noreferrer"}
-            onClick={(e) => {
-              if (isInternal) {
-                e.preventDefault();
-                setIsOpen(false);
-                navigate(linkUrl);
-              }
-            }}
-            className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-900 underline decoration-emerald-500/60 hover:decoration-emerald-700 transition-colors"
+            type="button"
+            onClick={(e) => handleSmartLinkClick(linkUrl, e)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all my-1 cursor-pointer ${
+              isRegister
+                ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
+            }`}
           >
             <span>{label}</span>
-            <ExternalLink className="w-3 h-3 inline shrink-0" />
-          </a>
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+          </button>
         );
       }
 
-      // 2. Raw URL: https://... or http://...
-      if (part.startsWith('http://') || part.startsWith('https://')) {
-        const match = part.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?)([.,!?;:)]*)$/);
+      // 2. Raw URL or relative path: https://... or /register or /profiles
+      if (part.startsWith('http://') || part.startsWith('https://') || part.startsWith('/register') || part.startsWith('/profiles')) {
+        const match = part.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?|\/[^\s]+?)([.,!?;:)]*)$/);
         const cleanUrl = match ? match[1] : part;
         const trailing = match ? match[2] : '';
+        const isRegister = cleanUrl.toLowerCase().includes('register');
+        const isProfiles = cleanUrl.toLowerCase().includes('profiles');
+
+        let buttonLabel = cleanUrl;
+        if (isRegister) {
+          buttonLabel = '👉 Register Free Biodata (Sirf 2 Minute)';
+        } else if (isProfiles) {
+          buttonLabel = '👉 Browse Verified Profiles';
+        }
 
         return (
-          <span key={i} className="inline">
-            <a
-              href={cleanUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-900 underline decoration-emerald-500/60 hover:decoration-emerald-700 transition-colors break-all"
+          <span key={i} className="inline-block my-1">
+            <button
+              type="button"
+              onClick={(e) => handleSmartLinkClick(cleanUrl, e)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                isRegister
+                  ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
+              }`}
             >
-              <span>{cleanUrl}</span>
-              <ExternalLink className="w-3 h-3 inline shrink-0" />
-            </a>
+              <span>{buttonLabel}</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+            </button>
             {trailing}
           </span>
         );

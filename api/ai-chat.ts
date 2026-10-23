@@ -114,8 +114,8 @@ const DEFAULT_KNOWLEDGE = `
   Answer: NO (Nahi bilkul nahi). Demanding dowry is strictly forbidden on our platform according to the Sunnah of Prophet Muhammad ﷺ. The Sunnah teaches simplicity (Aisarun-Nikah Barkatan).
 
 7. HOW TO GET STARTED:
-- Step 1: Register free biodata at https://rishtamatrimony.vercel.app/register (Takes 2 minutes).
-- Step 2: Browse verified proposals at https://rishtamatrimony.vercel.app/profiles
+- Step 1: Register free biodata at [👉 Register Free Biodata (Sirf 2 Minute)](/register) (Takes 2 minutes).
+- Step 2: Browse verified proposals at [👉 View Verified Profiles](/profiles)
 - Step 3: For any help or queries, message our official WhatsApp at +91 9128719875
 `;
 
@@ -350,7 +350,7 @@ function generateSmartFallback(
 ⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh genuine parivaron ki safety aur privacy ke liye platform ka zaroori niyam hai).
 
 👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**
-https://rishtamatrimony.vercel.app/register
+[👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Kya aap inka profile dekh kar apna free biodata register karna chahenge?*`,
         profileMatches: [
@@ -392,7 +392,7 @@ ${listItems}
 ⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh genuine khandano ki safety aur privacy ke liye zaroori niyam hai).
 
 👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**
-https://rishtamatrimony.vercel.app/register
+[👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
         profileMatches: matchedProfiles.map(p => ({
@@ -417,7 +417,7 @@ https://rishtamatrimony.vercel.app/register
 ⚠️ **Zaroori Jankari:** Hamare platform par kisi bhi rishte ka contact number aur photo dekhne ke liye pehle apna profile register karna hota hai.
 
 👉 **Agar aap chahte hain ki jaise hi ${cityTitle} ya aapke mutabiq matching rishta aaye hamari team aapse direct rabta kare, toh pehle aap apni profile register kar lein, sirf 2 minute lagega:**
-https://rishtamatrimony.vercel.app/register
+[👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Kya aap aas-paas ke kisi doosre shehar ke verified rishte dekhna chahenge?*`
       };
@@ -495,7 +495,7 @@ Iska maqsad yeh hai ki:
 • Charges sirf tab aate hain jab aap kisi verified rishte ke walidain ka **direct phone number unlock** karna chahein (Sirf ₹48 single profile unlock, ya ₹491 me 2 mahine ka unlimited plan).
 
 👉 *Aap abhi direct website ke top par 'Register Free' par jaakar 2 minute me biodata submit kar sakte hain:*
-https://rishtamatrimony.vercel.app/register
+[👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Kya aap apna biodata register karne me madad chahte hain?*`
     };
@@ -678,13 +678,13 @@ CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
         "⚠️ **Zaroori Jankari:** Inka personal contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh genuine parivaron ki safety aur privacy ke liye sabse zaroori niyam hai)."
      e. FOLLOW-UP CALL TO ACTION (REGISTER IN 2 MINUTES): Conclude with:
         "Agar aapko inka profile chahiye, toh pehle aap apni profile register kar le, do minute lagega:
-        👉 https://rishtamatrimony.vercel.app/register"
+        👉 [👉 Register Free Biodata (Sirf 2 Minute)](/register)"
    - If someone asks for a city where we currently have NO profiles:
      "Filhaal hamare paas [City] se direct profile live nahi hai, lekin doosre shehron jaise Ranchi, Patna, Delhi, Mumbai, Bihar, UP wagaira se verified rishte uplabdh hain.
      Aap pehle 2 minute nikaal kar apna profile register kar lijiye taaki jaise hi matching rishta aaye hamari team aapse direct rabta kare:
-     👉 https://rishtamatrimony.vercel.app/register"
+     👉 [👉 Register Free Biodata (Sirf 2 Minute)](/register)"
 4. NEVER dump a generic list of policy bullet points when a user asked a specific question. Answer their exact concern first, then explain briefly with warmth.
-5. CLICKABLE LINKS: Whenever you suggest viewing profiles or registering, provide full URLs (e.g. https://rishtamatrimony.vercel.app/profiles or https://rishtamatrimony.vercel.app/register) on their own line so visitors can click directly to open that page.
+5. CLICKABLE LINKS: Whenever you suggest viewing profiles or registering, provide full URLs (e.g. [👉 View Verified Profiles](/profiles) or [👉 Register Free Biodata (Sirf 2 Minute)](/register)) on their own line so visitors can click directly to open that page.
 6. Conclude with a helpful, friendly follow-up question.
 
 --- VERIFIED ACTIVE PROFILES ON WEBSITE ---
