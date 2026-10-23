@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 interface ExtendedChatMessage extends ChatMessage {
   isStreaming?: boolean;
   suggestedActions?: { label: string; url: string; isExternal?: boolean }[];
-  showLeadCard?: boolean;
 }
 
 
@@ -42,21 +41,12 @@ export function IslamicAssistantWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Inline Lead Form State
-  const [leadName, setLeadName] = useState('');
-  const [leadPhone, setLeadPhone] = useState('');
-  const [leadCity, setLeadCity] = useState('');
-  const [leadLookingFor, setLeadLookingFor] = useState<'Bride' | 'Groom' | 'Other'>('Bride');
-  const [leadSubmitting, setLeadSubmitting] = useState(false);
-  const [leadSubmitted, setLeadSubmitted] = useState(false);
-
   const [messages, setMessages] = useState<ExtendedChatMessage[]>([
     {
       id: 'welcome-matrimony-1',
       sender: 'assistant',
       text: `**Assalamu Alaikum!** 🌸✨\nWelcome to **Rishta Matrimony AI** 👰🤵\n\nMain aapka Halal Matchmaking Assistant hoon. Main aapke liye verified rishte dhoondhne, deeni masail aur pricing ki jankari ke liye hazir hoon.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya apna Free Biodata register karna chahte hain?*`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      showLeadCard: true,
     }
   ]);
 
@@ -68,7 +58,7 @@ export function IslamicAssistantWidget() {
     if (isOpen) {
       scrollToBottom();
     }
-  }, [messages, isOpen, isThinking, leadSubmitted]);
+  }, [messages, isOpen, isThinking]);
 
   useEffect(() => {
     return () => {
@@ -142,14 +132,6 @@ export function IslamicAssistantWidget() {
       const botMessageId = `bot-${Date.now()}`;
       const fullText = replyText;
 
-      // Show lead card after user asks about rishte or profiles
-      const shouldPromptLead = 
-        query.toLowerCase().includes('dulha') ||
-        query.toLowerCase().includes('dulhan') ||
-        query.toLowerCase().includes('rishta') ||
-        query.toLowerCase().includes('search') ||
-        query.toLowerCase().includes('dhoond');
-
       // Initialize streaming message
       const initialBotMsg: ExtendedChatMessage = {
         id: botMessageId,
@@ -159,7 +141,6 @@ export function IslamicAssistantWidget() {
         isStreaming: true,
         suggestedActions: actions,
         profileMatches,
-        showLeadCard: shouldPromptLead && !leadSubmitted
       };
 
       setMessages((prev) => [...prev, initialBotMsg]);
@@ -212,58 +193,6 @@ export function IslamicAssistantWidget() {
     }
   };
 
-  // Submit Lead from the Chatbot
-  const handleLeadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!leadPhone || leadPhone.replace(/\D/g, '').length < 10) {
-      toast({
-        title: 'Valid Phone Required',
-        description: 'Please enter a valid 10-digit WhatsApp number.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLeadSubmitting(true);
-    try {
-      const cleanPhone = leadPhone.replace(/\D/g, '');
-      const lastUserMsg = messages.filter(m => m.sender === 'user').slice(-1)[0]?.text || 'Requested matchmaking on WhatsApp';
-
-      await fetch('/api/ai-chat-lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: leadName.trim() || 'Website Visitor',
-          whatsapp: cleanPhone,
-          city: leadCity.trim() || 'India',
-          lookingFor: leadLookingFor,
-          query: lastUserMsg
-        })
-      });
-
-      setLeadSubmitted(true);
-      toast({
-        title: 'Details Received! 🌸',
-        description: 'Hamari team aapko WhatsApp par matching rishte bhejegi.'
-      });
-
-      // Add assistant confirmation message
-      const botMsg: ExtendedChatMessage = {
-        id: `lead-ack-${Date.now()}`,
-        sender: 'assistant',
-        text: `JazakAllah Khair **${leadName || 'brother/sister'}**! 🌸✨\nAapka number (+91 ${cleanPhone}) hamari matchmaking team ke paas register ho gaya hai.\n\nAap abhi direct niche diye gaye green button par click karke hamare admin se WhatsApp par direct chat bhi shuru kar sakte hain!`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, botMsg]);
-
-    } catch (err) {
-      console.warn('Lead submit error:', err);
-      setLeadSubmitted(true);
-    } finally {
-      setLeadSubmitting(false);
-    }
-  };
-
   const handleResetChat = () => {
     if (streamingIntervalRef.current) {
       clearInterval(streamingIntervalRef.current);
@@ -276,7 +205,6 @@ export function IslamicAssistantWidget() {
         sender: 'assistant',
         text: `**Assalamu Alaikum!** 🌸✨\nRishta Matrimony Matchmaker AI ready.\n\n💬 *Bataiye, aaj main aapki kya madad karoon? Kya aap rishta dhoondh rahe hain ya biodata banana chahte hain?*`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        showLeadCard: true
       }
     ]);
   };
@@ -499,78 +427,6 @@ export function IslamicAssistantWidget() {
                         <span>Free Biodata (/register)</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
-                    </div>
-                  )}
-
-                  {/* Interactive Lead Capture Card (inside chat) */}
-                  {!msg.isStreaming && msg.showLeadCard && !leadSubmitted && (
-                    <div className="mt-3 p-3 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl space-y-2.5 animate-in fade-in duration-300">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                          🌸
-                        </div>
-                        <h4 className="font-bold text-xs text-emerald-950">
-                          Direct WhatsApp par Matching Rishte Paayein
-                        </h4>
-                      </div>
-                      <p className="text-[11px] text-emerald-800 leading-tight">
-                        Apna WhatsApp number darj karein taaki admin team aapke location ke verified rishte WhatsApp par share kare:
-                      </p>
-
-                      <form onSubmit={handleLeadSubmit} className="space-y-2">
-                        <Input
-                          placeholder="Aapka Naam (e.g. Mohd. Farhan / Fatima)"
-                          value={leadName}
-                          onChange={(e) => setLeadName(e.target.value)}
-                          className="h-8 text-xs bg-white border-emerald-200"
-                        />
-                        <div className="flex gap-1.5">
-                          <Input
-                            placeholder="WhatsApp Number (10 digits)"
-                            type="tel"
-                            maxLength={10}
-                            value={leadPhone}
-                            onChange={(e) => setLeadPhone(e.target.value)}
-                            className="h-8 text-xs bg-white border-emerald-200 flex-1 font-mono"
-                            required
-                          />
-                          <Input
-                            placeholder="Shehar / City"
-                            value={leadCity}
-                            onChange={(e) => setLeadCity(e.target.value)}
-                            className="h-8 text-xs bg-white border-emerald-200 w-28"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between gap-1 pt-1">
-                          <div className="flex gap-1 text-[10px]">
-                            <button
-                              type="button"
-                              onClick={() => setLeadLookingFor('Bride')}
-                              className={`px-2 py-0.5 rounded border ${leadLookingFor === 'Bride' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-muted-foreground border-emerald-200'}`}
-                            >
-                              👰 Dulhan
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setLeadLookingFor('Groom')}
-                              className={`px-2 py-0.5 rounded border ${leadLookingFor === 'Groom' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-muted-foreground border-emerald-200'}`}
-                            >
-                              🤵 Dulha
-                            </button>
-                          </div>
-
-                          <Button
-                            type="submit"
-                            size="sm"
-                            disabled={leadSubmitting}
-                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs font-semibold px-3"
-                          >
-                            {leadSubmitting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <MessageCircle className="w-3 h-3 mr-1" />}
-                            Connect on WhatsApp
-                          </Button>
-                        </div>
-                      </form>
                     </div>
                   )}
                 </div>
