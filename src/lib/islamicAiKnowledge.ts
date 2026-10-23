@@ -195,6 +195,53 @@ export const verifiedMatrimonialProfiles = [
 ];
 
 // Search database for live profiles when user asks for matchmaking
+function detectTargetGender(q: string): 'Male' | 'Female' | null {
+  const cleanQ = q.toLowerCase();
+
+  const wantsMaleExplicit = 
+    /\b(ladka|larka|dulha|groom|male|mard|damad)\s+(chahiye|chahie|dhund|dhoond|dekhna|dikhao|batao|bhejo|search|hai)\b/i.test(cleanQ) ||
+    /\b(chahiye|chahie|dhund|dhoond|dekhna|dikhao)\s+(ladka|larka|dulha|groom|male|mard)\b/i.test(cleanQ) ||
+    /\b(ladke|larke|dulhe|grooms)\s+(ki\s+profile|ke\s+rishte|dikhao|bhejo|dekhna)\b/i.test(cleanQ);
+
+  const wantsFemaleExplicit = 
+    /\b(ladki|larki|dulhan|bride|female|aurat|bahu)\s+(chahiye|chahie|dhund|dhoond|dekhna|dikhao|batao|bhejo|search|hai)\b/i.test(cleanQ) ||
+    /\b(chahiye|chahie|dhund|dhoond|dekhna|dikhao)\s+(ladki|larki|dulhan|bride|female|aurat)\b/i.test(cleanQ) ||
+    /\b(ladkiyo|ladkiyon|ladkiya|ladkiyan|dulhano|brides)\s+(ki\s+profile|ke\s+rishte|dikhao|bhejo|dekhna)\b/i.test(cleanQ);
+
+  if (wantsMaleExplicit && !wantsFemaleExplicit) return 'Male';
+  if (wantsFemaleExplicit && !wantsMaleExplicit) return 'Female';
+
+  const lookingForGirlCandidate = 
+    /\b(ladki|larki|behen|sister|beti|bhanji|bhatiji)\s*(ka\s+rishta|ke\s+liye|keliye)\b/i.test(cleanQ) ||
+    cleanQ.includes("ladki ka rishta") ||
+    cleanQ.includes("larki ka rishta") ||
+    cleanQ.includes("ladki ke liye") ||
+    cleanQ.includes("larki ke liye") ||
+    cleanQ.includes("behen ke liye") ||
+    cleanQ.includes("beti ke liye");
+
+  const lookingForBoyCandidate = 
+    /\b(ladka|larka|ladke|larke|bhai|brother|beta|bete|bhanje|bhatije)\s*(ka\s+rishta|ke\s+liye|keliye)\b/i.test(cleanQ) ||
+    cleanQ.includes("ladke ka rishta") ||
+    cleanQ.includes("larke ka rishta") ||
+    cleanQ.includes("ladka ka rishta") ||
+    cleanQ.includes("ladke ke liye") ||
+    cleanQ.includes("larke ke liye") ||
+    cleanQ.includes("bhai ke liye") ||
+    cleanQ.includes("bete ke liye");
+
+  if (lookingForGirlCandidate && !lookingForBoyCandidate) return 'Male';
+  if (lookingForBoyCandidate && !lookingForGirlCandidate) return 'Female';
+
+  const hasMaleWord = /\b(ladka|larka|dulha|groom|male|mard|bhai|beta)\b/i.test(cleanQ);
+  const hasFemaleWord = /\b(ladki|larki|dulhan|bride|female|aurat|behen|beti)\b/i.test(cleanQ);
+
+  if (hasMaleWord && !hasFemaleWord) return 'Male';
+  if (hasFemaleWord && !hasMaleWord) return 'Female';
+
+  return null;
+}
+
 export async function searchProfilesForAssistant(queryText: string) {
   try {
     const q = queryText.toLowerCase();
@@ -234,20 +281,7 @@ export async function searchProfilesForAssistant(queryText: string) {
       }
     }
 
-    let genderFilter: string | null = null;
-    if (
-      q.includes('female') || q.includes('dulhan') || q.includes('bride') || 
-      q.includes('ladki') || q.includes('larki') || q.includes('sister') || q.includes('women') || 
-      q.includes('aurat') || q.includes('ladkiya') || q.includes('brides')
-    ) {
-      genderFilter = 'Female';
-    } else if (
-      q.includes('male') || q.includes('dulha') || q.includes('groom') || 
-      q.includes('ladka') || q.includes('larka') || q.includes('brother') || q.includes('men') || 
-      q.includes('mard') || q.includes('ladke') || q.includes('grooms')
-    ) {
-      genderFilter = 'Male';
-    }
+    const genderFilter: string | null = detectTargetGender(q);
 
     const stopWords = new Set([
       'hai', 'kya', 'koi', 'dikhao', 'se', 'in', 'for', 'me', 'show', 'from', 
@@ -827,7 +861,7 @@ export async function generateIslamicAssistantResponse(userPrompt: string): Prom
 
       return {
         text: `Haan ji! Hamare paas ${targetLabel} ki ye verified profiles uplabdh hain:\n\n${listItems}\n\n⚠️ **Zaroori Jankari:** Inka personal direct contact number aur photo dekhne ya rabta karne ke liye aapko pehle apna profile register karna padega. (Yeh dono khandano ki safety aur privacy ke liye platform ka zaroori niyam hai).\n\n👉 **Agar aapko inka profile chahiye, toh pehle aap apni profile register kar le, do minute lagega:**\n[👉 Register Free Biodata (Sirf 2 Minute)](/register)\n\n💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
-        profileMatches: matches,
+        profileMatches: undefined,
       };
     } else if (hasKeyword) {
       return {

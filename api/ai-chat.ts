@@ -201,6 +201,65 @@ async function fetchAdminKnowledgeBase(): Promise<string> {
 }
 
 // Find matching profiles for search queries
+// Smart Matchmaking Direction Resolver
+// "agar koi ladki ka rishta dhund raha hai toh usko ladke ka profile dikhana hai, aur agar koi ladke ka dhund raha hai toh usko ladki ka dikhana hai"
+export function detectTargetGender(q: string): 'Male' | 'Female' | null {
+  const cleanQ = q.toLowerCase();
+
+  // A. Explicit target desire ("ladka chahiye", "dulha chahiye", "ladki chahiye", "dulhan chahiye", etc.)
+  const wantsMaleExplicit = 
+    /\b(ladka|larka|dulha|groom|male|mard|damad)\s+(chahiye|chahie|dhund|dhoond|dekhna|dikhao|batao|bhejo|search|hai)\b/i.test(cleanQ) ||
+    /\b(chahiye|chahie|dhund|dhoond|dekhna|dikhao)\s+(ladka|larka|dulha|groom|male|mard)\b/i.test(cleanQ) ||
+    /\b(ladke|larke|dulhe|grooms)\s+(ki\s+profile|ke\s+rishte|dikhao|bhejo|dekhna)\b/i.test(cleanQ);
+
+  const wantsFemaleExplicit = 
+    /\b(ladki|larki|dulhan|bride|female|aurat|bahu)\s+(chahiye|chahie|dhund|dhoond|dekhna|dikhao|batao|bhejo|search|hai)\b/i.test(cleanQ) ||
+    /\b(chahiye|chahie|dhund|dhoond|dekhna|dikhao)\s+(ladki|larki|dulhan|bride|female|aurat)\b/i.test(cleanQ) ||
+    /\b(ladkiyo|ladkiyon|ladkiya|ladkiyan|dulhano|brides)\s+(ki\s+profile|ke\s+rishte|dikhao|bhejo|dekhna)\b/i.test(cleanQ);
+
+  if (wantsMaleExplicit && !wantsFemaleExplicit) return 'Male';
+  if (wantsFemaleExplicit && !wantsMaleExplicit) return 'Female';
+
+  // B. Candidate specification: "ladki ka rishta" (candidate is girl -> needs boy), "ladke ka rishta" (candidate is boy -> needs girl)
+  const lookingForGirlCandidate = 
+    /\b(ladki|larki|behen|sister|beti|bhanji|bhatiji)\s*(ka\s+rishta|ke\s+liye|keliye)\b/i.test(cleanQ) ||
+    cleanQ.includes("ladki ka rishta") ||
+    cleanQ.includes("larki ka rishta") ||
+    cleanQ.includes("ladki ke liye") ||
+    cleanQ.includes("larki ke liye") ||
+    cleanQ.includes("behen ke liye") ||
+    cleanQ.includes("beti ke liye");
+
+  const lookingForBoyCandidate = 
+    /\b(ladka|larka|ladke|larke|bhai|brother|beta|bete|bhanje|bhatije)\s*(ka\s+rishta|ke\s+liye|keliye)\b/i.test(cleanQ) ||
+    cleanQ.includes("ladke ka rishta") ||
+    cleanQ.includes("larke ka rishta") ||
+    cleanQ.includes("ladka ka rishta") ||
+    cleanQ.includes("ladke ke liye") ||
+    cleanQ.includes("larke ke liye") ||
+    cleanQ.includes("bhai ke liye") ||
+    cleanQ.includes("bete ke liye");
+
+  if (lookingForGirlCandidate && !lookingForBoyCandidate) {
+    // Girl candidate -> Show Male (Dulha / Groom) profiles
+    return 'Male';
+  }
+
+  if (lookingForBoyCandidate && !lookingForGirlCandidate) {
+    // Boy candidate -> Show Female (Dulhan / Bride) profiles
+    return 'Female';
+  }
+
+  // C. Fallback: only one gender term present
+  const hasMaleWord = /\b(ladka|larka|dulha|groom|male|mard|bhai|beta)\b/i.test(cleanQ);
+  const hasFemaleWord = /\b(ladki|larki|dulhan|bride|female|aurat|behen|beti)\b/i.test(cleanQ);
+
+  if (hasMaleWord && !hasFemaleWord) return 'Male';
+  if (hasFemaleWord && !hasMaleWord) return 'Female';
+
+  return null;
+}
+
 export function findMatchingProfiles(
   query: string,
   profiles: LiveProfileSummary[]
@@ -243,23 +302,8 @@ export function findMatchingProfiles(
     }
   }
 
-  // 3. Detect gender filter
-  let genderMatched: string | null = null;
-  if (
-    q.includes('ladki') || q.includes('larki') || q.includes('dulhan') || 
-    q.includes('female') || q.includes('bride') || q.includes('sister') ||
-    q.includes('aurat') || q.includes('women') || q.includes('beti') ||
-    q.includes('ladkiyo') || q.includes('ladkiya')
-  ) {
-    genderMatched = 'Female';
-  } else if (
-    q.includes('ladka') || q.includes('larka') || q.includes('dulha') || 
-    q.includes('male') || q.includes('groom') || q.includes('brother') ||
-    q.includes('mard') || q.includes('men') || q.includes('beta') ||
-    q.includes('ladko') || q.includes('ladke')
-  ) {
-    genderMatched = 'Male';
-  }
+  // 3. Detect target gender filter with intelligent bidirectional matching
+  const genderMatched: string | null = detectTargetGender(q);
 
   // 4. Detect common cities / states (using word boundary check to prevent false positives like "up" in "upload")
   const commonCities = [
@@ -381,18 +425,6 @@ function generateSmartFallback(
 [👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Kya aap inka profile dekh kar apna free biodata register karna chahenge?*`,
-        profileMatches: [
-          {
-            id: p.id,
-            name: p.name,
-            gender: p.gender,
-            age: p.age,
-            city: p.location,
-            education: p.education,
-            profession: p.profession,
-            maslak: p.maslak || null,
-          }
-        ]
       };
     }
 
@@ -423,16 +455,6 @@ ${listItems}
 [👉 Register Free Biodata (Sirf 2 Minute)](/register)
 
 💬 *Aap inme se kis profile ke bare me baat aage badhana chahte hain?*`,
-        profileMatches: matchedProfiles.map(p => ({
-          id: p.id,
-          name: p.name,
-          gender: p.gender,
-          age: p.age,
-          city: p.location,
-          education: p.education,
-          profession: p.profession,
-          maslak: p.maslak || null,
-        }))
       };
     }
 
@@ -817,7 +839,6 @@ Aap niche diye gaye link se direct join kar sakte hain:
       return res.status(200).json({
         success: true,
         reply: fastResult.reply,
-        profileMatches: fastResult.profileMatches,
         source: "fast_profile_engine",
         suggestedActions: [
           { label: "Register Free (2 Mins)", url: "/register" },
@@ -898,7 +919,13 @@ Aap niche diye gaye link se direct join kar sakte hain:
         const systemInstruction = `You are the polite, trustworthy, culturally sensitive human-like Relationship Manager for "Rishta Matrimony" (https://rishtamatrimony.vercel.app), a premier Islamic matrimonial service.
 
 CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
-1. MATCH CUSTOMER'S EXACT TONE & STYLE: Speak in the customer's exact language and conversational style (natural Hinglish, Hindi, Urdu, or English). Speak like an empathetic, friendly, and respectful human relationship manager, NEVER like a robot or a dry policy document.
+1. BE PRECISE & DIRECT (NO FLUFF): Answer ONLY what the user asked directly and concisely. Do NOT talk off-topic or give generic essays.
+2. GENDER MATCHMAKING RULE (EXTREMELY IMPORTANT):
+   - In matchmaking: If someone says "ladki ka rishta dhund rahe hain" or "ladki ke liye rishta chahiye" (candidate is a girl), they need a GROOM (Male / Ladka). Recommend MALE verified profiles.
+   - If someone says "ladke ka rishta dhund rahe hain" or "ladke ke liye rishta chahiye" (candidate is a boy), they need a BRIDE (Female / Ladki). Recommend FEMALE verified profiles.
+   - If someone says "ladka chahiye" or "dulha chahiye", recommend MALE profiles.
+   - If someone says "ladki chahiye" or "dulhan chahiye", recommend FEMALE profiles.
+3. MATCH CUSTOMER'S EXACT TONE & STYLE: Speak in the customer's exact language and conversational style (natural Hinglish, Hindi, Urdu, or English).
 2. NO REPEATING SALAM / GREETINGS MID-CHAT (EXTREMELY IMPORTANT):
    - In the middle of an ongoing conversation or when answering follow-up queries (e.g. user asks about WhatsApp group, price, city, photos, etc.), NEVER greet them again with "Assalamu Alaikum" or formal robotic greetings. Real humans talk continuously without greeting at every turn.
    - Only say "Assalamu Alaikum" if:

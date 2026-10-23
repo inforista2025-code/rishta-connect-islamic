@@ -547,49 +547,7 @@ export function IslamicAssistantWidget() {
                     {renderCleanText(msg.text, msg.isStreaming)}
                   </div>
 
-                  {/* Profile Match Cards */}
-                  {!msg.isStreaming && msg.profileMatches && msg.profileMatches.length > 0 && (
-                    <div className="mt-2.5 space-y-2 pt-2 border-t border-border/40 animate-in fade-in duration-300">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-                        Matching Verified Proposals:
-                      </p>
-                      {msg.profileMatches.map((profile) => (
-                        <div
-                          key={profile.id}
-                          onClick={() => {
-                            setIsOpen(false);
-                            navigate(`/profiles?id=${profile.id}&gender=${profile.gender}`);
-                          }}
-                          className="p-2.5 rounded-xl bg-muted/40 border border-border/60 hover:border-emerald-500/50 hover:bg-muted/70 transition-all cursor-pointer flex flex-col gap-1.5 group"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-foreground text-xs group-hover:text-emerald-700 transition-colors">{profile.name}</span>
-                                <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
-                                  {profile.gender === 'Female' ? '👰 Bride' : '🤵 Groom'}
-                                </Badge>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {profile.age} Yrs • {profile.city} • {profile.maslak || 'Sunni'}
-                              </p>
-                              <p className="text-[10px] text-foreground/80 font-medium">
-                                {profile.education} • {profile.profession}
-                              </p>
-                            </div>
-                          </div>
 
-                          <Button
-                            size="sm"
-                            className="h-6.5 w-full text-[11px] bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg flex items-center justify-center gap-1 font-semibold pointer-events-none"
-                          >
-                            <span>Open Profile on Page</span>
-                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
                   {/* Action Buttons beneath answer */}
                   {!msg.isStreaming && msg.sender === 'assistant' && (
