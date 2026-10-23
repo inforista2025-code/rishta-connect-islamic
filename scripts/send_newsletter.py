@@ -112,6 +112,9 @@ def get_unsubscribed_list():
 def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_email: str, day_of_week: int, recipient_name: str = "Valued Member"):
     unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipient_email}"
     total_count = male_count + female_count
+    raw_name = (recipient_name or "").strip()
+    is_generic = not raw_name or raw_name in ["Valued Member", "Member", "Respected Member", "Admin"]
+    salutation = f"As-salamu alaykum {raw_name}," if not is_generic else "As-salamu alaykum," 
 
     daily_themes = {
         0: {
@@ -198,12 +201,11 @@ def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
-                {theme['badge']}
-              </div>
+              <p style="font-size: 18px; font-weight: 700; color: #1f4037; margin: 0 0 16px 0;">
+                {salutation}
+              </p>
 
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 22px; line-height: 1.3;">{theme['headline']}</h2>
-              <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
+              <p style="font-size: 15px; line-height: 1.7; color: #4a5568; margin: 0 0 20px 0;">
                 {theme['intro']}
               </p>
 
@@ -280,65 +282,66 @@ def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_
 
 def build_member_digest_html(member: dict, matches: list, recipient_email: str, day_of_week: int):
     unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipient_email}"
-    user_name = member.get("name") or "Respected Member"
+    raw_name = (member.get("name") or "").strip()
+    user_name = raw_name if raw_name and raw_name not in ["Valued Member", "Member", "Respected Member", "Admin"] else ""
+    salutation = f"As-salamu alaykum {user_name}," if user_name else "As-salamu alaykum,"
     user_gender = (member.get("gender") or "male").lower()
     target_gender_label = "Bride" if user_gender == "male" else "Groom"
-    location = member.get("location") or "Your Region"
-
+    location = (member.get("location") or "Your Region").strip()
     daily_member_themes = {
         0: {
-            "subject": f"💎 {user_name}, Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony",
+            "subject": f"💎 {f'{user_name}, ' if user_name else ''}Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony",
             "badge": "Sunday Spotlight: Direct Connect",
             "headline": "Connect Directly with Your Chosen Proposals Today",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
+            "intro": "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
             "tip_title": "💎 Fast-Track Your Matrimonial Search",
             "tip_body": "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership."
         },
         1: {
-            "subject": f"📍 {user_name}, Top Recommended {target_gender_label} Matches in {location} – Rishta Matrimony",
+            "subject": f"📍 {f'{user_name}, ' if user_name else ''}Top Recommended {target_gender_label} Matches in {location} – Rishta Matrimony",
             "badge": "Regional & Local Focus",
             "headline": f"Top Recommended {target_gender_label} Proposals in {location} & Nearby",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Start your week by exploring compatible proposals located in or around <strong>{location}</strong>. Local connections make family meetings and background verification seamless.",
+            "intro": f"Start your week by exploring compatible proposals located in or around <strong>{location}</strong>. Local connections make family meetings and background verification seamless.",
             "tip_title": "📍 The Power of Regional Compatibility",
             "tip_body": "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families."
         },
         2: {
-            "subject": f"🎓 {user_name}, Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony",
+            "subject": f"🎓 {f'{user_name}, ' if user_name else ''}Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony",
             "badge": "Education & Career Spotlight",
             "headline": f"Highly Educated & Professional {target_gender_label} Candidates",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.",
+            "intro": "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.",
             "tip_title": "🎓 Academic & Professional Profiles",
             "tip_body": "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners."
         },
         3: {
-            "subject": f"⭐ {user_name}, Profile Activity & Views: Boost Your Visibility – Rishta Matrimony",
+            "subject": f"⭐ {f'{user_name}, ' if user_name else ''}Profile Activity & Views: Boost Your Visibility – Rishta Matrimony",
             "badge": "Profile Health & Visibility",
             "headline": "Boost Your Profile Rank & Check Profile Views",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
+            "intro": "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
             "tip_title": "⭐ Activity Boost Guarantee",
             "tip_body": "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals."
         },
         4: {
-            "subject": f"✨ {user_name}, Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony",
+            "subject": f"✨ {f'{user_name}, ' if user_name else ''}Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony",
             "badge": "Newest Weekly Arrivals",
             "headline": f"Newly Verified {target_gender_label} Profiles Added This Week",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
+            "intro": "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
             "tip_title": "✨ Fresh Proposals Every Week",
             "tip_body": "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families."
         },
         5: {
-            "subject": f"🕌 Jumu'ah Mubarak {user_name}! Curated Proposals for a Blessed Nikah – Rishta Matrimony",
+            "subject": f"🕌 Jumu'ah Mubarak{f' {user_name}' if user_name else ''}! Curated Proposals for a Blessed Nikah – Rishta Matrimony",
             "badge": "Jumu'ah Mubarak",
             "headline": "A Blessed Day to Advance Your Noble Intentions of Nikah",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. On this blessed Jumu'ah, we present curated, modest <strong>{target_gender_label} proposals</strong> upholding authentic Islamic principles.",
+            "intro": f"On this blessed Jumu'ah, we present curated, modest <strong>{target_gender_label} proposals</strong> upholding authentic Islamic principles.",
             "tip_title": "📖 Islamic Principle of Compatibility",
-            "tip_body": "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]"
+            "tip_body": '<em>"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser."</em> [Bukhari]'
         },
         6: {
-            "subject": f"👨‍👩‍👧‍👦 {user_name}, Weekend Family Review: Curated Matches for You – Rishta Matrimony",
+            "subject": f"👨‍👩‍👧‍👦 {f'{user_name}, ' if user_name else ''}Weekend Family Review: Curated Matches for You – Rishta Matrimony",
             "badge": "Weekend Family Digest",
             "headline": "Review Compatible Proposals with Your Family Today",
-            "intro": f"Assalamu Alaikum <strong>{user_name}</strong>. Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
+            "intro": "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
             "tip_title": "👨‍👩‍👧‍👦 Family Consultation (Mashwarah)",
             "tip_body": "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision."
         }
@@ -408,12 +411,11 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str, 
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
-                {theme['badge']}
-              </div>
+              <p style="font-size: 18px; font-weight: 700; color: #1f4037; margin: 0 0 16px 0;">
+                {salutation}
+              </p>
 
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px; line-height: 1.3;">{theme['headline']}</h2>
-              <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
+              <p style="font-size: 15px; line-height: 1.7; color: #4a5568; margin: 0 0 20px 0;">
                 {theme['intro']}
               </p>
 
@@ -679,14 +681,24 @@ def send_newsletter(is_live=False):
     context = ssl.create_default_context()
     
     if not is_live:
-        print(f"TEST RUN MODE: Sending test newsletter only to Admin ({ADMIN_EMAIL}) for {current_day_name}")
-        targets = [{
-            "type": "member",
+        print(f"TEST RUN MODE: Sending test newsletter...")
+        test_targets = []
+        # Find mdarmaanbih@gmail.com (Gajala Praween)
+        for r in recipients:
+            if r["email"].lower() == "mdarmaanbih@gmail.com":
+                test_targets.append(r)
+                break
+
+        # Dedicated test for ADMIN_EMAIL (info.rista2025@gmail.com) with its own name
+        admin_subject, admin_html = build_visitor_newsletter_html(member_count, 20, ADMIN_EMAIL, day_of_week, recipient_name="Admin")
+        test_targets.append({
+            "type": "admin",
             "email": ADMIN_EMAIL,
             "name": "Admin",
-            "subject": f"[TEST {current_day_name}] {recipients[0]['subject']}",
-            "html": recipients[0]["html"]
-        }]
+            "subject": f"[TEST {current_day_name}] {admin_subject}",
+            "html": admin_html
+        })
+        targets = test_targets
     else:
         print(f"LIVE MODE: Dispatching to all {len(recipients)} recipients...")
         targets = recipients

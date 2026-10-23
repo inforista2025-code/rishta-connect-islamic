@@ -185,9 +185,10 @@ function buildVisitorNewsletterHtml(
   dayOfWeek: number,
   recipientName?: string
 ): { subject: string; html: string } {
-  const isNamed = !!(recipientName && recipientName !== "Valued Member" && recipientName !== "Member");
+  const isNamed = !!(recipientName && recipientName !== "Valued Member" && recipientName !== "Member" && recipientName !== "Respected Member" && recipientName !== "Admin");
   const greetingName = isNamed ? recipientName!.trim() : "";
   const namePrefix = greetingName ? `${greetingName}, ` : "";
+  const salutation = greetingName ? `As-salamu alaykum ${greetingName},` : "As-salamu alaykum,";
   const unsubMailto = `mailto:${SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipientEmail}`;
   const totalCount = maleCount + femaleCount;
 
@@ -306,12 +307,11 @@ function buildVisitorNewsletterHtml(
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
-                ${currentTheme.badge}
-              </div>
+              <p style="font-size: 18px; font-weight: 700; color: #1f4037; margin: 0 0 16px 0;">
+                ${salutation}
+              </p>
 
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 22px; line-height: 1.3;">${currentTheme.headline}</h2>
-              <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
+              <p style="font-size: 15px; line-height: 1.7; color: #4a5568; margin: 0 0 20px 0;">
                 ${currentTheme.introParagraph}
               </p>
 
@@ -395,10 +395,12 @@ function buildMemberDigestHtml(
   dayOfWeek: number
 ): { subject: string; html: string } {
   const unsubMailto = `mailto:${SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipientEmail}`;
-  const userName = member.name || "Respected Member";
+  const rawName = (member.name || "").trim();
+  const userName = rawName && !["Valued Member", "Member", "Respected Member", "Admin"].includes(rawName) ? rawName : "";
+  const salutation = userName ? `As-salamu alaykum ${userName},` : "As-salamu alaykum,";
   const userGender = (member.gender || "male").toLowerCase();
   const targetGenderLabel = userGender === "male" ? "Bride" : "Groom";
-  const location = member.location || "Your Region";
+  const location = (member.location || "Your Region").trim();
 
   // 7-Day Rotating Configurations for Verified Members
   const dailyMemberThemes: Record<
@@ -414,77 +416,77 @@ function buildMemberDigestHtml(
   > = {
     0: {
       // Sunday
-      subject: `💎 ${userName}, Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony`,
+      subject: `💎 ${userName ? `${userName}, ` : ""}Ready to Connect? Unlock Verified Contacts for Just ₹48 – Rishta Matrimony`,
       badge: "Sunday Spotlight: Direct Connect",
       headline: "Connect Directly with Your Chosen Proposals Today",
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.`,
+        "Take a moment this Sunday to review your recommended matches. Unlock verified direct contacts for just ₹48, or upgrade to our full Premium Plan for unlimited 2-month access.",
       tipTitle: "💎 Fast-Track Your Matrimonial Search",
       tipBody:
         "Interested in one candidate? Use our single-profile unlock for ₹48. Want unlimited contact access and Page 1 featured placement? Choose our ₹491 Premium Membership.",
     },
     1: {
       // Monday
-      subject: `📍 ${userName}, Top Recommended ${targetGenderLabel} Matches in ${location} – Rishta Matrimony`,
+      subject: `📍 ${userName ? `${userName}, ` : ""}Top Recommended ${targetGenderLabel} Matches in ${location} – Rishta Matrimony`,
       badge: "Regional & Local Focus",
       headline: `Top Recommended ${targetGenderLabel} Proposals in ${location} & Nearby`,
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Start your week by exploring compatible proposals located in or around <strong>${location}</strong>. Local connections make family meetings and background verification seamless.`,
+        `Start your week by exploring compatible proposals located in or around <strong>${location}</strong>. Local connections make family meetings and background verification seamless.`,
       tipTitle: "📍 The Power of Regional Compatibility",
       tipBody:
         "Proposals from your own state or neighboring districts often share familiar cultural, educational, and linguistic traditions, making compatibility easier for both families.",
     },
     2: {
       // Tuesday
-      subject: `🎓 ${userName}, Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony`,
+      subject: `🎓 ${userName ? `${userName}, ` : ""}Highly Qualified Matches: Engineers, Doctors & Graduates – Rishta Matrimony`,
       badge: "Education & Career Spotlight",
       headline: `Highly Educated & Professional ${targetGenderLabel} Candidates`,
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.`,
+        "Compatibility in education and profession brings mutual understanding. Here are verified candidates with strong academic and professional backgrounds curated for you.",
       tipTitle: "🎓 Academic & Professional Profiles",
       tipBody:
         "Our database features verified engineers, doctors, professors, business professionals, and university graduates seeking righteous life partners.",
     },
     3: {
       // Wednesday
-      subject: `⭐ ${userName}, Profile Activity & Views: Boost Your Visibility – Rishta Matrimony`,
+      subject: `⭐ ${userName ? `${userName}, ` : ""}Profile Activity & Views: Boost Your Visibility – Rishta Matrimony`,
       badge: "Profile Health & Visibility",
       headline: "Boost Your Profile Rank & Check Profile Views",
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.`,
+        "Active profiles are recommended higher in our matrimonial algorithm. Log in to your dashboard to see who viewed or shortlisted your biodata recently.",
       tipTitle: "⭐ Activity Boost Guarantee",
       tipBody:
         "Members who log in at least once a week receive up to <strong>3x more interest requests</strong>. Keep your preferences updated to receive the best proposals.",
     },
     4: {
       // Thursday
-      subject: `✨ ${userName}, Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony`,
+      subject: `✨ ${userName ? `${userName}, ` : ""}Fresh Proposals for You: Newly Verified Candidates – Rishta Matrimony`,
       badge: "Newest Weekly Arrivals",
       headline: `Newly Verified ${targetGenderLabel} Profiles Added This Week`,
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.`,
+        "Every day brings new hopes and fresh proposals. Here are recently approved and verified profiles that match your gender and lifestyle preferences.",
       tipTitle: "✨ Fresh Proposals Every Week",
       tipBody:
         "Be among the first to express interest in newly approved profiles. Early inquiries receive the highest response rates from prospective families.",
     },
     5: {
       // Friday
-      subject: `🕌 Jumu'ah Mubarak ${userName}! Curated Proposals for a Blessed Nikah – Rishta Matrimony`,
+      subject: `🕌 Jumu'ah Mubarak${userName ? ` ${userName}` : ""}! Curated Proposals for a Blessed Nikah – Rishta Matrimony`,
       badge: "Jumu'ah Mubarak",
       headline: "A Blessed Day to Advance Your Noble Intentions of Nikah",
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. On this blessed Jumu'ah, we present curated, modest <strong>${targetGenderLabel} proposals</strong> upholding authentic Islamic principles.`,
+        `On this blessed Jumu'ah, we present curated, modest <strong>${targetGenderLabel} proposals</strong> upholding authentic Islamic principles.`,
       tipTitle: "📖 Islamic Principle of Compatibility",
       tipBody:
         "<em>\"A woman is married for four things: her wealth, her family status, her beauty, and her religion. So you should marry the religious woman; otherwise you will be a loser.\"</em> [Bukhari]",
     },
     6: {
       // Saturday
-      subject: `👨‍👩‍👧‍👦 ${userName}, Weekend Family Review: Curated Matches for You – Rishta Matrimony`,
+      subject: `👨‍👩‍👧‍👦 ${userName ? `${userName}, ` : ""}Weekend Family Review: Curated Matches for You – Rishta Matrimony`,
       badge: "Weekend Family Digest",
       headline: "Review Compatible Proposals with Your Family Today",
       introNote:
-        `Assalamu Alaikum <strong>${userName}</strong>. Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.`,
+        "Weekends provide the ideal time for families to sit together, review biodatas, and discuss prospects with mutual consultation and care.",
       tipTitle: "👨‍👩‍👧‍👦 Family Consultation (Mashwarah)",
       tipBody:
         "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision.",
@@ -558,12 +560,11 @@ function buildMemberDigestHtml(
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
-                ${currentTheme.badge}
-              </div>
+              <p style="font-size: 18px; font-weight: 700; color: #1f4037; margin: 0 0 16px 0;">
+                ${salutation}
+              </p>
 
-              <h2 style="margin-top: 0; color: #1f4037; font-size: 21px; line-height: 1.3;">${currentTheme.headline}</h2>
-              <p style="font-size: 15px; line-height: 1.7; color: #4a5568;">
+              <p style="font-size: 15px; line-height: 1.7; color: #4a5568; margin: 0 0 20px 0;">
                 ${currentTheme.introNote}
               </p>
 
