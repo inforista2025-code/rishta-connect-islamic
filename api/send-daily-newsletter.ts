@@ -551,19 +551,13 @@ function buildMemberDigestHtml(
             <td style="background: linear-gradient(135deg, #1f4037, #2c7a7b); padding: 35px 25px; text-align: center; color: #ffffff;">
               <div style="font-size: 20px; font-family: serif; margin-bottom: 6px; opacity: 0.9;">﷽</div>
               <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">Rishta Matrimony</h1>
-              <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9; color: #e2e8f0;">Personalized Matchmaking Digest</p>
+              <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9; color: #e2e8f0;">Islamic Matchmaking & Matrimonial Service</p>
             </td>
           </tr>
 
           <!-- Body Content -->
           <tr>
             <td style="padding: 35px 30px;">
-              <!-- Personalized Member Header Card -->
-              <div style="background-color: #f8fafc; border-left: 4px solid #1f4037; padding: 13px 18px; margin-bottom: 22px; border-radius: 0 8px 8px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                <div style="font-size: 16px; font-weight: 700; color: #1f4037;">Assalamu Alaikum, ${userName}</div>
-                <div style="font-size: 12px; color: #64748b; margin-top: 3px;">Personalized matrimonial recommendations curated for your verified profile</div>
-              </div>
-
               <div style="display: inline-block; background: #e6f4ea; color: #137333; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;">
                 ${currentTheme.badge}
               </div>
