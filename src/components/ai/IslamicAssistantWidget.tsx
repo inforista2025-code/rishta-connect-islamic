@@ -13,7 +13,8 @@ import {
   PhoneCall,
   CheckCircle2,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import { generateIslamicAssistantResponse, ChatMessage } from '@/lib/islamicAiKnowledge';
 import { useToast } from '@/hooks/use-toast';
@@ -236,20 +237,41 @@ export function IslamicAssistantWidget() {
             );
           }
 
+          // Check if line is purely a URL
+          if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+            const match = trimmed.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?)([.,!?;:)]*)$/);
+            const cleanUrl = match ? match[1] : trimmed;
+            const trailing = match ? match[2] : '';
+            return (
+              <div key={idx} className="my-1.5">
+                <a
+                  href={cleanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-semibold text-xs transition-colors break-all shadow-xs"
+                >
+                  <span>{cleanUrl}</span>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                </a>
+                {trailing}
+              </div>
+            );
+          }
+
           // Bullet points
           if (trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
             const content = trimmed.replace(/^(\u2022|\-|\*)\s*/, '');
             return (
               <div key={idx} className="flex items-start gap-1.5 text-xs text-foreground/90 pl-1">
                 <span className="text-primary text-[10px] mt-0.5">•</span>
-                <span>{formatBoldText(content)}</span>
+                <span>{formatRichText(content)}</span>
               </div>
             );
           }
 
           return (
             <p key={idx} className="text-xs text-foreground/90 leading-relaxed">
-              {formatBoldText(trimmed)}
+              {formatRichText(trimmed)}
             </p>
           );
         })}
@@ -257,16 +279,66 @@ export function IslamicAssistantWidget() {
     );
   };
 
-  // Bold text renderer
-  const formatBoldText = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+  // Rich text renderer: Handles Bold, Italic, Markdown Links, and inline Raw URLs
+  const formatRichText = (text: string) => {
+    // Matches markdown links [text](url), raw URLs http(s)://..., bold **...**, or italic *...*
+    const regex = /(\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s]+|\*\*.*?\*\*|\*.*?\*)/g;
+    const parts = text.split(regex);
+
     return parts.map((part, i) => {
+      if (!part) return null;
+
+      // 1. Markdown link: [Label](url)
+      const mdMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (mdMatch) {
+        const label = mdMatch[1];
+        const linkUrl = mdMatch[2];
+        return (
+          <a
+            key={i}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-900 underline decoration-emerald-500/60 hover:decoration-emerald-700 transition-colors"
+          >
+            <span>{label}</span>
+            <ExternalLink className="w-3 h-3 inline shrink-0" />
+          </a>
+        );
+      }
+
+      // 2. Raw URL: https://... or http://...
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        const match = part.match(/^([a-zA-Z0-9+.-]+:\/\/[^\s]+?)([.,!?;:)]*)$/);
+        const cleanUrl = match ? match[1] : part;
+        const trailing = match ? match[2] : '';
+
+        return (
+          <span key={i} className="inline">
+            <a
+              href={cleanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-900 underline decoration-emerald-500/60 hover:decoration-emerald-700 transition-colors break-all"
+            >
+              <span>{cleanUrl}</span>
+              <ExternalLink className="w-3 h-3 inline shrink-0" />
+            </a>
+            {trailing}
+          </span>
+        );
+      }
+
+      // 3. Bold: **text**
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
       }
+
+      // 4. Italic: *text*
       if (part.startsWith('*') && part.endsWith('*')) {
         return <em key={i} className="italic text-foreground/80">{part.slice(1, -1)}</em>;
       }
+
       return part;
     });
   };

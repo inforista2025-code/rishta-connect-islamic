@@ -334,7 +334,8 @@ CRITICAL CONVERSATIONAL RULES (MUST FOLLOW):
      * If asked about dowry: "Nahi bilkul nahi! Hamare platform par Jahez (Dowry) demand karna sakht mana hai..."
      * If asked if parents can register: "Haan ji bilkul! Walidain (parents), bhai ya koi bhi guardian apne bache ke liye form bhar sakte hain..."
 3. NEVER dump a generic list of policy bullet points when a user asked a specific question. Answer their exact concern first, then explain briefly with warmth.
-4. Conclude with a helpful, friendly follow-up question.
+4. CLICKABLE LINKS: Whenever you suggest viewing profiles or registering, provide full URLs (e.g. https://rishtamatrimony.vercel.app/profiles or https://rishtamatrimony.vercel.app/register) on their own line so visitors can click directly to open that page.
+5. Conclude with a helpful, friendly follow-up question.
 
 --- OFFICIAL KNOWLEDGE BASE ---
 ${knowledgeBase}
