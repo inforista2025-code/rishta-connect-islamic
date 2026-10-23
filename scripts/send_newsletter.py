@@ -109,7 +109,7 @@ def get_unsubscribed_list():
     with open(UNSUBSCRIBE_FILE, "r", encoding="utf-8") as f:
         return set(line.strip().lower() for line in f if line.strip())
 
-def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_email: str, day_of_week: int):
+def build_visitor_newsletter_html(male_count: int, female_count: int, recipient_email: str, day_of_week: int, recipient_name: str = "Valued Member"):
     unsub_mailto = f"mailto:{SENDER_EMAIL}?subject=Unsubscribe%20Newsletter&body=Please%20unsubscribe%20my%20email:%20${recipient_email}"
     total_count = male_count + female_count
 
@@ -343,6 +343,7 @@ def build_member_digest_html(member: dict, matches: list, recipient_email: str, 
             "tip_body": "Share suitable profiles with your parents or guardians this weekend. Discussing compatibility together brings clarity and barakah into the matrimonial decision."
         }
     }
+    theme = daily_member_themes.get(day_of_week, daily_member_themes[1])
     match_cards_html = ""
     for m in matches:
         m_name = m.get("name") or "Verified Candidate"
