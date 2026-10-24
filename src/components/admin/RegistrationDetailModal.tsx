@@ -546,7 +546,7 @@ export function RegistrationDetailModal({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[200]">
                     <SelectItem value="Male">Male</SelectItem>
                     <SelectItem value="Female">Female</SelectItem>
                   </SelectContent>
@@ -587,10 +587,11 @@ export function RegistrationDetailModal({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[200]">
                     <SelectItem value="Single">Single</SelectItem>
                     <SelectItem value="Divorced">Divorced</SelectItem>
                     <SelectItem value="Widowed">Widowed</SelectItem>
+                    <SelectItem value="Khula">Khula</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -736,7 +737,7 @@ export function RegistrationDetailModal({
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="verified">Verified</SelectItem>
                       <SelectItem value="rejected">Rejected</SelectItem>
@@ -753,7 +754,7 @@ export function RegistrationDetailModal({
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       <SelectItem value="true">Yes - Visible on Public Page</SelectItem>
                       <SelectItem value="false">No - Hidden</SelectItem>
                     </SelectContent>
@@ -771,7 +772,7 @@ export function RegistrationDetailModal({
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       <SelectItem value="free">Free</SelectItem>
                       <SelectItem value="premium">Premium</SelectItem>
                     </SelectContent>
