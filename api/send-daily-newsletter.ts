@@ -178,6 +178,97 @@ function getISTDayOfWeek(): number {
   return nowIST.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
 }
 
+function getISTDateString(): string {
+  // Indian Standard Time is UTC + 5:30 -> YYYY-MM-DD
+  const nowIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  return nowIST.toISOString().split("T")[0];
+}
+
+async function acquireDailyGlobalLock(dateStr: string): Promise<boolean> {
+  const lockEmail = `dispatch_daily_lock_${dateStr}@system.internal`;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        email: lockEmail,
+        status: "in_progress",
+      }),
+    });
+
+    if (res.status === 201) {
+      console.log(`[Daily Lock] Successfully claimed global daily dispatch lock for ${dateStr}.`);
+      return true;
+    }
+
+    if (res.status === 409) {
+      console.log(`[Daily Lock] Lock for ${dateStr} already claimed by another runner. Skipping duplicate invocation.`);
+      return false;
+    }
+
+    console.warn(`[Daily Lock] Unexpected status ${res.status} while acquiring lock. Proceeding cautiously.`);
+    return true;
+  } catch (err) {
+    console.warn(`[Daily Lock] Error acquiring global lock:`, err);
+    return true;
+  }
+}
+
+async function claimRecipientSentLock(dateStr: string, email: string): Promise<boolean> {
+  const cleanEmail = email.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, "_");
+  const lockKey = `sent_${dateStr}_${cleanEmail}@system.internal`;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        email: lockKey,
+        status: "delivered",
+      }),
+    });
+
+    if (res.status === 201) {
+      return true;
+    }
+
+    if (res.status === 409) {
+      console.log(`[Recipient Deduplication] ${email} already received today's email (${dateStr}). Skipping duplicate.`);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn(`[Recipient Deduplication] Error claiming recipient lock for ${email}:`, err);
+    return true;
+  }
+}
+
+async function cleanupOldLocks(): Promise<void> {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers?email=like.*@system.internal&created_at=lt.${sevenDaysAgo}`, {
+      method: "DELETE",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    });
+  } catch (cleanErr) {
+    // Non-critical background cleanup
+  }
+}
+
 function buildVisitorNewsletterHtml(
   maleCount: number,
   femaleCount: number,
@@ -854,16 +945,49 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    const host = (req.headers["x-forwarded-host"] || req.headers["host"] || "").toLowerCase();
+    const isForce = req.query?.force === "true" || req.body?.force === true;
+
+    // 1. Host Guard: Prevent duplicate crons from secondary/legacy project deployments.
+    // The official primary domain is rishtamatrimony.vercel.app.
+    if (!isForce && (host.includes("rishta-connect-islamic") || host.includes("rishta-matrimony.vercel.app"))) {
+      console.log(`[Host Guard] Skipping dispatch on duplicate secondary host: ${host}`);
+      return res.status(200).json({
+        skipped: true,
+        host,
+        message: "Skipped duplicate secondary project. Daily dispatch runs exclusively from primary domain: rishtamatrimony.vercel.app",
+      });
+    }
+
+    const todayDateStr = getISTDateString();
     const dayOfWeek = getISTDayOfWeek();
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const currentDayName = dayNames[dayOfWeek];
 
+    // 2. Global Daily Dispatch Lock: Guarantees exactly ONE dispatch run per calendar day (IST)
+    if (!isForce) {
+      const lockAcquired = await acquireDailyGlobalLock(todayDateStr);
+      if (!lockAcquired) {
+        console.log(`[Global Lock Guard] Dispatch for ${todayDateStr} (${currentDayName}) already claimed or completed. Skipping duplicate run.`);
+        return res.status(200).json({
+          skipped: true,
+          day: currentDayName,
+          date: todayDateStr,
+          message: `Daily dispatch for ${todayDateStr} has already been sent. Duplicate run safely skipped.`,
+        });
+      }
+    }
+
+    // Clean up locks older than 7 days in the background
+    cleanupOldLocks().catch(() => {});
+
     const recipients = await fetchRecipients();
     const memberCount = recipients.filter((r) => r.type === "member").length;
     const visitorCount = recipients.filter((r) => r.type === "visitor").length;
-    console.log(`[Cron Dispatcher] Day: ${currentDayName} (IST). Total: ${recipients.length} recipients (${memberCount} Members, ${visitorCount} Visitors).`);
+    console.log(`[Cron Dispatcher] Day: ${currentDayName} (${todayDateStr} IST). Total qualified: ${recipients.length} recipients (${memberCount} Members, ${visitorCount} Visitors).`);
 
     let successCount = 0;
+    let skippedDuplicateCount = 0;
     const errors: string[] = [];
     const bouncedList: { email: string; type: string; reason: string }[] = [];
     const startTime = Date.now();
@@ -880,6 +1004,22 @@ export default async function handler(req: any, res: any) {
       await Promise.allSettled(
         batch.map(async (rec) => {
           try {
+            // 3. Per-Recipient Lock: Guarantees no recipient ever receives more than 1 email today
+            if (!isForce) {
+              const claimed = await claimRecipientSentLock(todayDateStr, rec.email);
+              if (!claimed) {
+                skippedDuplicateCount++;
+                return;
+              }
+            }
+
+            // 4. Content Integrity Guard: Refuse to send empty or corrupt emails
+            if (!rec.html || rec.html.trim().length < 500) {
+              console.error(`[Content Guard] Empty or corrupt HTML detected for ${rec.email}. Refusing to send.`);
+              errors.push(`${rec.email}: Refused to send empty/corrupt HTML`);
+              return;
+            }
+
             const recipientToHeader = rec.name && rec.name !== "Valued Member" && rec.name !== "Member" && rec.name !== "Respected Member"
               ? `"${rec.name.replace(/[<>"']/g, "").trim()}" <${rec.email}>`
               : rec.email;
@@ -889,8 +1029,14 @@ export default async function handler(req: any, res: any) {
               to: recipientToHeader,
               subject: rec.subject,
               html: rec.html,
+              text: `As-salamu alaykum ${rec.name || "Member"},
+
+Please open this email in an HTML-compatible email client to view your curated daily proposals and community updates on Rishta Matrimony.
+
+Website: https://rishtamatrimony.vercel.app`,
               headers: {
                 "List-Unsubscribe": `<mailto:${SENDER_EMAIL}?subject=Unsubscribe>`,
+                "X-Entity-Ref-ID": `${todayDateStr}-${rec.profileId || rec.email}`,
               },
             });
             successCount++;
@@ -933,11 +1079,12 @@ export default async function handler(req: any, res: any) {
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #2d3748;">
             <h2 style="color: #1f4037; margin-top: 0;">Daily Matrimonial Newsletter Report (${currentDayName})</h2>
             <p style="margin: 4px 0;"><strong>Execution Status:</strong> Completed</p>
-            <p style="margin: 4px 0;"><strong>Scheduled Day:</strong> ${currentDayName} (IST)</p>
+            <p style="margin: 4px 0;"><strong>Scheduled Date:</strong> ${currentDayName} (${todayDateStr} IST)</p>
             <p style="margin: 4px 0;"><strong>Total Qualified Recipients:</strong> ${recipients.length}</p>
-            <p style="margin: 4px 0;"><strong>Verified Members Delivered:</strong> ${memberCount}</p>
-            <p style="margin: 4px 0;"><strong>Visitors / Pending Delivered:</strong> ${visitorCount}</p>
-            <p style="margin: 4px 0;"><strong>Successfully Delivered:</strong> <span style="color: #15803d; font-weight: bold;">${successCount}</span></p>
+            <p style="margin: 4px 0;"><strong>Verified Members:</strong> ${memberCount}</p>
+            <p style="margin: 4px 0;"><strong>Visitors / Pending:</strong> ${visitorCount}</p>
+            <p style="margin: 4px 0;"><strong>Successfully Delivered (Strictly 1 Email/Person):</strong> <span style="color: #15803d; font-weight: bold;">${successCount}</span></p>
+            <p style="margin: 4px 0;"><strong>Duplicate Sends Blocked:</strong> <span style="color: #15803d; font-weight: bold;">${skippedDuplicateCount}</span></p>
             <p style="margin: 4px 0;"><strong>Total Errors/Rejections:</strong> ${errors.length}</p>
             <p style="margin: 4px 0;"><strong>Auto-Deactivated Bounced Addresses:</strong> <span style="color: ${bouncedList.length > 0 ? '#b91c1c' : '#15803d'}; font-weight: bold;">${bouncedList.length}</span></p>
 

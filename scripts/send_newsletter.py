@@ -98,9 +98,35 @@ def get_ist_day_of_week():
     """Returns day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday) in Indian Standard Time (IST)."""
     ist = timezone(timedelta(hours=5, minutes=30))
     now_ist = datetime.now(ist)
-    # Python weekday(): 0 = Mon, 6 = Sun -> convert to JS getDay(): 0 = Sun, 1 = Mon, ..., 6 = Sat
     py_weekday = now_ist.weekday()
     return (py_weekday + 1) % 7
+
+def get_ist_date_string():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    return datetime.now(ist).strftime("%Y-%m-%d")
+
+def claim_recipient_sent_lock(date_str: str, email: str) -> bool:
+    clean_email = re.sub(r"[^a-zA-Z0-9]", "_", email.strip().lower())
+    lock_key = f"sent_{date_str}_{clean_email}@system.internal"
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/newsletter_subscribers"
+        payload = json.dumps({"email": lock_key, "status": "delivered"}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, method="POST", headers={
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Prefer": "return=minimal"
+        })
+        with urllib.request.urlopen(req) as resp:
+            if resp.status == 201:
+                return True
+    except urllib.error.HTTPError as he:
+        if he.code == 409:
+            print(f"[Recipient Deduplication] {email} already received today's email ({date_str}). Skipping.")
+            return False
+    except Exception as e:
+        print(f"[Recipient Deduplication] Lock check error for {email}: {e}")
+    return True
 
 def get_unsubscribed_list():
     """Reads emails that have opted out of the newsletter."""
@@ -707,8 +733,16 @@ def send_newsletter(is_live=False):
     bounced_count = 0
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(SENDER_EMAIL, APP_PASSWORD)
+        today_date_str = get_ist_date_string()
         for r in targets:
             try:
+                if is_live:
+                    if not claim_recipient_sent_lock(today_date_str, r["email"]):
+                        continue
+                if not r.get("html") or len(r["html"].strip()) < 500:
+                    print(f"[Content Guard] Empty/corrupt HTML for {r['email']}. Refusing to send.")
+                    continue
+
                 msg = MIMEMultipart("alternative")
                 msg["Subject"] = r["subject"]
                 msg["From"] = f"Rishta Matrimony <{SENDER_EMAIL}>"
