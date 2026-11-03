@@ -57,7 +57,8 @@ const App = () => (
           </Routes>
           <IslamicAssistantWidget />
         </BrowserRouter>
-      </TooltipProvider>
+      </ErrorBoundary>
+    </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
