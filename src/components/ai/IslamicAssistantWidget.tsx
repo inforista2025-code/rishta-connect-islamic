@@ -66,6 +66,11 @@ export function IslamicAssistantWidget() {
     };
   }, []);
 
+  // Safe to check the route only after every hook has been called.
+  if (location.pathname !== '/') {
+    return null;
+  }
+
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
     if (!query.trim() || loading) return;
