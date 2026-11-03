@@ -23,6 +23,7 @@ import MemberDashboard from "./pages/MemberDashboard";
 import PremiumDashboard from "./pages/PremiumDashboard";
 import { MemberProtectedRoute } from "./components/MemberProtectedRoute";
 import { IslamicAssistantWidget } from "./components/ai/IslamicAssistantWidget";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
