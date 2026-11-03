@@ -30,10 +30,7 @@ export function IslamicAssistantWidget() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // ONLY render the AI Assistant on the Home Page ('/')
-  if (location.pathname !== '/') {
-    return null;
-  }
+  // Only show on home page — checked AFTER all hooks below (Rules of Hooks).
 
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -68,6 +65,11 @@ export function IslamicAssistantWidget() {
       }
     };
   }, []);
+
+  // Safe to check the route only after every hook has been called.
+  if (location.pathname !== '/') {
+    return null;
+  }
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;

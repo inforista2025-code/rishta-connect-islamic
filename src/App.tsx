@@ -23,6 +23,7 @@ import MemberDashboard from "./pages/MemberDashboard";
 import PremiumDashboard from "./pages/PremiumDashboard";
 import { MemberProtectedRoute } from "./components/MemberProtectedRoute";
 import { IslamicAssistantWidget } from "./components/ai/IslamicAssistantWidget";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ErrorBoundary>
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -56,7 +58,8 @@ const App = () => (
           </Routes>
           <IslamicAssistantWidget />
         </BrowserRouter>
-      </TooltipProvider>
+      </ErrorBoundary>
+    </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
