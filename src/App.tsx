@@ -57,9 +57,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <IslamicAssistantWidget />
+          </ErrorBoundary>
         </BrowserRouter>
-      </ErrorBoundary>
-    </TooltipProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
