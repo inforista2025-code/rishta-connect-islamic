@@ -24,7 +24,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
           className="w-full h-full object-cover object-center"
           loading="eager"
           decoding="async"
-          fetchPriority="high"
+          fetchpriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-cream/95 via-cream/85 to-cream/40" />
         <div className="absolute inset-0 islamic-pattern opacity-60" />
