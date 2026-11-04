@@ -90,7 +90,7 @@ export function Navbar() {
               className="h-14 w-14 object-contain" 
               loading="eager"
               decoding="async"
-              fetchpriority="high"
+              fetchPriority="high"
             />
             <span className="text-xl text-primary font-extrabold">Rishta Matrimony</span>
           </Link>
