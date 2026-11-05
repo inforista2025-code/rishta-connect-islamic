@@ -846,21 +846,21 @@ async function fetchRecipients(): Promise<NewsletterRecipient[]> {
     // Newest profiles (Sort by ID desc)
     const newestMatches = [...candidates].sort((a, b) => b.id - a.id);
 
-    // Dynamic Matching Sorting based on Day of Week:
+    // Dynamic Matching Sorting based on Alternate-Day Schedule (Sun, Mon, Wed, Fri):
     let selectedMatches: ProfileRecord[] = [];
     if (dayOfWeek === 1 && regionalMatches.length > 0) {
-      // Monday: Regional priority
+      // Monday: Regional priority (Matches from same state / nearby districts)
       const other = candidates.filter((c) => !regionalMatches.includes(c));
       selectedMatches = [...regionalMatches, ...other].slice(0, 3);
-    } else if (dayOfWeek === 2 && educationMatches.length > 0) {
-      // Tuesday: High Qualification priority
+    } else if (dayOfWeek === 3 && educationMatches.length > 0) {
+      // Wednesday: High Qualification priority (Engineers, Doctors, Graduates)
       const other = candidates.filter((c) => !educationMatches.includes(c));
       selectedMatches = [...educationMatches, ...other].slice(0, 3);
-    } else if (dayOfWeek === 4) {
-      // Thursday: Newest profiles added
+    } else if (dayOfWeek === 5) {
+      // Friday (Jumu'ah): Newest verified pious candidates
       selectedMatches = newestMatches.slice(0, 3);
     } else {
-      // Other days (Wed, Fri, Sat, Sun): Balanced regional + diverse profiles
+      // Sunday: Balanced regional + diverse curated profiles
       const other = candidates.filter((c) => !regionalMatches.includes(c));
       selectedMatches = [...regionalMatches, ...other].slice(0, 3);
     }
@@ -945,24 +945,26 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const host = (req.headers["x-forwarded-host"] || req.headers["host"] || "").toLowerCase();
     const isForce = req.query?.force === "true" || req.body?.force === true;
-
-    // 1. Host Guard: Prevent duplicate crons from secondary/legacy project deployments.
-    // The official primary domain is rishtamatrimony.vercel.app.
-    if (!isForce && (host.includes("rishta-connect-islamic") || host.includes("rishta-matrimony.vercel.app"))) {
-      console.log(`[Host Guard] Skipping dispatch on duplicate secondary host: ${host}`);
-      return res.status(200).json({
-        skipped: true,
-        host,
-        message: "Skipped duplicate secondary project. Daily dispatch runs exclusively from primary domain: rishtamatrimony.vercel.app",
-      });
-    }
-
     const todayDateStr = getISTDateString();
     const dayOfWeek = getISTDayOfWeek();
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const currentDayName = dayNames[dayOfWeek];
+
+    // 1. Alternate-Day Dispatch Schedule Gate:
+    // Dispatches run on Sunday (0), Monday (1), Wednesday (3), Friday (5) at 9:00 AM IST.
+    // Tuesday (2), Thursday (4), Saturday (6) are Rest Days.
+    const ALTERNATE_DISPATCH_DAYS = [0, 1, 3, 5];
+    if (!isForce && !ALTERNATE_DISPATCH_DAYS.includes(dayOfWeek)) {
+      console.log(`[Alternate Schedule] ${currentDayName} (${todayDateStr}) is a rest day. Dispatches run on Sun, Mon, Wed, Fri.`);
+      return res.status(200).json({
+        skipped: true,
+        day: currentDayName,
+        date: todayDateStr,
+        reason: "alternate_day_rest_schedule",
+        message: `Today (${currentDayName}) is an off-day for email dispatches. Scheduled alternate send days are Sunday, Monday, Wednesday, and Friday at 9:00 AM IST.`,
+      });
+    }
 
     // 2. Global Daily Dispatch Lock: Guarantees exactly ONE dispatch run per calendar day (IST)
     if (!isForce) {
@@ -992,15 +994,15 @@ export default async function handler(req: any, res: any) {
     const bouncedList: { email: string; type: string; reason: string }[] = [];
     const startTime = Date.now();
 
-    // Paced sending: batches of 2 with a 2-second delay between them
-    for (let i = 0; i < recipients.length; i += 2) {
-      // Timeout safeguard: gracefully wrap up and report if nearing 52 seconds
-      if (Date.now() - startTime > 52000) {
+    // Paced sending: batches of 5 with a 1-second delay between them (safely finishes all in ~15-18 seconds)
+    for (let i = 0; i < recipients.length; i += 5) {
+      // Timeout safeguard: gracefully wrap up and report if nearing 50 seconds
+      if (Date.now() - startTime > 50000) {
         console.warn(`[Cron Dispatcher] Approaching Vercel execution threshold at recipient ${i}/${recipients.length}. Wrapping up.`);
         break;
       }
 
-      const batch = recipients.slice(i, i + 2);
+      const batch = recipients.slice(i, i + 5);
       await Promise.allSettled(
         batch.map(async (rec) => {
           try {
@@ -1063,9 +1065,9 @@ Website: https://rishtamatrimony.vercel.app`,
         })
       );
 
-      // 2-second delay between outgoing batches
-      if (i + 2 < recipients.length) {
-        await sleep(2000);
+      // 1-second delay between outgoing batches
+      if (i + 5 < recipients.length) {
+        await sleep(1000);
       }
     }
 
@@ -1077,9 +1079,10 @@ Website: https://rishtamatrimony.vercel.app`,
         subject: `📊 [${currentDayName}] Daily Matrimonial Dispatch: ${successCount}/${recipients.length} Delivered (${bouncedList.length} Bounced/Cleaned)`,
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #2d3748;">
-            <h2 style="color: #1f4037; margin-top: 0;">Daily Matrimonial Newsletter Report (${currentDayName})</h2>
+            <h2 style="color: #1f4037; margin-top: 0;">Alternate-Day Matrimonial Dispatch Report (${currentDayName})</h2>
             <p style="margin: 4px 0;"><strong>Execution Status:</strong> Completed</p>
             <p style="margin: 4px 0;"><strong>Scheduled Date:</strong> ${currentDayName} (${todayDateStr} IST)</p>
+            <p style="margin: 4px 0;"><strong>Schedule Mode:</strong> Alternate Days (Sunday, Monday, Wednesday, Friday at 9:00 AM IST)</p>
             <p style="margin: 4px 0;"><strong>Total Qualified Recipients:</strong> ${recipients.length}</p>
             <p style="margin: 4px 0;"><strong>Verified Members:</strong> ${memberCount}</p>
             <p style="margin: 4px 0;"><strong>Visitors / Pending:</strong> ${visitorCount}</p>

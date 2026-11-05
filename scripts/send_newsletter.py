@@ -615,19 +615,20 @@ def fetch_recipients():
         # Newest matches
         newest_matches = sorted(candidates, key=lambda x: x.get("id", 0), reverse=True)
 
-        # Dynamic Matching Sorting based on Day of Week:
+        # Dynamic Matching Sorting based on Alternate-Day Schedule (Sun, Mon, Wed, Fri):
         if day_of_week == 1 and regional_matches:
-            # Monday: Regional priority
+            # Monday: Regional priority (Matches from member's state / district)
             other = [c for c in candidates if c not in regional_matches]
             selected_matches = (regional_matches + other)[:3]
-        elif day_of_week == 2 and education_matches:
-            # Tuesday: Qualification priority
+        elif day_of_week == 3 and education_matches:
+            # Wednesday: High Qualification priority (Doctors, Engineers, Professionals)
             other = [c for c in candidates if c not in education_matches]
             selected_matches = (education_matches + other)[:3]
-        elif day_of_week == 4:
-            # Thursday: Newest profiles
+        elif day_of_week == 5:
+            # Friday (Jumu'ah): Newest verified pious candidates
             selected_matches = newest_matches[:3]
         else:
+            # Sunday: Balanced diverse & regional recommendations
             other = [c for c in candidates if c not in regional_matches]
             selected_matches = (regional_matches + other)[:3]
 
@@ -695,10 +696,16 @@ def send_newsletter(is_live=False):
     day_of_week = get_ist_day_of_week()
     current_day_name = day_names[day_of_week]
 
+    # Alternate-day schedule check (Sun, Mon, Wed, Fri)
+    alternate_days = [0, 1, 3, 5]
+    if is_live and day_of_week not in alternate_days:
+        print(f"[Alternate Schedule] Today ({current_day_name}) is a rest day. Dispatches run on Sunday, Monday, Wednesday, and Friday.")
+        return
+
     recipients = fetch_recipients()
     member_count = sum(1 for r in recipients if r["type"] == "member")
     visitor_count = sum(1 for r in recipients if r["type"] == "visitor")
-    print(f"[{current_day_name} IST] Found {len(recipients)} recipients ({member_count} Registered Members, {visitor_count} Newsletter Visitors).")
+    print(f"[{current_day_name} IST - Alternate Day Dispatch] Found {len(recipients)} recipients ({member_count} Registered Members, {visitor_count} Newsletter Visitors).")
 
     if not recipients:
         print("No recipients found.")
