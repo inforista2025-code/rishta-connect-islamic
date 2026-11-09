@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
@@ -168,9 +169,16 @@ export function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden pb-4 border-t border-border">
-            <div className="flex flex-col space-y-2 pt-4">
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="md:hidden pb-4 border-t border-border overflow-hidden"
+            >
+              <div className="flex flex-col space-y-2 pt-4">
               {navLinks.map(link => (
                 <Link 
                   key={link.path} 
@@ -232,8 +240,9 @@ export function Navbar() {
                 </>
               )}
             </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

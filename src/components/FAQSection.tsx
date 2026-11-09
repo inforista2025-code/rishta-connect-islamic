@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { motion } from "motion/react";
 
 export function FAQSection() {
   const faqs = [
@@ -16,16 +17,28 @@ export function FAQSection() {
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
             FREQUENTLY ASKED QUESTIONS
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">
             Have Questions? We've Got Answers
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto"
+        >
           {/* Left Column */}
           <Accordion type="single" collapsible className="space-y-2.5">
             {leftFaqs.map((faq) => (
@@ -61,7 +74,7 @@ export function FAQSection() {
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

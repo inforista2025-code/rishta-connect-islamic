@@ -1,6 +1,30 @@
 import { FileText, ShieldCheck, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 25 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 90,
+      damping: 14,
+    },
+  },
+};
 
 export function HowToJoinSection() {
   const navigate = useNavigate();
@@ -34,41 +58,60 @@ export function HowToJoinSection() {
   return (
     <section id="how-to-join" className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
             HOW IT WORKS
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             Find Your Match in 3 Simple Steps
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+        >
           {steps.map((step) => (
-            <Card
+            <motion.div
               key={step.number}
-              className="group text-center border rounded-2xl shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-pointer"
-              onClick={() => step.clickable && navigate(step.link || '/')}
+              variants={cardVariants}
+              whileHover={{ y: -6, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.98 }}
+              className="h-full"
             >
-              <CardContent className="p-8">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform duration-200">
-                    {step.number}
+              <Card
+                className="group h-full text-center border rounded-2xl shadow-xs hover:shadow-xl transition-shadow duration-300 ease-out cursor-pointer"
+                onClick={() => step.clickable && navigate(step.link || '/')}
+              >
+                <CardContent className="p-8">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform duration-200">
+                      {step.number}
+                    </div>
+                    <div
+                      className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
+                    >
+                      <step.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors duration-200" />
+                    </div>
                   </div>
-                  <div
-                    className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
-                  >
-                    <step.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors duration-200" />
-                  </div>
-                </div>
-                <h3 className="font-semibold text-foreground text-lg mb-2 group-hover:text-primary transition-colors duration-200">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </CardContent>
-            </Card>
+                  <h3 className="font-semibold text-foreground text-lg mb-2 group-hover:text-primary transition-colors duration-200">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

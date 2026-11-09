@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useState } from "react";
 import { Mail, ShieldCheck, HeartHandshake, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,13 @@ export function NewsletterSection() {
       <div className="container relative max-w-5xl mx-auto px-4">
         <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-12 border border-pink-500/20 shadow-2xl shadow-black/40">
           
-          <div className="text-center max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-center max-w-2xl mx-auto"
+          >
             {/* Islamic Bismillah & Badge */}
             <div className="text-xl font-serif text-pink-300/80 mb-2">﷽</div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-400/30 text-pink-300 text-xs sm:text-sm font-semibold tracking-wide uppercase mb-3">
@@ -177,7 +184,7 @@ export function NewsletterSection() {
               </div>
             </div>
 
-          </div>
+          </motion.div>
 
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Crown, Sparkles, Phone, Eye, Heart, Image as ImageIcon, Check } from "lucide-react";
+import { Crown, Check } from "lucide-react";
+import { motion } from "motion/react";
 
 export function PremiumSection() {
   const navigate = useNavigate();
@@ -31,7 +32,13 @@ export function PremiumSection() {
   return (
     <section className="py-14 md:py-20 bg-background">
       <div className="container mx-auto px-5 sm:px-6">
-        <div className="max-w-6xl mx-auto rounded-2xl border border-gold/40 bg-gradient-to-br from-gold-soft via-cream to-background p-6 md:p-10 shadow-card">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="max-w-6xl mx-auto rounded-2xl border border-gold/40 bg-gradient-to-br from-gold-soft via-cream to-background p-6 md:p-10 shadow-card"
+        >
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-10 items-start">
             {/* Left: benefits */}
             <div className="md:col-span-3">
@@ -67,18 +74,23 @@ export function PremiumSection() {
 
             {/* Right: pricing + CTA */}
             <div className="md:col-span-2 md:pl-6 md:border-l md:border-border">
-              <div className="bg-card border border-gold/30 rounded-2xl p-6 text-center shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <motion.div
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="bg-card border border-gold/30 rounded-2xl p-6 text-center shadow-xs hover:shadow-xl transition-shadow duration-300"
+              >
                 <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Premium Plan</p>
                 <p className="mt-2 text-4xl md:text-5xl font-bold text-primary">₹491</p>
                 <p className="text-sm text-muted-foreground">for 2 months</p>
-                <Button
-                  onClick={() => navigate("/pricing")}
-                  className="mt-5 w-full h-12 rounded-full shadow-md"
-                  size="lg"
-                >
-                  <Crown className="w-5 h-5" />
-                  View Pricing Plans (From ₹48)
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    onClick={() => navigate("/pricing")}
+                    className="mt-5 w-full h-12 rounded-full shadow-md cursor-pointer"
+                    size="lg"
+                  >
+                    <Crown className="w-5 h-5" />
+                    View Pricing Plans (From ₹48)
+                  </Button>
+                </motion.div>
                 <div className="mt-3.5 pt-3 border-t border-dashed border-border/80 flex flex-col gap-1">
                   <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     ⚡ Single Profile Unlock also available for just ₹48
@@ -87,10 +99,10 @@ export function PremiumSection() {
                     Instant access on WhatsApp after payment confirmation
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -285,10 +286,16 @@ export function FeaturedProfilesSection() {
           {displayedProfiles?.map((p) => {
             const photo = p.photo_urls?.[0];
             return (
-              <article
+              <motion.article
                 key={p.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => open(p.id, p.gender)}
-                className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden shadow-card hover:shadow-xl hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 ease-out"
+                className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden shadow-card hover:shadow-xl transition-shadow duration-300 ease-out"
               >
                 <div className="relative aspect-square bg-muted overflow-hidden">
                   {photo ? (
@@ -361,7 +368,7 @@ export function FeaturedProfilesSection() {
                     View Profile
                   </Button>
                 </div>
-              </article>
+              </motion.article>
             );
           })}
         </div>

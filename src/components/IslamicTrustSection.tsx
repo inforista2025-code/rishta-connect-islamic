@@ -1,4 +1,5 @@
 import { Moon } from "lucide-react";
+import { motion } from "motion/react";
 
 export function IslamicTrustSection() {
   return (
@@ -6,7 +7,13 @@ export function IslamicTrustSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-cream to-cream" aria-hidden="true" />
       <div className="absolute inset-0 islamic-pattern opacity-50" aria-hidden="true" />
       <div className="container mx-auto px-5 sm:px-6 relative">
-        <div className="max-w-3xl mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 15 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, margin: "-30px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="max-w-3xl mx-auto text-center"
+        >
           <div className="w-11 h-11 mx-auto mb-3.5 rounded-full bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
             <Moon className="w-5 h-5 text-primary" />
           </div>
@@ -19,9 +26,8 @@ export function IslamicTrustSection() {
             — Surah Ar-Rum (30:21)
           </cite>
           <div className="w-14 h-px bg-primary/40 mx-auto mt-4" aria-hidden="true" />
-        </div>
+        </motion.div>
       </div>
-
     </section>
   );
 }

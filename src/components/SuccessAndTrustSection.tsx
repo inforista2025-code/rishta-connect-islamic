@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, Quote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
+import { motion } from "motion/react";
 import couple1 from "@/assets/couple1.jpg";
 import couple2 from "@/assets/couple2.jpg";
 import couple3 from "@/assets/couple3.jpg";
@@ -52,7 +53,13 @@ export function SuccessAndTrustSection() {
     <section id="success-stories" className="py-14 md:py-20 bg-cream scroll-mt-20">
       <div className="container mx-auto px-5 sm:px-6">
         <div className="max-w-[1280px] mx-auto">
-          <div className="text-center mb-8 md:mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8 md:mb-12"
+          >
             <p className="text-xs font-semibold text-primary uppercase tracking-[0.18em] mb-2">
               Success Stories
             </p>
@@ -61,7 +68,7 @@ export function SuccessAndTrustSection() {
               <br className="hidden md:block" />{" "}
               <span className="text-primary">Rishta Matrimony</span>
             </h2>
-          </div>
+          </motion.div>
 
           {/* Mobile carousel / desktop grid */}
           <div
@@ -70,9 +77,14 @@ export function SuccessAndTrustSection() {
             className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar -mx-5 px-5 md:mx-0 md:px-0"
           >
             {successStories.map((story, index) => (
-              <article
+              <motion.article
                 key={index}
-                className="group min-w-full md:min-w-0 snap-center bg-card border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col"
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.45, delay: index * 0.1, ease: "easeOut" }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group min-w-full md:min-w-0 snap-center bg-card border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-shadow duration-300 ease-out flex flex-col cursor-pointer"
               >
                 <div className="overflow-hidden">
                   <img
@@ -96,7 +108,7 @@ export function SuccessAndTrustSection() {
                     </p>
                   </div>
                 </div>
-              </article>
+              </motion.article>
             ))}
           </div>
 
@@ -115,7 +127,13 @@ export function SuccessAndTrustSection() {
           </div>
 
           {/* Compact CTA */}
-          <div className="mt-8 md:mt-12 bg-card border border-primary/25 rounded-xl px-5 py-5 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5 }}
+            className="mt-8 md:mt-12 bg-card border border-primary/25 rounded-xl px-5 py-5 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
             <div className="text-center sm:text-left">
               <p className="font-semibold text-foreground text-base md:text-lg">
                 Your Success Story Could Be Next!
@@ -123,13 +141,13 @@ export function SuccessAndTrustSection() {
               <p className="text-sm text-muted-foreground">Start Your Journey Today.</p>
             </div>
             <Button
-              className="h-11 rounded-full px-6 w-full sm:w-auto whitespace-nowrap"
+              className="h-11 rounded-full px-6 w-full sm:w-auto whitespace-nowrap cursor-pointer hover:scale-105 active:scale-95 transition-transform"
               onClick={() => navigate("/register")}
             >
               <UserPlus className="w-4 h-4" />
               Register Free Now
             </Button>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

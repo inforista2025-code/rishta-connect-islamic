@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -479,31 +480,50 @@ export function IslamicAssistantWidget() {
   return (
     <>
       {/* Floating Trigger Button at Bottom-Right */}
-      {!isOpen && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 group animate-in fade-in slide-in-from-bottom-4 duration-300">
-          {/* Tooltip greeting */}
-          <div 
-            onClick={() => setIsOpen(true)}
-            className="hidden sm:flex items-center gap-2 bg-card/95 backdrop-blur-md border border-primary/30 px-3.5 py-1.5 rounded-full shadow-lg text-xs font-semibold text-foreground cursor-pointer hover:border-primary transition-all duration-200"
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            key="ai-floating-trigger"
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 15 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="fixed bottom-5 right-5 z-50 flex items-center gap-2 group"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-            <span>Rishta AI Assistant 🌸</span>
-          </div>
+            {/* Tooltip greeting */}
+            <div 
+              onClick={() => setIsOpen(true)}
+              className="hidden sm:flex items-center gap-2 bg-card/95 backdrop-blur-md border border-primary/30 px-3.5 py-1.5 rounded-full shadow-lg text-xs font-semibold text-foreground cursor-pointer hover:border-primary transition-all duration-200"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span>Rishta AI Assistant 🌸</span>
+            </div>
 
-          <button
-            onClick={() => setIsOpen(true)}
-            aria-label="Open AI Matchmaking Assistant"
-            className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-600 text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center border-2 border-white/30"
-          >
-            <Sparkles className="w-6 h-6 animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white"></span>
-          </button>
-        </div>
-      )}
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setIsOpen(true)}
+              aria-label="Open AI Matchmaking Assistant"
+              className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center border-2 border-white/30 cursor-pointer"
+            >
+              <Sparkles className="w-6 h-6 animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white"></span>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Chat Window Dialog */}
-      {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-[420px] h-[600px] max-h-[85vh] bg-card border border-border/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="ai-chat-window"
+            initial={{ opacity: 0, scale: 0.92, y: 25 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            transition={{ type: "spring", stiffness: 280, damping: 25 }}
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-[420px] h-[600px] max-h-[85vh] bg-card border border-border/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          >
           
           {/* Header */}
           <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white p-3.5 flex items-center justify-between shrink-0 shadow-sm">
@@ -649,8 +669,9 @@ export function IslamicAssistantWidget() {
               </a>
             </div>
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

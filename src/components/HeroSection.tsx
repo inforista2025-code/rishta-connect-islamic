@@ -1,11 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import heroImage from "@/assets/hero-matrimony.jpg";
 
 interface HeroSectionProps {
   onScrollToHowToJoin: () => void;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 90,
+      damping: 15,
+    },
+  },
+};
 
 export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
   const navigate = useNavigate();
@@ -33,56 +58,90 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
       <div className="container mx-auto px-5 sm:px-6 relative">
         <div className="max-w-[1280px] mx-auto py-14 md:py-20 lg:py-28">
           {/* Copy */}
-          <div className="fade-up text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
-            <p className="text-sm md:text-base font-medium text-primary mb-3">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0"
+          >
+            <motion.p
+              variants={itemVariants}
+              className="text-sm md:text-base font-medium text-primary mb-3"
+            >
               Assalamualaikum! 🌸
-            </p>
-            <h1 className="text-[2rem] leading-[1.15] sm:text-4xl lg:text-5xl xl:text-[3.4rem] font-bold text-foreground tracking-tight">
+            </motion.p>
+            <motion.h1
+              variants={itemVariants}
+              className="text-[2rem] leading-[1.15] sm:text-4xl lg:text-5xl xl:text-[3.4rem] font-bold text-foreground tracking-tight"
+            >
               Find Your Life Partner
               <br />
               <span className="text-primary">with Confidence</span>
-            </h1>
-            <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
+            </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0"
+            >
               Verified Muslim profiles • Privacy protected • Marriage focused
-            </p>
+            </motion.p>
 
-            <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-              <Button
-                variant="whatsapp"
-                size="lg"
-                onClick={handleWhatsAppClick}
-                className="w-full sm:w-auto h-12 rounded-full"
+            <motion.div
+              variants={itemVariants}
+              className="mt-7 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start"
+            >
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full sm:w-auto"
               >
-                <MessageCircle className="w-5 h-5" />
-                Join WhatsApp Community
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate('/profiles')}
-                className="w-full sm:w-auto h-12 rounded-full"
+                <Button
+                  variant="whatsapp"
+                  size="lg"
+                  onClick={handleWhatsAppClick}
+                  className="w-full sm:w-auto h-12 rounded-full cursor-pointer"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Join WhatsApp Community
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full sm:w-auto"
               >
-                <Users className="w-5 h-5" />
-                Browse Verified Profiles
-              </Button>
-            </div>
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/profiles')}
+                  className="w-full sm:w-auto h-12 rounded-full cursor-pointer"
+                >
+                  <Users className="w-5 h-5" />
+                  Browse Verified Profiles
+                </Button>
+              </motion.div>
+            </motion.div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center lg:justify-start gap-1 text-sm text-muted-foreground">
+            <motion.div
+              variants={itemVariants}
+              className="mt-4 flex flex-wrap items-center justify-center lg:justify-start gap-1 text-sm text-muted-foreground"
+            >
               <span>Already a member?</span>
               <button
                 onClick={() => navigate('/member/login')}
-                className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                className="inline-flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
               >
                 Login <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </div>
+            </motion.div>
 
-            <button
-              onClick={onScrollToHowToJoin}
-              className="mt-5 text-xs md:text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
-            >
-              How to Join / Verify
-            </button>
-          </div>
+            <motion.div variants={itemVariants}>
+              <button
+                onClick={onScrollToHowToJoin}
+                className="mt-5 text-xs md:text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 cursor-pointer"
+              >
+                How to Join / Verify
+              </button>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

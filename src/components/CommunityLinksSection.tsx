@@ -1,5 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Users, UserPlus, Send, Instagram } from "lucide-react";
+import { motion } from "motion/react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: "easeOut",
+    },
+  },
+};
 
 export function CommunityLinksSection() {
   const communityLinks = [
@@ -51,20 +74,34 @@ export function CommunityLinksSection() {
     <section className="py-14 md:py-20 bg-sage-soft">
       <div className="container mx-auto px-5 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 md:mb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8 md:mb-10"
+          >
             <h2 className="text-2xl md:text-4xl font-bold text-foreground">
               Stay Connected With Us
             </h2>
             <p className="text-sm md:text-base text-muted-foreground mt-2">
               Join our WhatsApp, Telegram & social channels for verified profiles, updates, and community support.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5"
+          >
             {communityLinks.map((link, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="group bg-card border border-border rounded-2xl p-6 text-center shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col justify-between"
+                variants={cardVariants}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group bg-card border border-border rounded-2xl p-6 text-center shadow-xs hover:shadow-xl transition-shadow duration-300 ease-out flex flex-col justify-between"
               >
                 <div>
                   <div className={`w-14 h-14 mx-auto mb-3 ${link.iconBg} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xs`}>
@@ -75,15 +112,15 @@ export function CommunityLinksSection() {
                 </div>
                 <Button
                   variant={link.isCustom ? "default" : "whatsapp"}
-                  className={`w-full h-11 rounded-full ${link.customClass || ""}`}
+                  className={`w-full h-11 rounded-full cursor-pointer ${link.customClass || ""}`}
                   onClick={() => window.open(link.url, "_blank")}
                 >
                   <UserPlus className="w-4 h-4 mr-1.5" />
                   {link.buttonText}
                 </Button>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
