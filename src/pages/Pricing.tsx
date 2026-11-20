@@ -190,7 +190,7 @@ export default function Pricing() {
       <Navbar />
       
       {/* Islamic Header Section */}
-      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background pt-8 pb-8 px-4 text-center overflow-hidden border-b mb-8">
+      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background -mt-16 pt-24 pb-8 px-4 text-center overflow-hidden border-b mb-8">
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="text-2xl font-serif text-primary/80 mb-1">
             ﷽

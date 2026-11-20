@@ -1551,7 +1551,7 @@ const Profiles = () => {
       )}
 
       {/* Islamic Premium Header Section - Compact */}
-      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background pt-6 pb-6 px-4 text-center overflow-hidden border-b mb-6">
+      <div className="relative bg-gradient-to-b from-primary/10 via-muted/20 to-background -mt-16 pt-28 pb-8 px-4 text-center overflow-hidden border-b mb-6">
         <div className="max-w-3xl mx-auto relative z-10">
           {/* Bismillah Calligraphy */}
           <div className="text-2xl font-serif text-primary/80 mb-1">

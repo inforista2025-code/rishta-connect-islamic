@@ -37,16 +37,27 @@ const freeMemberNavLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { isAdmin } = useAdmin();
   const { member, logout: memberLogout } = useMemberAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === "/";
   const isActive = (path: string) => location.pathname === path;
   const navLinks = member
     ? member.plan_type === "premium"
       ? memberNavLinks
       : freeMemberNavLinks
     : publicNavLinks;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -80,20 +91,27 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+    <nav
+      className={cn(
+        "sticky top-0 z-50 transition-all duration-300 w-full",
+        isScrolled
+          ? "bg-card/90 backdrop-blur-md border-b border-border shadow-xs"
+          : "bg-transparent border-0 shadow-none"
+      )}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2.5 group">
             <img 
               src={logo} 
               alt="Rishta Matrimony Logo" 
-              className="h-14 w-14 object-contain" 
+              className="h-12 w-12 sm:h-[50px] sm:w-[50px] object-contain transition-transform duration-200 group-hover:scale-105" 
               loading="eager"
               decoding="async"
               fetchPriority="high"
             />
-            <span className="text-xl text-primary font-extrabold">Rishta Matrimony</span>
+            <span className="text-xl sm:text-2xl text-primary font-extrabold tracking-tight">Rishta Matrimony</span>
           </Link>
 
           {/* Desktop Menu */}
@@ -176,7 +194,7 @@ export function Navbar() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="md:hidden pb-4 border-t border-border overflow-hidden"
+              className="md:hidden pb-4 border border-primary/20 overflow-hidden bg-cream/95 backdrop-blur-md rounded-2xl mt-2 px-3 shadow-xl"
             >
               <div className="flex flex-col space-y-2 pt-4">
               {navLinks.map(link => (
@@ -185,10 +203,10 @@ export function Navbar() {
                   to={link.path} 
                   onClick={() => setIsOpen(false)} 
                   className={cn(
-                    "px-4 py-3 rounded-md text-sm font-medium transition-colors", 
+                    "px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200", 
                     isActive(link.path) 
-                      ? "bg-primary/10 text-primary" 
-                      : "text-foreground hover:bg-muted hover:text-primary"
+                      ? "bg-primary/15 text-primary font-bold shadow-xs" 
+                      : "text-foreground hover:bg-primary/10 hover:text-primary"
                   )}
                 >
                   {link.name}

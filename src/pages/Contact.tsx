@@ -104,7 +104,7 @@ export default function Contact() {
       <Navbar />
 
       {/* Hero Header */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background py-14 md:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background -mt-16 pt-24 md:pt-30 pb-14 md:pb-20">
         <div className="container mx-auto px-4 max-w-5xl text-center relative z-10">
           <Badge className="bg-primary/15 text-primary border-primary/20 px-3.5 py-1 mb-4 text-xs font-semibold rounded-full inline-flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" /> We're Here to Help Your Halal Journey

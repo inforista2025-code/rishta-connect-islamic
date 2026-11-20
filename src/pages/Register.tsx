@@ -14,7 +14,7 @@ export default function Register() {
       <Navbar />
       
       {/* Islamic Premium Header Section */}
-      <div className="relative bg-gradient-to-b from-primary/15 via-muted/30 to-background pt-10 pb-12 px-4 text-center overflow-hidden border-b">
+      <div className="relative bg-gradient-to-b from-primary/15 via-muted/30 to-background -mt-16 pt-24 pb-12 px-4 text-center overflow-hidden border-b">
         <div className="max-w-4xl mx-auto relative z-10">
           {/* Bismillah Calligraphy */}
           <div className="text-3xl sm:text-4xl font-serif text-primary/80 mb-2">

@@ -40,7 +40,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-cream">
+    <section className="relative overflow-hidden bg-cream -mt-16 pt-16">
       {/* Background image */}
       <div className="absolute inset-0" aria-hidden="true">
         <img
