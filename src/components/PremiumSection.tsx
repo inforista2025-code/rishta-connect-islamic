@@ -30,14 +30,14 @@ export function PremiumSection() {
   ];
 
   return (
-    <section className="py-14 md:py-20 bg-background">
-      <div className="container mx-auto px-5 sm:px-6">
+    <section className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="max-w-6xl mx-auto rounded-2xl border border-gold/40 bg-gradient-to-br from-gold-soft via-cream to-background p-6 md:p-10 shadow-card"
+          className="max-w-6xl mx-auto rounded-3xl border border-gold/40 bg-gradient-to-br from-gold-soft via-cream to-background p-6 md:p-10 shadow-card"
         >
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-10 items-start">
             {/* Left: benefits */}

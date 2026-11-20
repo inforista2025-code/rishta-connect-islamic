@@ -255,25 +255,25 @@ export function FeaturedProfilesSection() {
   };
 
   return (
-    <section className="py-12 md:py-16 bg-background">
-      <div className="container mx-auto px-5 sm:px-6">
-        <div className="flex items-end justify-between gap-4 mb-7 md:mb-9">
+    <section className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">Featured Matrimonial Profiles</h2>
-            <p className="text-sm md:text-base text-muted-foreground mt-1.5">
+            <p className="text-sm md:text-base text-muted-foreground mt-2">
               Genuine, admin-verified profiles looking for a righteous spouse
             </p>
           </div>
           <button
             onClick={() => navigate("/profiles")}
-            className="shrink-0 inline-flex items-center gap-1 text-sm md:text-base font-semibold text-primary hover:underline"
+            className="shrink-0 inline-flex items-center gap-1 text-sm md:text-base font-semibold text-primary hover:underline cursor-pointer"
           >
             See All <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* 4-Profile Grid (Smooth Transition & Micro-Interactions) */}
-        <div key={startIndex} className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in duration-500">
+        <div key={startIndex} className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500">
           {!displayedProfiles &&
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-border bg-card p-4 animate-pulse">

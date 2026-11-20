@@ -15,14 +15,14 @@ export function FAQSection() {
   const rightFaqs = faqs.filter((_, i) => i >= 3);
 
   return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
+    <section className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          className="text-center mb-8 md:mb-12"
         >
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
             FREQUENTLY ASKED QUESTIONS
@@ -37,7 +37,7 @@ export function FAQSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto"
         >
           {/* Left Column */}
           <Accordion type="single" collapsible className="space-y-2.5">

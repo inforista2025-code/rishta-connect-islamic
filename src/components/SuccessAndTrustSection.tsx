@@ -50,32 +50,31 @@ export function SuccessAndTrustSection() {
   };
 
   return (
-    <section id="success-stories" className="py-14 md:py-20 bg-cream scroll-mt-20">
-      <div className="container mx-auto px-5 sm:px-6">
-        <div className="max-w-[1280px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-8 md:mb-12"
-          >
-            <p className="text-xs font-semibold text-primary uppercase tracking-[0.18em] mb-2">
-              Success Stories
-            </p>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground leading-tight">
-              Alhamdulillah! Beautiful Matches Made Through
-              <br className="hidden md:block" />{" "}
-              <span className="text-primary">Rishta Matrimony</span>
-            </h2>
-          </motion.div>
+    <section id="success-stories" className="py-16 md:py-24 bg-cream scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8 md:mb-12"
+        >
+          <p className="text-xs font-semibold text-primary uppercase tracking-[0.18em] mb-2">
+            Success Stories
+          </p>
+          <h2 className="text-2xl md:text-4xl font-bold text-foreground leading-tight">
+            Alhamdulillah! Beautiful Matches Made Through
+            <br className="hidden md:block" />{" "}
+            <span className="text-primary">Rishta Matrimony</span>
+          </h2>
+        </motion.div>
 
-          {/* Mobile carousel / desktop grid */}
-          <div
-            ref={trackRef}
-            onScroll={handleScroll}
-            className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar -mx-5 px-5 md:mx-0 md:px-0"
-          >
+        {/* Mobile carousel / desktop grid */}
+        <div
+          ref={trackRef}
+          onScroll={handleScroll}
+          className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"
+        >
             {successStories.map((story, index) => (
               <motion.article
                 key={index}
@@ -149,7 +148,6 @@ export function SuccessAndTrustSection() {
             </Button>
           </motion.div>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
+    );
+  }

@@ -119,7 +119,7 @@ export default function Contact() {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 max-w-6xl pb-20 space-y-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-24 space-y-16">
         
         {/* 1. Quick Direct Contact Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

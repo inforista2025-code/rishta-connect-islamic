@@ -1568,7 +1568,7 @@ const Profiles = () => {
         </div>
       </div>
 
-      <main className="container mx-auto px-4 pb-10">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-24">
         {/* Admin Toggle */}
         {user && (
           <div className="max-w-4xl mx-auto mb-4 transition-all duration-300 ease-in-out animate-fade-in">

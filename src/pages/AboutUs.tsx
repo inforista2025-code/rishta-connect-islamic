@@ -104,7 +104,7 @@ export default function AboutUs() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 w-full">
         {/* Language Selector */}
         <div className="flex justify-end mb-6 md:mb-8">
           <Select value={currentLanguage} onValueChange={(value: Language) => setCurrentLanguage(value)}>

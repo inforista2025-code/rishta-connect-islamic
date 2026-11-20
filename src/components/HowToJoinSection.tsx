@@ -56,14 +56,14 @@ export function HowToJoinSection() {
   ];
 
   return (
-    <section id="how-to-join" className="py-16 bg-background">
-      <div className="container mx-auto px-4">
+    <section id="how-to-join" className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          className="text-center mb-8 md:mb-12"
         >
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
             HOW IT WORKS
@@ -78,7 +78,7 @@ export function HowToJoinSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto"
         >
           {steps.map((step) => (
             <motion.div

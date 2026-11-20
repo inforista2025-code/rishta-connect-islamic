@@ -97,12 +97,12 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="relative pt-14 sm:pt-20 pb-8 sm:pb-12 overflow-hidden bg-gradient-to-b from-[#1F0A13] via-[#2A0F1A] to-[#1F0A13] text-white border-t border-pink-900/40">
+    <section className="relative py-16 md:py-24 overflow-hidden bg-gradient-to-b from-[#1F0A13] via-[#2A0F1A] to-[#1F0A13] text-white border-t border-pink-900/40">
       {/* Decorative Glow */}
       <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500 via-rose-600 to-transparent blur-3xl" />
 
-      <div className="container relative max-w-5xl mx-auto px-4">
-        <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-12 border border-pink-500/20 shadow-2xl shadow-black/40">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-12 border border-pink-500/20 shadow-2xl shadow-black/40 max-w-5xl mx-auto">
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}

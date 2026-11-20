@@ -55,8 +55,8 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
         <div className="absolute inset-0 islamic-pattern opacity-60" />
       </div>
 
-      <div className="container mx-auto px-5 sm:px-6 relative">
-        <div className="max-w-[1280px] mx-auto py-14 md:py-20 lg:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="py-16 md:py-20 lg:py-28">
           {/* Copy */}
           <motion.div
             variants={containerVariants}
