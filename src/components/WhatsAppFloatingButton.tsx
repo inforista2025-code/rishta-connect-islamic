@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useLocation } from "react-router-dom";
 
 interface WhatsAppFloatingButtonProps {
   phoneNumber?: string;
@@ -9,13 +10,19 @@ export function WhatsAppFloatingButton({
   phoneNumber = "919128719875",
   defaultMessage = "Assalamu Alaikum! I have an inquiry regarding Rishta Matrimony.",
 }: WhatsAppFloatingButtonProps) {
+  const location = useLocation();
+
+  // Show only on the homepage ('/')
+  if (location.pathname !== '/') {
+    return null;
+  }
+
   const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(defaultMessage)}`;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
       className="fixed bottom-5 right-5 z-50 flex items-center gap-2 group select-none"
     >
       {/* Tooltip Pill / Label (Desktop & Tablet) */}
@@ -36,25 +43,27 @@ export function WhatsAppFloatingButton({
 
       {/* Floating Action Circular Button Container with Outward Radiating Waves */}
       <div className="relative w-14 h-14 flex items-center justify-center">
-        {/* Outward Radiating Wave Ring 1 */}
+        {/* Outward Radiating Wave Ring 1 (Slow & Gentle: 3.6s duration) */}
         <motion.span
           className="absolute inset-0 rounded-full bg-[#25D366] pointer-events-none -z-10"
-          animate={{ scale: [1, 1.45, 1.85], opacity: [0.75, 0.35, 0] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+          animate={{ scale: [1, 1.45, 1.85], opacity: [0.65, 0.3, 0] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeOut" }}
           aria-hidden="true"
         />
 
-        {/* Outward Radiating Wave Ring 2 (Staggered Wave) */}
+        {/* Outward Radiating Wave Ring 2 (Staggered Wave: 3.6s duration, 1.8s delay) */}
         <motion.span
           className="absolute inset-0 rounded-full bg-[#25D366] pointer-events-none -z-10"
-          animate={{ scale: [1, 1.4, 1.75], opacity: [0.6, 0.25, 0] }}
-          transition={{ duration: 2.2, delay: 0.75, repeat: Infinity, ease: "easeOut" }}
+          animate={{ scale: [1, 1.4, 1.75], opacity: [0.55, 0.2, 0] }}
+          transition={{ duration: 3.6, delay: 1.8, repeat: Infinity, ease: "easeOut" }}
           aria-hidden="true"
         />
 
-        {/* CSS Ping Fallback */}
-        <span
-          className="absolute inset-0 rounded-full bg-[#25D366] opacity-50 animate-ping pointer-events-none -z-10"
+        {/* Soft Ambient Halo */}
+        <motion.span
+          className="absolute -inset-1 rounded-full bg-[#25D366]/30 pointer-events-none -z-10"
+          animate={{ opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
           aria-hidden="true"
         />
 

@@ -21,7 +21,44 @@ test("1. WhatsAppFloatingButton component file exists", () => {
   assert.ok(content.length > 50, "WhatsAppFloatingButton.tsx must have implementation content");
 });
 
-test("2. WhatsAppFloatingButton targets official WhatsApp number with English inquiry message", () => {
+test("2. WhatsAppFloatingButton only renders on the Home page (pathname === '/')", () => {
+  const content = readFileSafe(COMPONENT_PATH);
+  assert.ok(content, "Component content must be available");
+
+  // Must import and use useLocation from react-router-dom
+  assert.ok(
+    content.includes("useLocation"),
+    "WhatsAppFloatingButton must use useLocation to check the active page route"
+  );
+  // Must restrict visibility to home route only
+  assert.ok(
+    content.includes("pathname !== '/'") ||
+    content.includes('pathname !== "/"') ||
+    content.includes("pathname === '/'") ||
+    content.includes('pathname === "/"'),
+    "WhatsAppFloatingButton must only render on the homepage ('/')"
+  );
+});
+
+test("3. WhatsAppFloatingButton wave animation is slowed down for a gentle, elegant ripple", () => {
+  const content = readFileSafe(COMPONENT_PATH);
+  assert.ok(content, "Component content must be available");
+
+  // Duration for wave ripples must be slow (>= 3.0s, e.g. 3.6s)
+  const durationMatch = content.match(/animate=\{\{\s*scale:[^}]+\}\}\s*transition=\{\{\s*duration:\s*([0-9.]+)/) ||
+                        content.match(/transition=\{\{\s*duration:\s*([0-9.]+)/);
+  assert.ok(
+    durationMatch,
+    "Wave animation must define an explicit duration"
+  );
+  const durationValue = parseFloat(durationMatch[1]);
+  assert.ok(
+    durationValue >= 3.0,
+    `Wave animation duration should be at least 3.0 seconds to be slow and gentle, got: ${durationValue}s`
+  );
+});
+
+test("4. WhatsAppFloatingButton targets official WhatsApp number with English inquiry message", () => {
   const content = readFileSafe(COMPONENT_PATH);
   assert.ok(content, "Component content must be available");
   
@@ -48,25 +85,7 @@ test("2. WhatsAppFloatingButton targets official WhatsApp number with English in
   );
 });
 
-test("3. WhatsAppFloatingButton features an animated wave / ripple radiating from the main button", () => {
-  const content = readFileSafe(COMPONENT_PATH);
-  assert.ok(content, "Component content must be available");
-
-  // Must have a wave/ripple ring radiating from the main button container
-  const hasWavePing = content.includes("animate-ping") && content.includes("absolute inset-0");
-  const hasWavePulse = content.includes("animate-pulse") || content.includes("-inset-");
-
-  assert.ok(
-    hasWavePing || hasWavePulse,
-    "Floating circular button must have an animated wave/ripple effect radiating outwards (e.g. animate-ping with absolute inset-0)"
-  );
-  assert.ok(
-    content.includes("bg-[#25D366]") || content.includes("bg-emerald-"),
-    "Wave must use WhatsApp green brand color"
-  );
-});
-
-test("4. WhatsAppFloatingButton has proper accessibility, secure link attributes, and fixed positioning", () => {
+test("5. WhatsAppFloatingButton has proper accessibility, secure link attributes, and fixed positioning", () => {
   const content = readFileSafe(COMPONENT_PATH);
   assert.ok(content, "Component content must be available");
 
@@ -84,7 +103,7 @@ test("4. WhatsAppFloatingButton has proper accessibility, secure link attributes
   );
 });
 
-test("5. WhatsAppFloatingButton features a responsive inquiry pill/label and WhatsApp styling", () => {
+test("6. WhatsAppFloatingButton features a responsive inquiry pill/label and WhatsApp styling", () => {
   const content = readFileSafe(COMPONENT_PATH);
   assert.ok(content, "Component content must be available");
 
@@ -102,7 +121,7 @@ test("5. WhatsAppFloatingButton features a responsive inquiry pill/label and Wha
   );
 });
 
-test("6. App.tsx replaces IslamicAssistantWidget with WhatsAppFloatingButton", () => {
+test("7. App.tsx replaces IslamicAssistantWidget with WhatsAppFloatingButton", () => {
   const appContent = readFileSafe(APP_PATH);
   assert.ok(appContent, "src/App.tsx must exist");
 
