@@ -62,7 +62,7 @@ export function HeroSection({ onScrollToHowToJoin }: HeroSectionProps) {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0"
+            className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 lg:-mt-7"
           >
             <motion.p
               variants={itemVariants}
