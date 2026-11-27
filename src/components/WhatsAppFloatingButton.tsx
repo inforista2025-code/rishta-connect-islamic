@@ -34,17 +34,27 @@ export function WhatsAppFloatingButton({
         <span className="text-emerald-600 font-bold">💬</span>
       </a>
 
-      {/* Floating Action Circular Button Container with Outward Wave Ripples */}
-      <div className="relative flex items-center justify-center">
-        {/* Animated Wave / Radar Ripple Layer 1 (Expanding wave) */}
-        <span
-          className="absolute inset-0 rounded-full bg-[#25D366] opacity-75 animate-ping pointer-events-none -z-10"
+      {/* Floating Action Circular Button Container with Outward Radiating Waves */}
+      <div className="relative w-14 h-14 flex items-center justify-center">
+        {/* Outward Radiating Wave Ring 1 */}
+        <motion.span
+          className="absolute inset-0 rounded-full bg-[#25D366] pointer-events-none -z-10"
+          animate={{ scale: [1, 1.45, 1.85], opacity: [0.75, 0.35, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
           aria-hidden="true"
         />
 
-        {/* Animated Wave / Soft Halo Layer 2 (Pulsing aura) */}
+        {/* Outward Radiating Wave Ring 2 (Staggered Wave) */}
+        <motion.span
+          className="absolute inset-0 rounded-full bg-[#25D366] pointer-events-none -z-10"
+          animate={{ scale: [1, 1.4, 1.75], opacity: [0.6, 0.25, 0] }}
+          transition={{ duration: 2.2, delay: 0.75, repeat: Infinity, ease: "easeOut" }}
+          aria-hidden="true"
+        />
+
+        {/* CSS Ping Fallback */}
         <span
-          className="absolute -inset-1.5 rounded-full bg-[#25D366]/40 animate-pulse pointer-events-none -z-10"
+          className="absolute inset-0 rounded-full bg-[#25D366] opacity-50 animate-ping pointer-events-none -z-10"
           aria-hidden="true"
         />
 
