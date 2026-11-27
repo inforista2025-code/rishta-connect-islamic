@@ -23,7 +23,7 @@ import MemberLogin from "./pages/MemberLogin";
 import MemberDashboard from "./pages/MemberDashboard";
 import PremiumDashboard from "./pages/PremiumDashboard";
 import { MemberProtectedRoute } from "./components/MemberProtectedRoute";
-import { IslamicAssistantWidget } from "./components/ai/IslamicAssistantWidget";
+import { WhatsAppFloatingButton } from "./components/WhatsAppFloatingButton";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
@@ -58,7 +58,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              <IslamicAssistantWidget />
+              <WhatsAppFloatingButton />
             </ErrorBoundary>
           </BrowserRouter>
         </MotionConfig>
